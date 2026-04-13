@@ -1,16 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useQuery } from '@hooks/useQuery';
+import { membersService } from '@api/services';
+import type { IMemberProfile } from '@app-types/member';
 
 export function useMyProfile() {
-  const [data, setData] = useState<Record<string, unknown> | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    // Backend contract for member profile isn't specified yet; keep as skeleton.
-    setData(null);
-    setLoading(false);
-    setError(null);
-  }, []);
-
-  return { data, loading, error };
+  return useQuery<IMemberProfile>({
+    queryFn: () => membersService.getMyProfile(),
+    // Backend no disponible aun
+    enabled: false,
+    errorMessage: 'No se pudo cargar el perfil',
+  });
 }
