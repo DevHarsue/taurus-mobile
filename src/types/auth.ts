@@ -24,17 +24,22 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-  access_token: string;
-  refresh_token: string;
+  accessToken: string;
+  refreshToken: string;
   user: AuthUser;
 }
 
 export interface RefreshRequest {
-  refresh_token: string;
+  refreshToken: string;
 }
 
 export interface RefreshResponse {
-  access_token: string;
+  accessToken: string;
+  refreshToken: string;
+}
+
+export interface LogoutRequest {
+  refreshToken: string;
 }
 
 export interface JwtPayload {

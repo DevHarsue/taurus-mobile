@@ -1,24 +1,14 @@
-import { useState } from 'react';
+import { useMutation } from '@hooks/useMutation';
 import { useAuth } from '@hooks/useAuth';
 import type { LoginRequest } from '@app-types/auth';
 
 export function useLogin() {
   const { login } = useAuth();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const submit = async (body: LoginRequest) => {
-    setLoading(true);
-    setError(null);
-    try {
-      await login(body);
-    } catch (e) {
-      setError('No se pudo iniciar sesión');
-      throw e;
-    } finally {
-      setLoading(false);
-    }
-  };
+  const mutation = useMutation<LoginRequest>({
+    mutationFn: (body) => login(body),
+    errorMessage: 'No se pudo iniciar sesion',
+  });
 
-  return { submit, loading, error };
+  return { submit: mutation.mutate, loading: mutation.loading, error: mutation.error };
 }

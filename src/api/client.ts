@@ -3,8 +3,8 @@ import axios, {
   type AxiosInstance,
   type InternalAxiosRequestConfig
 } from 'axios';
-import * as SecureStore from 'expo-secure-store';
 import { AUTH_BASE_URL, SECURE_STORE_KEYS } from '@utils/constants';
+import { storage } from '@utils/storage';
 import { triggerLogout } from './authEvents';
 import type { RefreshResponse } from '@app-types/auth';
 
@@ -13,15 +13,19 @@ type RequestConfigWithRetry = InternalAxiosRequestConfig & { _retry?: boolean };
 let refreshPromise: Promise<string> | null = null;
 
 async function getAccessToken() {
-  return SecureStore.getItemAsync(SECURE_STORE_KEYS.accessToken);
+  return storage.getItem(SECURE_STORE_KEYS.accessToken);
 }
 
 async function getRefreshToken() {
-  return SecureStore.getItemAsync(SECURE_STORE_KEYS.refreshToken);
+  return storage.getItem(SECURE_STORE_KEYS.refreshToken);
 }
 
 async function setAccessToken(token: string) {
-  await SecureStore.setItemAsync(SECURE_STORE_KEYS.accessToken, token);
+  await storage.setItem(SECURE_STORE_KEYS.accessToken, token);
+}
+
+async function storeRefreshToken(token: string) {
+  await storage.setItem(SECURE_STORE_KEYS.refreshToken, token);
 }
 
 async function refreshAccessToken(): Promise<string> {
@@ -29,11 +33,15 @@ async function refreshAccessToken(): Promise<string> {
   if (!refreshToken) throw new Error('Missing refresh token');
 
   const resp = await axios.post<RefreshResponse>(`${AUTH_BASE_URL}/api/auth/refresh`, {
-    refresh_token: refreshToken
+    refreshToken,
   });
 
-  const newAccessToken = resp.data.access_token;
+  const newAccessToken = resp.data.accessToken;
   await setAccessToken(newAccessToken);
+  // Rotacion de tokens: guardar el nuevo refreshToken
+  if (resp.data.refreshToken) {
+    await storeRefreshToken(resp.data.refreshToken);
+  }
   return newAccessToken;
 }
 

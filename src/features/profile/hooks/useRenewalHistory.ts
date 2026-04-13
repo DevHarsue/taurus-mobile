@@ -1,16 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useQuery } from '@hooks/useQuery';
+import { membersService } from '@api/services';
+import type { IRenewalHistoryItem } from '@app-types/member';
 
-export function useRenewalHistory() {
-  const [data, setData] = useState<unknown[] | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    // Backend contract for renewal history isn't specified yet; keep as skeleton.
-    setData(null);
-    setLoading(false);
-    setError(null);
-  }, []);
-
-  return { data, loading, error };
+export function useRenewalHistory(memberId?: string) {
+  return useQuery<IRenewalHistoryItem[]>({
+    queryFn: () => membersService.getRenewalHistory(memberId!),
+    deps: [memberId],
+    // Backend no disponible aun
+    enabled: false,
+    errorMessage: 'No se pudo cargar el historial',
+  });
 }

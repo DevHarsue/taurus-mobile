@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useEffect, useMemo, useState } from 'react';
-import * as SecureStore from 'expo-secure-store';
 import { SECURE_STORE_KEYS } from '@utils/constants';
+import { storage } from '@utils/storage';
 import { decodeJwtPayload } from '@utils/jwt';
 import type { AuthUser, JwtPayload, LoginRequest } from '@app-types/auth';
 import * as authApi from '@api/auth.api';
@@ -19,23 +19,23 @@ export const AuthContext = createContext<AuthContextValue | undefined>(undefined
 
 async function readTokens() {
   const [accessToken, refreshToken] = await Promise.all([
-    SecureStore.getItemAsync(SECURE_STORE_KEYS.accessToken),
-    SecureStore.getItemAsync(SECURE_STORE_KEYS.refreshToken)
+    storage.getItem(SECURE_STORE_KEYS.accessToken),
+    storage.getItem(SECURE_STORE_KEYS.refreshToken),
   ]);
   return { accessToken, refreshToken };
 }
 
 async function writeTokens(accessToken: string, refreshToken: string) {
   await Promise.all([
-    SecureStore.setItemAsync(SECURE_STORE_KEYS.accessToken, accessToken),
-    SecureStore.setItemAsync(SECURE_STORE_KEYS.refreshToken, refreshToken)
+    storage.setItem(SECURE_STORE_KEYS.accessToken, accessToken),
+    storage.setItem(SECURE_STORE_KEYS.refreshToken, refreshToken),
   ]);
 }
 
 async function clearTokens() {
   await Promise.all([
-    SecureStore.deleteItemAsync(SECURE_STORE_KEYS.accessToken),
-    SecureStore.deleteItemAsync(SECURE_STORE_KEYS.refreshToken)
+    storage.deleteItem(SECURE_STORE_KEYS.accessToken),
+    storage.deleteItem(SECURE_STORE_KEYS.refreshToken),
   ]);
 }
 
@@ -45,24 +45,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [accessToken, setAccessToken] = useState<string | null>(null);
 
   const logout = useCallback(async () => {
+    // Llamar al backend para revocar el refreshToken
+    try {
+      const refreshToken = await storage.getItem(SECURE_STORE_KEYS.refreshToken);
+      if (refreshToken) {
+        await authApi.logout({ refreshToken });
+      }
+    } catch {
+      // Si falla la llamada al backend, seguimos limpiando localmente
+    }
     await clearTokens();
     setUser(null);
     setAccessToken(null);
   }, []);
 
-  const login = useCallback(
-    async (body: LoginRequest) => {
-      const resp = await authApi.login(body);
-      await writeTokens(resp.access_token, resp.refresh_token);
-      setAccessToken(resp.access_token);
+  const login = useCallback(async (body: LoginRequest) => {
+    const resp = await authApi.login(body);
+    await writeTokens(resp.accessToken, resp.refreshToken);
+    setAccessToken(resp.accessToken);
 
-      // role comes from JWT payload (no extra backend call required)
-      const payload = decodeJwtPayload<JwtPayload>(resp.access_token);
-      const role = payload?.role ?? resp.user.role;
-      setUser({ ...resp.user, role });
-    },
-    []
-  );
+    // Role del JWT payload (sin llamada extra al backend)
+    const payload = decodeJwtPayload<JwtPayload>(resp.accessToken);
+    const role = payload?.role ?? resp.user.role;
+    setUser({ ...resp.user, role });
+  }, []);
 
   useEffect(() => {
     setLogoutHandler(logout);
@@ -85,7 +91,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (!cancelled) setAccessToken(storedAccess);
 
-        // Validate token with backend (will auto-refresh on 401 via interceptor)
+        // Validar token con backend (auto-refresh en 401 via interceptor)
         const me = await authApi.me();
         if (!cancelled) setUser(me);
       } catch {
@@ -101,7 +107,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [logout]);
 
   const isAuthenticated = !!accessToken;
-  const isAdmin = user?.role === 'admin' || decodeJwtPayload<JwtPayload>(accessToken ?? '')?.role === 'admin';
+  const isAdmin =
+    user?.role === 'admin' ||
+    decodeJwtPayload<JwtPayload>(accessToken ?? '')?.role === 'admin';
 
   const value = useMemo<AuthContextValue>(
     () => ({
@@ -110,9 +118,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isAuthenticated,
       isAdmin,
       login,
-      logout
+      logout,
     }),
-    [user, loading, isAuthenticated, isAdmin, login, logout]
+    [user, loading, isAuthenticated, isAdmin, login, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
