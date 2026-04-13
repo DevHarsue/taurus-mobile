@@ -1,22 +1,16 @@
-import { useState } from 'react';
-import * as membersApi from '@api/members.api';
+import { useMutation } from '@hooks/useMutation';
+import { membersService } from '@api/services';
+import type { SubscriptionResponse } from '@app-types/member';
+
+interface IRenewInput {
+  memberId: string;
+  planId: string;
+}
 
 export function useRenew() {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const renew = async (memberId: string, planId: string) => {
-    setLoading(true);
-    setError(null);
-    try {
-      await membersApi.renewMember(memberId, { planId });
-    } catch {
-      setError('No se pudo renovar');
-      throw new Error('renew_failed');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return { renew, loading, error };
+  return useMutation<IRenewInput, SubscriptionResponse>({
+    mutationFn: ({ memberId, planId }) =>
+      membersService.renew(memberId, { planId }),
+    errorMessage: 'No se pudo renovar',
+  });
 }
