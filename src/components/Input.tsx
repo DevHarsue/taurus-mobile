@@ -1,20 +1,25 @@
 import React from 'react';
 import { StyleSheet, Text, TextInput, View, type TextInputProps } from 'react-native';
-import { theme } from '@theme/index';
+import { colors, radii, sizes, typography } from '@theme/index';
+
+type InputVariant = 'light' | 'dark';
 
 type Props = TextInputProps & {
   label: string;
   error?: string;
+  variant?: InputVariant;
 };
 
-export function Input({ label, error, style, ...props }: Props) {
+export function Input({ label, error, variant = 'light', style, ...props }: Props) {
+  const bgColor = variant === 'dark' ? colors.inputBgAlt : colors.inputBg;
+
   return (
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>
       <TextInput
         {...props}
-        style={[styles.input, !!error && styles.inputError, style]}
-        placeholderTextColor={theme.colors.textSecondary}
+        style={[styles.input, { backgroundColor: bgColor }, !!error && styles.inputError, style]}
+        placeholderTextColor={colors.textPrimaryAlpha40}
       />
       {!!error && <Text style={styles.error}>{error}</Text>}
     </View>
@@ -23,26 +28,31 @@ export function Input({ label, error, style, ...props }: Props) {
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 12
+    marginBottom: 12,
   },
   label: {
     marginBottom: 6,
-    color: theme.colors.black,
-    fontWeight: '600'
+    fontFamily: typography.labelL.fontFamily,
+    fontSize: typography.labelL.fontSize,
+    letterSpacing: typography.labelL.letterSpacing,
+    color: colors.textMuted,
+    textTransform: 'uppercase',
   },
   input: {
-    borderWidth: 1,
-    borderColor: '#D1D5DB',
-    borderRadius: theme.radii.sm,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    backgroundColor: theme.colors.white
+    height: sizes.inputHeight,
+    borderRadius: radii.md,
+    paddingHorizontal: 16,
+    fontSize: typography.bodySM.fontSize,
+    fontFamily: typography.bodySM.fontFamily,
+    color: colors.textPrimary,
   },
   inputError: {
-    borderColor: theme.colors.badgeExpired
+    borderWidth: 1,
+    borderColor: colors.badgeExpired,
   },
   error: {
     marginTop: 6,
-    color: theme.colors.badgeExpired
-  }
+    color: colors.badgeExpired,
+    fontSize: 12,
+  },
 });
