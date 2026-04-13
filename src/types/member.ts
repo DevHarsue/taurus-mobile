@@ -7,11 +7,12 @@ export type MemberStatus = 'active' | 'expired' | 'pending';
 // ─── Request / Response ────────────────────────────────────────────────────
 
 export interface CreateMemberRequest {
+  userId: string;
   name: string;
   cedula: string;
   phone: string;
   email: string;
-  fingerprint_id: string;
+  fingerprintId?: number;
 }
 
 export interface GetMembersQuery {
@@ -43,7 +44,7 @@ export interface MemberListItem {
   id: string;
   name: string;
   cedula: string;
-  status: MemberStatus;
+  status?: MemberStatus;
 }
 
 export interface MemberDetail {
@@ -54,8 +55,8 @@ export interface MemberDetail {
   email: string;
   status: MemberStatus;
   daysLeft: number;
-  fingerprintId: string;
-  createdAt: string;
+  fingerprintId?: number;
+  createdAt?: string;
   planName?: string;
   planStartDate?: string;
   planEndDate?: string;

@@ -31,6 +31,9 @@ export default function MemberDetailScreen({ route }: MemberDetailScreenProps) {
         {(member) => {
           const totalDays = 30;
           const progress = Math.max(0, member.daysLeft / totalDays);
+          const memberSince = member.createdAt
+            ? new Date(member.createdAt).toLocaleDateString('es', { month: 'long', year: 'numeric' })
+            : 'No disponible';
 
           return (
             <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
@@ -40,7 +43,7 @@ export default function MemberDetailScreen({ route }: MemberDetailScreenProps) {
               </View>
 
               <Text style={styles.memberName}>{member.name.toUpperCase()}</Text>
-              <Text style={styles.memberSince}>Socio desde: {new Date(member.createdAt).toLocaleDateString('es', { month: 'long', year: 'numeric' })}</Text>
+              <Text style={styles.memberSince}>Socio desde: {memberSince}</Text>
 
               <View style={styles.progressContainer}>
                 <CircularProgress

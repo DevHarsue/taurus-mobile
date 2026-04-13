@@ -17,7 +17,7 @@ export default function CreateMemberScreen() {
 
   const { control, handleSubmit, formState: { errors } } = useForm<CreateMemberFormValues>({
     resolver: zodResolver(createMemberSchema),
-    defaultValues: { name: '', cedula: '', phone: '', email: '', fingerprint_id: '' },
+    defaultValues: { name: '', cedula: '', phone: '', email: '' },
   });
 
   const onSubmit = async (values: CreateMemberFormValues) => {
