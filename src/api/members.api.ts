@@ -1,17 +1,16 @@
 import { membersClient } from '@api/index';
 import type {
   CreateMemberRequest,
-  CreateMemberResponse,
+  MemberDetail,
   GetMembersQuery,
   GetMembersResponse,
-  MemberDetail,
   UpdateMemberRequest,
   SubscriptionResponse,
   RenewMemberRequest
 } from '@app-types/member';
 
-export async function createMember(body: CreateMemberRequest): Promise<CreateMemberResponse> {
-  const resp = await membersClient.post<CreateMemberResponse>('/api/members', body);
+export async function createMember(body: CreateMemberRequest): Promise<MemberDetail> {
+  const resp = await membersClient.post<MemberDetail>('/api/members', body);
   return resp.data;
 }
 
