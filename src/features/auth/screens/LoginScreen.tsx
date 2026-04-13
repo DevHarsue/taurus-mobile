@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { theme } from '@theme/index';
+import { colors } from '@theme/index';
 import { LoginForm } from '@features/auth/components/LoginForm';
 
 export default function LoginScreen() {
@@ -14,8 +14,6 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.bgLight,
-    padding: theme.spacing.lg,
-    justifyContent: 'center'
-  }
+    backgroundColor: colors.white,
+  },
 });
