@@ -41,3 +41,7 @@ yarn-error.*
 /android
 
 taurus_kinetic
+
+# IDE/tool config
+.claude/
+.mcp.json
