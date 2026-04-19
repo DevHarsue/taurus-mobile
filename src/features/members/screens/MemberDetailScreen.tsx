@@ -9,6 +9,7 @@ import { CircularProgress } from '@components/CircularProgress';
 import { GradientButton } from '@components/GradientButton';
 import { QueryRenderer } from '@components/QueryRenderer';
 import { useMemberDetail } from '../hooks/useMemberDetail';
+import { useMemberSubscriptions } from '../hooks/useMemberSubscriptions';
 import { colors, typography, spacing } from '@theme/index';
 import type { MemberDetailScreenProps, MembersStackParamList } from '@navigation/types';
 
@@ -18,11 +19,13 @@ export default function MemberDetailScreen({ route }: MemberDetailScreenProps) {
   const { id } = route.params;
   const nav = useNavigation<Nav>();
   const query = useMemberDetail(id);
+  const subscriptionsQuery = useMemberSubscriptions(id);
 
   useFocusEffect(
     useCallback(() => {
       query.refetch();
-    }, [query.refetch])
+      subscriptionsQuery.refetch();
+    }, [query.refetch, subscriptionsQuery.refetch])
   );
 
   return (
@@ -72,18 +75,22 @@ export default function MemberDetailScreen({ route }: MemberDetailScreenProps) {
                 </View>
               </Card>
 
-              <Text style={styles.historyTitle}>HISTORIAL DE RENOVACIONES</Text>
+              <Text style={styles.historyTitle}>HISTORIAL DE SUSCRIPCIONES</Text>
 
-              {['Renovacion Mensual', 'Renovacion Mensual', 'Inscripcion Inicial'].map((item, i) => (
-                <View key={i} style={styles.historyRow}>
-                  <Text style={styles.historyIcon}>{i < 2 ? '↻' : '⭐'}</Text>
-                  <View style={styles.historyInfo}>
-                    <Text style={styles.historyName}>{item}</Text>
-                    <Text style={styles.historyMeta}>Procesado por: {i === 1 ? 'Staff Maria' : 'Admin Taurus'}</Text>
+              {subscriptionsQuery.data?.length ? (
+                subscriptionsQuery.data.map((sub) => (
+                  <View key={sub.id} style={styles.historyRow}>
+                    <Text style={styles.historyIcon}>{sub.status === 'active' ? '✓' : '↻'}</Text>
+                    <View style={styles.historyInfo}>
+                      <Text style={styles.historyName}>Suscripcion ({sub.status})</Text>
+                      <Text style={styles.historyMeta}>Inicio: {new Date(sub.startsAt).toLocaleDateString('es')}</Text>
+                    </View>
+                    <Text style={styles.historyDate}>{new Date(sub.expiresAt).toLocaleDateString('es', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}</Text>
                   </View>
-                  <Text style={styles.historyDate}>{['12 SEP 2023', '12 AGO 2023', '12 JUL 2023'][i]}</Text>
-                </View>
-              ))}
+                ))
+              ) : (
+                <Text style={styles.emptyHistory}>Sin suscripciones registradas</Text>
+              )}
 
               <GradientButton
                 title="+ Renovar membresia"
@@ -125,4 +132,5 @@ const styles = StyleSheet.create({
   historyName: { fontFamily: typography.bodyS.fontFamily, fontSize: typography.bodyS.fontSize, color: colors.textPrimary },
   historyMeta: { fontFamily: typography.bodyXS.fontFamily, fontSize: 11, color: colors.textMuted },
   historyDate: { fontFamily: typography.bodyXS.fontFamily, fontSize: 11, color: colors.textMuted },
+  emptyHistory: { fontFamily: typography.bodySM.fontFamily, fontSize: typography.bodySM.fontSize, color: colors.textMuted, textAlign: 'center', paddingVertical: 20 },
 });

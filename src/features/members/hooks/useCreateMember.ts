@@ -9,8 +9,9 @@ export function useCreateMember() {
       const body: CreateMemberRequest = {
         name: form.name,
         cedula: form.cedula,
+        email: form.email,
         phone: form.phone || undefined,
-        email: form.email || undefined,
+        password: form.password || undefined,
         fingerprintId: form.fingerprintId
           ? Number(form.fingerprintId)
           : undefined,

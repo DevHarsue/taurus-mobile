@@ -10,8 +10,9 @@ export type MemberStatus = 'active' | 'expired' | 'none';
 export interface CreateMemberRequest {
   name: string;
   cedula: string;
+  email: string;
   phone?: string;
-  email?: string;
+  password?: string;
   fingerprintId?: number;
 }
 
@@ -45,13 +46,7 @@ export interface MemberCreated {
   name: string;
   cedula: string;
   status: 'expired';
-}
-
-export interface MemberStatusResponse {
-  name: string;
-  active: boolean;
-  daysLeft: number;
-  fingerprintId?: number;
+  temporaryPassword?: string;
 }
 
 // ─── Entidades ─────────────────────────────────────────────────────────────
@@ -60,7 +55,13 @@ export interface MemberListItem {
   id: string;
   name: string;
   cedula: string;
+  email: string;
+  phone?: string;
+  fingerprintId?: number | null;
   subscriptionStatus: MemberStatus;
+  daysLeft: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface MemberDetail {
@@ -74,38 +75,4 @@ export interface MemberDetail {
   fingerprintId?: number | null;
 }
 
-// ─── Perfil del miembro (pantalla MyProfile) ───────────────────────────────
 
-export interface IAttendanceDay {
-  date: string;
-  attended: boolean;
-}
-
-export interface IMemberProfile {
-  id: string;
-  name: string;
-  cedula: string;
-  phone: string;
-  email: string;
-  status: MemberStatus;
-  planName: string;
-  planExpiry: string;
-  daysLeft: number;
-  streak: number;
-  totalVisits: number;
-  nextMonthVisits: number;
-  attendance: IAttendanceDay[];
-}
-
-// ─── Historial de renovaciones ─────────────────────────────────────────────
-
-export type RenewalType = 'renewal' | 'initial' | 'upgrade';
-
-export interface IRenewalHistoryItem {
-  id: string;
-  type: RenewalType;
-  planName: string;
-  processedBy: string;
-  date: string;
-  duration: string;
-}

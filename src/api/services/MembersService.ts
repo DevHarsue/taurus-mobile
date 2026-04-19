@@ -4,14 +4,11 @@ import type {
   MemberListItem,
   MemberDetail,
   MemberCreated,
-  MemberStatusResponse,
   CreateMemberRequest,
   GetMembersQuery,
   UpdateMemberRequest,
   RenewMemberRequest,
   SubscriptionResponse,
-  IMemberProfile,
-  IRenewalHistoryItem,
 } from '@app-types/member';
 
 export class MembersService extends BaseApiService {
@@ -37,10 +34,6 @@ export class MembersService extends BaseApiService {
     return this.delete(`/api/members/${id}`);
   }
 
-  async getStatus(id: string): Promise<MemberStatusResponse> {
-    return this.get(`/api/members/${id}/status`);
-  }
-
   async renew(
     id: string,
     body: RenewMemberRequest,
@@ -48,11 +41,4 @@ export class MembersService extends BaseApiService {
     return this.post(`/api/members/${id}/renew`, body);
   }
 
-  async getMyProfile(): Promise<IMemberProfile> {
-    return this.get('/api/members/me/profile');
-  }
-
-  async getRenewalHistory(memberId: string): Promise<IRenewalHistoryItem[]> {
-    return this.get(`/api/members/${memberId}/renewals`);
-  }
 }
