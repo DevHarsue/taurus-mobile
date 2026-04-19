@@ -1,5 +1,6 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
+import type { PlanBase } from '@app-types/plan';
 
 // ─── Param Lists ───────────────────────────────────────────────────────────
 
@@ -20,10 +21,13 @@ export type MembersStackParamList = {
   MemberDetail: { id: string };
   CreateMember: undefined;
   RenewMembership: { memberId: string; memberName: string };
+  EditMember: { id: string };
 };
 
 export type PlansStackParamList = {
   PlansHome: undefined;
+  CreatePlan: undefined;
+  EditPlan: { plan: PlanBase };
 };
 
 export type DashboardStackParamList = {
@@ -53,6 +57,9 @@ export type MemberDetailScreenProps = NativeStackScreenProps<MembersStackParamLi
 export type CreateMemberScreenProps = NativeStackScreenProps<MembersStackParamList, 'CreateMember'>;
 export type RenewMembershipScreenProps = NativeStackScreenProps<MembersStackParamList, 'RenewMembership'>;
 export type PlansScreenProps = NativeStackScreenProps<PlansStackParamList, 'PlansHome'>;
+export type EditMemberScreenProps = NativeStackScreenProps<MembersStackParamList, 'EditMember'>;
+export type CreatePlanScreenProps = NativeStackScreenProps<PlansStackParamList, 'CreatePlan'>;
+export type EditPlanScreenProps = NativeStackScreenProps<PlansStackParamList, 'EditPlan'>;
 export type QRScannerScreenProps = NativeStackScreenProps<QRScannerStackParamList, 'QRScannerHome'>;
 export type ProfileScreenProps = NativeStackScreenProps<ProfileStackParamList, 'ProfileHome'>;
 

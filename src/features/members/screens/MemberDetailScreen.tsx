@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ScreenHeader } from '@components/ScreenHeader';
@@ -10,6 +10,7 @@ import { GradientButton } from '@components/GradientButton';
 import { QueryRenderer } from '@components/QueryRenderer';
 import { useMemberDetail } from '../hooks/useMemberDetail';
 import { useMemberSubscriptions } from '../hooks/useMemberSubscriptions';
+import { useDeleteMember } from '../hooks/useDeleteMember';
 import { colors, typography, spacing } from '@theme/index';
 import type { MemberDetailScreenProps, MembersStackParamList } from '@navigation/types';
 
@@ -20,6 +21,32 @@ export default function MemberDetailScreen({ route }: MemberDetailScreenProps) {
   const nav = useNavigation<Nav>();
   const query = useMemberDetail(id);
   const subscriptionsQuery = useMemberSubscriptions(id);
+  const { mutate: deleteMember } = useDeleteMember();
+
+  const handleDelete = async () => {
+    if (Platform.OS === 'web') {
+      if (!window.confirm('Esta seguro que desea eliminar este miembro? Esta accion no se puede deshacer.')) return;
+      await deleteMember(id);
+      nav.goBack();
+    } else {
+      const { Alert } = require('react-native');
+      Alert.alert(
+        'Eliminar miembro',
+        'Esta seguro que desea eliminar este miembro? Esta accion no se puede deshacer.',
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          {
+            text: 'Eliminar',
+            style: 'destructive',
+            onPress: async () => {
+              await deleteMember(id);
+              nav.goBack();
+            },
+          },
+        ],
+      );
+    }
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -96,6 +123,15 @@ export default function MemberDetailScreen({ route }: MemberDetailScreenProps) {
                 onPress={() => nav.navigate('RenewMembership', { memberId: id, memberName: member.name })}
               />
 
+              <GradientButton
+                title="Editar miembro"
+                onPress={() => nav.navigate('EditMember', { id })}
+              />
+
+              <Pressable onPress={handleDelete} style={styles.deleteBtn}>
+                <Text style={styles.deleteBtnText}>Eliminar miembro</Text>
+              </Pressable>
+
               <View style={{ height: 40 }} />
             </ScrollView>
           );
@@ -132,4 +168,6 @@ const styles = StyleSheet.create({
   historyMeta: { fontFamily: typography.bodyXS.fontFamily, fontSize: 11, color: colors.textMuted },
   historyDate: { fontFamily: typography.bodyXS.fontFamily, fontSize: 11, color: colors.textMuted },
   emptyHistory: { fontFamily: typography.bodySM.fontFamily, fontSize: typography.bodySM.fontSize, color: colors.textMuted, textAlign: 'center', paddingVertical: 20 },
+  deleteBtn: { alignItems: 'center', paddingVertical: 12, marginTop: 8 },
+  deleteBtnText: { fontFamily: typography.bodyS.fontFamily, fontSize: typography.bodyS.fontSize, color: colors.badgeExpired },
 });
