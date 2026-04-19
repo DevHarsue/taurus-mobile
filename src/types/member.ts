@@ -1,17 +1,19 @@
 import type { IPaginatedResponse } from './api';
+import type { Subscription } from './subscription';
 
 // ─── Enums y tipos base ────────────────────────────────────────────────────
 
-export type MemberStatus = 'active' | 'expired' | 'pending';
+export type MemberStatus = 'active' | 'expired';
 
 // ─── Request / Response ────────────────────────────────────────────────────
 
 export interface CreateMemberRequest {
+  userId: string;
   name: string;
   cedula: string;
-  phone: string;
-  email: string;
-  fingerprint_id: string;
+  phone?: string;
+  email?: string;
+  fingerprintId?: number;
 }
 
 export interface GetMembersQuery {
@@ -34,7 +36,23 @@ export interface RenewMemberRequest {
 }
 
 export interface SubscriptionResponse {
-  subscription: Record<string, unknown>;
+  subscription: Subscription;
+}
+
+// ─── Respuestas especificas ───────────────────────────────────────────────
+
+export interface MemberCreated {
+  id: string;
+  name: string;
+  cedula: string;
+  status: 'expired';
+}
+
+export interface MemberStatusResponse {
+  name: string;
+  active: boolean;
+  daysLeft: number;
+  fingerprintId?: number;
 }
 
 // ─── Entidades ─────────────────────────────────────────────────────────────
@@ -50,11 +68,11 @@ export interface MemberDetail {
   id: string;
   name: string;
   cedula: string;
-  phone: string;
-  email: string;
+  phone?: string;
+  email?: string;
   status: MemberStatus;
   daysLeft: number;
-  fingerprintId: string;
+  fingerprintId?: number;
   createdAt: string;
   planName?: string;
   planStartDate?: string;

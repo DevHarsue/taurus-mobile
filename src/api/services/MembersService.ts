@@ -1,8 +1,10 @@
-import type { ICrudService, IPaginatedResponse } from '@api/interfaces';
+import type { IPaginatedResponse } from '@api/interfaces';
 import { BaseApiService } from './BaseApiService';
 import type {
   MemberListItem,
   MemberDetail,
+  MemberCreated,
+  MemberStatusResponse,
   CreateMemberRequest,
   GetMembersQuery,
   UpdateMemberRequest,
@@ -12,16 +14,7 @@ import type {
   IRenewalHistoryItem,
 } from '@app-types/member';
 
-export class MembersService
-  extends BaseApiService
-  implements
-    ICrudService<
-      MemberListItem,
-      MemberDetail,
-      CreateMemberRequest,
-      GetMembersQuery
-    >
-{
+export class MembersService extends BaseApiService {
   async getAll(
     query?: GetMembersQuery,
   ): Promise<IPaginatedResponse<MemberListItem>> {
@@ -32,12 +25,20 @@ export class MembersService
     return this.get(`/api/members/${id}`);
   }
 
-  async create(body: CreateMemberRequest): Promise<MemberDetail> {
+  async create(body: CreateMemberRequest): Promise<MemberCreated> {
     return this.post('/api/members', body);
   }
 
   async update(id: string, body: UpdateMemberRequest): Promise<MemberDetail> {
     return this.put(`/api/members/${id}`, body);
+  }
+
+  async remove(id: string): Promise<void> {
+    return this.delete(`/api/members/${id}`);
+  }
+
+  async getStatus(id: string): Promise<MemberStatusResponse> {
+    return this.get(`/api/members/${id}/status`);
   }
 
   async renew(
