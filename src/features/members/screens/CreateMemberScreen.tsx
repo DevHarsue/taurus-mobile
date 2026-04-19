@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -23,11 +23,17 @@ export default function CreateMemberScreen() {
   const onSubmit = async (values: CreateMemberFormValues) => {
     const result = await mutate(values);
     if (result.temporaryPassword) {
-      Alert.alert(
-        'Miembro registrado',
-        `Contrasena temporal: ${result.temporaryPassword}\n\nComparta esta contrasena con el miembro para su primer acceso.`,
-        [{ text: 'OK', onPress: () => nav.goBack() }],
-      );
+      if (Platform.OS === 'web') {
+        window.alert(`Contrasena temporal: ${result.temporaryPassword}\n\nComparta esta contrasena con el miembro para su primer acceso.`);
+        nav.goBack();
+      } else {
+        const { Alert } = require('react-native');
+        Alert.alert(
+          'Miembro registrado',
+          `Contrasena temporal: ${result.temporaryPassword}\n\nComparta esta contrasena con el miembro para su primer acceso.`,
+          [{ text: 'OK', onPress: () => nav.goBack() }],
+        );
+      }
     } else {
       nav.goBack();
     }
