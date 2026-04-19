@@ -7,7 +7,10 @@ import MembersListScreen from '@features/members/screens/MembersListScreen';
 import MemberDetailScreen from '@features/members/screens/MemberDetailScreen';
 import CreateMemberScreen from '@features/members/screens/CreateMemberScreen';
 import RenewMembershipScreen from '@features/members/screens/RenewMembershipScreen';
+import EditMemberScreen from '@features/members/screens/EditMemberScreen';
 import PlansScreen from '@features/plans/screens/PlansScreen';
+import CreatePlanScreen from '@features/plans/screens/CreatePlanScreen';
+import EditPlanScreen from '@features/plans/screens/EditPlanScreen';
 import QRScannerScreen from '@features/scanner/screens/QRScannerScreen';
 import MyProfileScreen from '@features/profile/screens/MyProfileScreen';
 import { colors, typography } from '@theme/index';
@@ -38,6 +41,7 @@ function MembersStackNavigator() {
       <MembersStack.Screen name="MemberDetail" component={MemberDetailScreen} />
       <MembersStack.Screen name="CreateMember" component={CreateMemberScreen} />
       <MembersStack.Screen name="RenewMembership" component={RenewMembershipScreen} />
+      <MembersStack.Screen name="EditMember" component={EditMemberScreen} />
     </MembersStack.Navigator>
   );
 }
@@ -47,6 +51,8 @@ function PlansStackNavigator() {
   return (
     <PlansStack.Navigator screenOptions={{ headerShown: false }}>
       <PlansStack.Screen name="PlansHome" component={PlansScreen} />
+      <PlansStack.Screen name="CreatePlan" component={CreatePlanScreen} />
+      <PlansStack.Screen name="EditPlan" component={EditPlanScreen} />
     </PlansStack.Navigator>
   );
 }

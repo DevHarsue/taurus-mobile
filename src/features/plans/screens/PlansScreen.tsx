@@ -1,5 +1,7 @@
-import React from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useCallback } from 'react';
+import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ScreenHeader } from '@components/ScreenHeader';
 import { Avatar } from '@components/Avatar';
 import { Card } from '@components/Card';
@@ -7,10 +9,14 @@ import { GradientButton } from '@components/GradientButton';
 import { FAB } from '@components/FAB';
 import { QueryRenderer } from '@components/QueryRenderer';
 import { usePlans } from '../hooks/usePlans';
+import { useDeletePlan } from '../hooks/useDeletePlan';
 import { colors, typography, spacing } from '@theme/index';
-import type { Plan } from '@app-types/plan';
+import type { Plan, PlanBase } from '@app-types/plan';
+import type { PlansStackParamList } from '@navigation/types';
 
-function PlanCard({ plan, highlighted }: { plan: Plan; highlighted: boolean }) {
+type Nav = NativeStackNavigationProp<PlansStackParamList>;
+
+function PlanCard({ plan, highlighted, onEdit, onDelete }: { plan: Plan; highlighted: boolean; onEdit: () => void; onDelete: () => void }) {
   return (
     <Card style={[styles.planCard, highlighted && styles.planCardDark]}>
       <Text style={[styles.planTier, highlighted && styles.textWhite60]}>{plan.tier || 'BASIC TIER'}</Text>
@@ -22,18 +28,62 @@ function PlanCard({ plan, highlighted }: { plan: Plan; highlighted: boolean }) {
         <Text key={i} style={[styles.benefit, highlighted && styles.textWhite80]}>{b}</Text>
       ))}
       {highlighted ? (
-        <GradientButton title="EDIT PLAN" onPress={() => {}} />
+        <GradientButton title="EDIT PLAN" onPress={onEdit} />
       ) : (
-        <View style={styles.editBtn}>
+        <Pressable style={styles.editBtn} onPress={onEdit}>
           <Text style={styles.editBtnText}>EDIT PLAN</Text>
-        </View>
+        </Pressable>
       )}
+      <Pressable onPress={onDelete} style={styles.deleteBtn}>
+        <Text style={[styles.deleteBtnText, highlighted && styles.textWhite60]}>Eliminar</Text>
+      </Pressable>
     </Card>
   );
 }
 
 export default function PlansScreen() {
+  const nav = useNavigation<Nav>();
   const query = usePlans();
+  const { mutate: deletePlan } = useDeletePlan();
+
+  useFocusEffect(
+    useCallback(() => {
+      query.refetch();
+    }, [query.refetch])
+  );
+
+  const handleDeletePlan = async (planId: string, planName: string) => {
+    if (Platform.OS === 'web') {
+      if (!window.confirm(`Esta seguro que desea eliminar "${planName}"?`)) return;
+      await deletePlan(planId);
+      query.refetch();
+    } else {
+      const { Alert } = require('react-native');
+      Alert.alert(
+        'Eliminar plan',
+        `Esta seguro que desea eliminar "${planName}"?`,
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          {
+            text: 'Eliminar',
+            style: 'destructive',
+            onPress: async () => {
+              await deletePlan(planId);
+              query.refetch();
+            },
+          },
+        ],
+      );
+    }
+  };
+
+  const toPlanBase = (plan: Plan): PlanBase => ({
+    id: plan.id,
+    name: plan.name,
+    durationDays: plan.durationDays,
+    referencePrice: plan.referencePrice,
+    isActive: plan.isActive,
+  });
 
   return (
     <View style={styles.container}>
@@ -56,7 +106,13 @@ export default function PlansScreen() {
           {(plans) => (
             <View style={styles.plansList}>
               {plans.map((plan, i) => (
-                <PlanCard key={plan.id} plan={plan} highlighted={plan.isHighlighted ?? i === 1} />
+                <PlanCard
+                  key={plan.id}
+                  plan={plan}
+                  highlighted={plan.isHighlighted ?? i === 1}
+                  onEdit={() => nav.navigate('EditPlan', { plan: toPlanBase(plan) })}
+                  onDelete={() => handleDeletePlan(plan.id, plan.name)}
+                />
               ))}
             </View>
           )}
@@ -65,7 +121,7 @@ export default function PlansScreen() {
         <View style={{ height: 120 }} />
       </ScrollView>
 
-      <FAB onPress={() => {}} />
+      <FAB onPress={() => nav.navigate('CreatePlan')} />
     </View>
   );
 }
@@ -89,6 +145,8 @@ const styles = StyleSheet.create({
   benefit: { fontFamily: typography.bodySM.fontFamily, fontSize: typography.bodySM.fontSize, color: colors.textMuted },
   editBtn: { borderWidth: 1, borderColor: colors.divider, borderRadius: 12, paddingVertical: 12, alignItems: 'center', marginTop: 8 },
   editBtnText: { fontFamily: typography.bodyS.fontFamily, fontSize: typography.bodyS.fontSize, color: colors.textPrimary, letterSpacing: 0.5 },
+  deleteBtn: { alignItems: 'center', paddingVertical: 8 },
+  deleteBtnText: { fontFamily: typography.bodyXS.fontFamily, fontSize: 11, color: colors.badgeExpired },
   textWhite: { color: colors.white },
   textWhite60: { color: '#FFFFFF60' },
   textWhite80: { color: '#FFFFFF99' },
