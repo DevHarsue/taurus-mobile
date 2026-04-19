@@ -66,7 +66,7 @@ export function createApiClient(baseURL: string): AxiosInstance {
 
       // Don't attempt refresh on auth endpoints
       const url = original.url ?? '';
-      if (url.includes('/api/auth/login') || url.includes('/api/auth/refresh') || url.includes('/api/auth/register')) {
+      if (url.includes('/api/auth/login') || url.includes('/api/auth/refresh') || url.includes('/api/auth/register') || url.includes('/api/auth/logout')) {
         return Promise.reject(error);
       }
 

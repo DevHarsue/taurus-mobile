@@ -58,9 +58,9 @@ export default function DashboardScreen() {
 
         {data?.slice(0, 5).map((item, index) => (
           <View key={index} style={styles.accessRow}>
-            <Avatar size={36} name={item.memberName} />
+            <Avatar size={36} name={item.member_name} />
             <View style={styles.accessInfo}>
-              <Text style={styles.accessName}>{item.memberName}</Text>
+              <Text style={styles.accessName}>{item.member_name}</Text>
               <Text style={styles.accessTime}>{item.reason} · {new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
             </View>
           </View>

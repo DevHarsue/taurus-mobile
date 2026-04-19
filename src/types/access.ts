@@ -1,11 +1,8 @@
 export interface IAccessLogItem {
-  id: string;
-  memberName: string;
-  memberId: string;
+  member_name: string;
   granted: boolean;
   reason: string;
   timestamp: string;
-  planName?: string;
 }
 
 export interface GetAccessLogQuery {

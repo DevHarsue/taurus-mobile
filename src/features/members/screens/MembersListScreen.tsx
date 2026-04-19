@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ScreenHeader } from '@components/ScreenHeader';
 import { Avatar } from '@components/Avatar';
@@ -18,13 +18,20 @@ const FILTERS: IFilterChip[] = [
   { key: '', label: 'Todos' },
   { key: 'active', label: 'Activos' },
   { key: 'expired', label: 'Vencidos' },
+  { key: 'none', label: 'Sin Plan' },
 ];
 
 type Nav = NativeStackNavigationProp<MembersStackParamList>;
 
 export default function MembersListScreen() {
   const nav = useNavigation<Nav>();
-  const { data, loading, search, filter, onSearch, onFilter } = useMemberSearch();
+  const { data, loading, search, filter, onSearch, onFilter, refetch } = useMemberSearch();
+
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+    }, [refetch])
+  );
 
   const members = data?.data ?? [];
 
@@ -59,8 +66,8 @@ export default function MembersListScreen() {
                   <Text style={styles.memberCedula}>ID: {item.cedula}</Text>
                 </View>
                 <Badge
-                  label={item.status === 'active' ? 'ACTIVO' : 'VENCIDO'}
-                  variant={item.status === 'active' ? 'active' : 'expired'}
+                  label={item.subscriptionStatus === 'active' ? 'ACTIVO' : item.subscriptionStatus === 'expired' ? 'VENCIDO' : 'SIN PLAN'}
+                  variant={item.subscriptionStatus === 'active' ? 'active' : item.subscriptionStatus === 'expired' ? 'expired' : 'neutral'}
                   badgeStyle="pill"
                 />
               </Pressable>

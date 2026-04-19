@@ -1,5 +1,5 @@
-import React from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useState } from 'react';
+import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -17,12 +17,20 @@ export default function CreateMemberScreen() {
 
   const { control, handleSubmit, formState: { errors } } = useForm<CreateMemberFormValues>({
     resolver: zodResolver(createMemberSchema),
-    defaultValues: { name: '', cedula: '', phone: '', email: '' },
+    defaultValues: { name: '', cedula: '', email: '', phone: '', password: '', fingerprintId: '' },
   });
 
   const onSubmit = async (values: CreateMemberFormValues) => {
-    await mutate(values);
-    nav.goBack();
+    const result = await mutate(values);
+    if (result.temporaryPassword) {
+      Alert.alert(
+        'Miembro registrado',
+        `Contrasena temporal: ${result.temporaryPassword}\n\nComparta esta contrasena con el miembro para su primer acceso.`,
+        [{ text: 'OK', onPress: () => nav.goBack() }],
+      );
+    } else {
+      nav.goBack();
+    }
   };
 
   return (
@@ -68,6 +76,13 @@ export default function CreateMemberScreen() {
           name="email"
           render={({ field: { onChange, value } }) => (
             <Input label="EMAIL" placeholder="usuario@taurus.com" value={value} onChangeText={onChange} error={errors.email?.message} variant="dark" keyboardType="email-address" autoCapitalize="none" />
+          )}
+        />
+        <Controller
+          control={control}
+          name="password"
+          render={({ field: { onChange, value } }) => (
+            <Input label="CONTRASENA (OPCIONAL)" placeholder="Dejar vacio para generar automaticamente" value={value} onChangeText={onChange} error={errors.password?.message} variant="dark" secureTextEntry />
           )}
         />
 
