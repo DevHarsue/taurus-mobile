@@ -74,5 +74,3 @@ export interface MemberDetail {
   daysLeft: number;
   fingerprintId?: number | null;
 }
-
-

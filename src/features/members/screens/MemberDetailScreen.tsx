@@ -40,7 +40,6 @@ export default function MemberDetailScreen({ route }: MemberDetailScreenProps) {
         {(member) => {
           const totalDays = 30;
           const progress = Math.max(0, member.daysLeft / totalDays);
-
           return (
             <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
               <View style={styles.statusRow}>
