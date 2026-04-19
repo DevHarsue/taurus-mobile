@@ -45,3 +45,4 @@ taurus_kinetic
 # IDE/tool config
 .claude/
 .mcp.json
+TESTING.md
