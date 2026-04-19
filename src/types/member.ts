@@ -1,17 +1,18 @@
 import type { IPaginatedResponse } from './api';
+import type { Subscription } from './subscription';
 
 // ─── Enums y tipos base ────────────────────────────────────────────────────
 
-export type MemberStatus = 'active' | 'expired' | 'pending';
+export type MemberStatus = 'active' | 'expired' | 'none';
 
 // ─── Request / Response ────────────────────────────────────────────────────
 
 export interface CreateMemberRequest {
-  userId: string;
   name: string;
   cedula: string;
-  phone: string;
   email: string;
+  phone?: string;
+  password?: string;
   fingerprintId?: number;
 }
 
@@ -35,7 +36,17 @@ export interface RenewMemberRequest {
 }
 
 export interface SubscriptionResponse {
-  subscription: Record<string, unknown>;
+  subscription: Subscription;
+}
+
+// ─── Respuestas especificas ───────────────────────────────────────────────
+
+export interface MemberCreated {
+  id: string;
+  name: string;
+  cedula: string;
+  status: 'expired';
+  temporaryPassword?: string;
 }
 
 // ─── Entidades ─────────────────────────────────────────────────────────────
@@ -44,56 +55,22 @@ export interface MemberListItem {
   id: string;
   name: string;
   cedula: string;
-  status?: MemberStatus;
+  email: string;
+  phone?: string;
+  fingerprintId?: number | null;
+  subscriptionStatus: MemberStatus;
+  daysLeft: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface MemberDetail {
   id: string;
   name: string;
   cedula: string;
-  phone: string;
-  email: string;
-  status: MemberStatus;
+  phone?: string;
+  email?: string;
+  subscriptionStatus: MemberStatus;
   daysLeft: number;
-  fingerprintId?: number;
-  createdAt?: string;
-  planName?: string;
-  planStartDate?: string;
-  planEndDate?: string;
-}
-
-// ─── Perfil del miembro (pantalla MyProfile) ───────────────────────────────
-
-export interface IAttendanceDay {
-  date: string;
-  attended: boolean;
-}
-
-export interface IMemberProfile {
-  id: string;
-  name: string;
-  cedula: string;
-  phone: string;
-  email: string;
-  status: MemberStatus;
-  planName: string;
-  planExpiry: string;
-  daysLeft: number;
-  streak: number;
-  totalVisits: number;
-  nextMonthVisits: number;
-  attendance: IAttendanceDay[];
-}
-
-// ─── Historial de renovaciones ─────────────────────────────────────────────
-
-export type RenewalType = 'renewal' | 'initial' | 'upgrade';
-
-export interface IRenewalHistoryItem {
-  id: string;
-  type: RenewalType;
-  planName: string;
-  processedBy: string;
-  date: string;
-  duration: string;
+  fingerprintId?: number | null;
 }
