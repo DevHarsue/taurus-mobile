@@ -3,12 +3,11 @@ import type { Subscription } from './subscription';
 
 // ─── Enums y tipos base ────────────────────────────────────────────────────
 
-export type MemberStatus = 'active' | 'expired';
+export type MemberStatus = 'active' | 'expired' | 'none';
 
 // ─── Request / Response ────────────────────────────────────────────────────
 
 export interface CreateMemberRequest {
-  userId: string;
   name: string;
   cedula: string;
   phone?: string;
@@ -61,7 +60,7 @@ export interface MemberListItem {
   id: string;
   name: string;
   cedula: string;
-  status: MemberStatus;
+  subscriptionStatus: MemberStatus;
 }
 
 export interface MemberDetail {
@@ -70,13 +69,9 @@ export interface MemberDetail {
   cedula: string;
   phone?: string;
   email?: string;
-  status: MemberStatus;
+  subscriptionStatus: MemberStatus;
   daysLeft: number;
-  fingerprintId?: number;
-  createdAt: string;
-  planName?: string;
-  planStartDate?: string;
-  planEndDate?: string;
+  fingerprintId?: number | null;
 }
 
 // ─── Perfil del miembro (pantalla MyProfile) ───────────────────────────────

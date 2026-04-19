@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ScreenHeader } from '@components/ScreenHeader';
 import { Badge } from '@components/Badge';
@@ -19,6 +19,12 @@ export default function MemberDetailScreen({ route }: MemberDetailScreenProps) {
   const nav = useNavigation<Nav>();
   const query = useMemberDetail(id);
 
+  useFocusEffect(
+    useCallback(() => {
+      query.refetch();
+    }, [query.refetch])
+  );
+
   return (
     <View style={styles.container}>
       <ScreenHeader
@@ -35,12 +41,15 @@ export default function MemberDetailScreen({ route }: MemberDetailScreenProps) {
           return (
             <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
               <View style={styles.statusRow}>
-                <Badge label="ACTIVO" variant={member.status === 'active' ? 'active' : 'expired'} badgeStyle="dot" />
+                <Badge
+                  label={member.subscriptionStatus === 'active' ? 'ACTIVO' : member.subscriptionStatus === 'expired' ? 'VENCIDO' : 'SIN PLAN'}
+                  variant={member.subscriptionStatus === 'active' ? 'active' : member.subscriptionStatus === 'expired' ? 'expired' : 'neutral'}
+                  badgeStyle="dot"
+                />
                 <Text style={styles.memberId}>ID: {member.cedula}</Text>
               </View>
 
               <Text style={styles.memberName}>{member.name.toUpperCase()}</Text>
-              <Text style={styles.memberSince}>Socio desde: {new Date(member.createdAt).toLocaleDateString('es', { month: 'long', year: 'numeric' })}</Text>
 
               <View style={styles.progressContainer}>
                 <CircularProgress
@@ -58,17 +67,8 @@ export default function MemberDetailScreen({ route }: MemberDetailScreenProps) {
               <Card style={styles.planCard}>
                 <Text style={styles.planIcon}>📋</Text>
                 <View style={styles.planInfo}>
-                  <Text style={styles.planName}>{member.planName ?? 'Plan Mensual'}</Text>
-                  <View style={styles.planDates}>
-                    <View>
-                      <Text style={styles.planDateLabel}>FECHA INICIO</Text>
-                      <Text style={styles.planDateValue}>{member.planStartDate ?? '12 OCT 2023'}</Text>
-                    </View>
-                    <View>
-                      <Text style={styles.planDateLabel}>VENCIMIENTO</Text>
-                      <Text style={styles.planDateValue}>{member.planEndDate ?? '12 NOV 2023'}</Text>
-                    </View>
-                  </View>
+                  <Text style={styles.planName}>Membresia</Text>
+                  <Text style={styles.planDateLabel}>{member.daysLeft} dias restantes</Text>
                 </View>
               </Card>
 
