@@ -41,4 +41,52 @@ export class MembersService extends BaseApiService {
     return this.post(`/api/members/${id}/renew`, body);
   }
 
+  async startEnrollment(
+    id: string,
+    deviceId: string,
+  ): Promise<EnrollmentSession> {
+    return this.post(`/api/members/${id}/enroll/start`, { deviceId });
+  }
+
+  async getEnrollmentStatus(id: string): Promise<EnrollmentSession | EnrollmentIdle> {
+    return this.get(`/api/members/${id}/enroll/status`);
+  }
+
+  async cancelEnrollment(id: string): Promise<void> {
+    return this.delete(`/api/members/${id}/enroll/cancel`);
+  }
+
+  async deleteFingerprint(id: string, deviceId: string): Promise<void> {
+    return this.delete(`/api/members/${id}/fingerprint`, { deviceId });
+  }
+}
+
+export type EnrollmentStep =
+  | 'starting'
+  | 'place_finger'
+  | 'remove_finger'
+  | 'place_again'
+  | 'building'
+  | 'done'
+  | 'delete';
+
+export type EnrollmentStatus =
+  | 'in_progress'
+  | 'success'
+  | 'failed'
+  | 'timeout';
+
+export interface EnrollmentSession {
+  memberId: string;
+  fingerprintId: number;
+  deviceId: string;
+  step: EnrollmentStep;
+  status: EnrollmentStatus;
+  message: string;
+  updatedAt?: string;
+}
+
+export interface EnrollmentIdle {
+  status: 'idle';
+  step: 'idle';
 }
