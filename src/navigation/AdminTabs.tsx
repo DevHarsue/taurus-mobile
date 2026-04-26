@@ -8,6 +8,7 @@ import MemberDetailScreen from '@features/members/screens/MemberDetailScreen';
 import CreateMemberScreen from '@features/members/screens/CreateMemberScreen';
 import RenewMembershipScreen from '@features/members/screens/RenewMembershipScreen';
 import EditMemberScreen from '@features/members/screens/EditMemberScreen';
+import FingerprintEnrollScreen from '@features/members/screens/FingerprintEnrollScreen';
 import PlansScreen from '@features/plans/screens/PlansScreen';
 import CreatePlanScreen from '@features/plans/screens/CreatePlanScreen';
 import EditPlanScreen from '@features/plans/screens/EditPlanScreen';
@@ -42,6 +43,7 @@ function MembersStackNavigator() {
       <MembersStack.Screen name="CreateMember" component={CreateMemberScreen} />
       <MembersStack.Screen name="RenewMembership" component={RenewMembershipScreen} />
       <MembersStack.Screen name="EditMember" component={EditMemberScreen} />
+      <MembersStack.Screen name="FingerprintEnroll" component={FingerprintEnrollScreen} />
     </MembersStack.Navigator>
   );
 }
