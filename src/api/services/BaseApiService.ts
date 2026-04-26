@@ -25,8 +25,8 @@ export abstract class BaseApiService {
     return resp.data;
   }
 
-  protected async delete<T>(path: string): Promise<T> {
-    const resp = await this.client.delete<T>(path);
+  protected async delete<T>(path: string, body?: unknown): Promise<T> {
+    const resp = await this.client.delete<T>(path, body ? { data: body } : undefined);
     return resp.data;
   }
 }

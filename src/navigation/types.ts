@@ -22,6 +22,7 @@ export type MembersStackParamList = {
   CreateMember: undefined;
   RenewMembership: { memberId: string; memberName: string };
   EditMember: { id: string };
+  FingerprintEnroll: { memberId: string; memberName: string };
 };
 
 export type PlansStackParamList = {
@@ -58,6 +59,7 @@ export type CreateMemberScreenProps = NativeStackScreenProps<MembersStackParamLi
 export type RenewMembershipScreenProps = NativeStackScreenProps<MembersStackParamList, 'RenewMembership'>;
 export type PlansScreenProps = NativeStackScreenProps<PlansStackParamList, 'PlansHome'>;
 export type EditMemberScreenProps = NativeStackScreenProps<MembersStackParamList, 'EditMember'>;
+export type FingerprintEnrollScreenProps = NativeStackScreenProps<MembersStackParamList, 'FingerprintEnroll'>;
 export type CreatePlanScreenProps = NativeStackScreenProps<PlansStackParamList, 'CreatePlan'>;
 export type EditPlanScreenProps = NativeStackScreenProps<PlansStackParamList, 'EditPlan'>;
 export type QRScannerScreenProps = NativeStackScreenProps<QRScannerStackParamList, 'QRScannerHome'>;

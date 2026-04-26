@@ -128,6 +128,13 @@ export default function MemberDetailScreen({ route }: MemberDetailScreenProps) {
                 onPress={() => nav.navigate('EditMember', { id })}
               />
 
+              <GradientButton
+                title={member.fingerprintId ? 'Re-enrolar huella' : 'Enrolar huella'}
+                onPress={() =>
+                  nav.navigate('FingerprintEnroll', { memberId: id, memberName: member.name })
+                }
+              />
+
               <Pressable onPress={handleDelete} style={styles.deleteBtn}>
                 <Text style={styles.deleteBtnText}>Eliminar miembro</Text>
               </Pressable>
