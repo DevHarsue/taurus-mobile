@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -11,6 +10,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { ScreenHeader } from '@components/ScreenHeader';
 import { GradientButton } from '@components/GradientButton';
+import { KeyboardScreen } from '@components/KeyboardScreen';
 import { Card } from '@components/Card';
 import { Badge } from '@components/Badge';
 import { useEnrollFingerprint } from '../hooks/useEnrollFingerprint';
@@ -60,7 +60,7 @@ export default function FingerprintEnrollScreen({
     <View style={styles.container}>
       <ScreenHeader title="Enrolar huella" onBack={() => nav.goBack()} />
 
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
+      <KeyboardScreen contentContainerStyle={styles.scrollContent}>
         <Text style={styles.title}>HUELLA{'\n'}DEL MIEMBRO</Text>
         <Text style={styles.subtitle}>{memberName}</Text>
 
@@ -144,15 +144,13 @@ export default function FingerprintEnrollScreen({
           </>
         ) : null}
 
-        <View style={{ height: 40 }} />
-      </ScrollView>
+      </KeyboardScreen>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.white },
-  scroll: { flex: 1 },
   scrollContent: { padding: spacing.xxl, gap: 16 },
   title: {
     fontFamily: typography.titleM.fontFamily,

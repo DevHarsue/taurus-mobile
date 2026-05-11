@@ -1,5 +1,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ChevronLeft } from 'lucide-react-native';
 import { colors, sizes, spacing, typography } from '@theme/index';
 
 export interface IScreenHeaderProps {
@@ -19,14 +21,26 @@ export function ScreenHeader({
   onRightPress,
   backgroundColor = colors.white,
 }: IScreenHeaderProps) {
+  const insets = useSafeAreaInsets();
   return (
-    <View style={[styles.container, { backgroundColor }]}>
+    <View
+      style={[
+        styles.container,
+        {
+          backgroundColor,
+          paddingTop: insets.top,
+          height: sizes.headerHeight + insets.top,
+        },
+      ]}
+    >
       <View style={styles.left}>
         {onBack && (
           <Pressable onPress={onBack} hitSlop={8}>
-            <Text style={[styles.backArrow, { color: backgroundColor === colors.black || backgroundColor === colors.backgroundDark ? colors.white : colors.textPrimary }]}>
-              {'<'}
-            </Text>
+            <ChevronLeft
+              size={26}
+              strokeWidth={2}
+              color={backgroundColor === colors.black || backgroundColor === colors.backgroundDark ? colors.white : colors.textPrimary}
+            />
           </Pressable>
         )}
         {leftContent}

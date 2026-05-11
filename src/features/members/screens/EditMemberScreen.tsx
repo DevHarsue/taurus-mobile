@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -7,6 +7,7 @@ import { ScreenHeader } from '@components/ScreenHeader';
 import { Input } from '@components/Input';
 import { GradientButton } from '@components/GradientButton';
 import { AlertBanner } from '@components/AlertBanner';
+import { KeyboardScreen } from '@components/KeyboardScreen';
 import { QueryRenderer } from '@components/QueryRenderer';
 import { useMemberDetail } from '../hooks/useMemberDetail';
 import { useUpdateMember } from '../hooks/useUpdateMember';
@@ -29,7 +30,7 @@ function EditMemberForm({ id, defaultValues }: { id: string; defaultValues: Upda
   };
 
   return (
-    <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
+    <KeyboardScreen contentContainerStyle={styles.scrollContent}>
       <Text style={styles.title}>Editar Informacion</Text>
 
       {error && <AlertBanner message={error} variant="error" />}
@@ -45,12 +46,12 @@ function EditMemberForm({ id, defaultValues }: { id: string; defaultValues: Upda
         control={control}
         name="phone"
         render={({ field: { onChange, value } }) => (
-          <Input label="TELEFONO" placeholder="+508 0000-0000" value={value ?? ''} onChangeText={onChange} error={errors.phone?.message} variant="dark" keyboardType="phone-pad" />
+          <Input label="TELEFONO" placeholder="584141771490" value={value ?? ''} onChangeText={onChange} error={errors.phone?.message} variant="dark" keyboardType="phone-pad" maxLength={12} />
         )}
       />
 
       <GradientButton title="Guardar cambios" onPress={handleSubmit(onSubmit)} loading={loading} />
-    </ScrollView>
+    </KeyboardScreen>
   );
 }
 
@@ -84,7 +85,6 @@ export default function EditMemberScreen({ route }: EditMemberScreenProps) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.backgroundForm },
-  scroll: { flex: 1 },
   scrollContent: { padding: spacing.xxl, gap: 8 },
   title: { fontFamily: typography.titleS.fontFamily, fontSize: typography.titleS.fontSize, color: colors.textPrimary, marginBottom: 16 },
 });

@@ -1,5 +1,7 @@
 import React from 'react';
-import { FlatList, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Bell } from 'lucide-react-native';
 import { ScreenHeader } from '@components/ScreenHeader';
 import { Avatar } from '@components/Avatar';
 import { Card } from '@components/Card';
@@ -8,6 +10,7 @@ import { colors, typography, spacing } from '@theme/index';
 
 export default function DashboardScreen() {
   const { data, loading } = useDashboard();
+  const insets = useSafeAreaInsets();
 
   return (
     <View style={styles.container}>
@@ -18,10 +21,14 @@ export default function DashboardScreen() {
             <Text style={styles.greeting}>Hola, Carlos</Text>
           </View>
         }
-        rightIcon={<Text style={styles.bellIcon}>🔔</Text>}
+        rightIcon={<Bell size={20} color={colors.textPrimary} strokeWidth={2} />}
       />
 
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 24 }]}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Sensor Status */}
         <View style={styles.sensorRow}>
           <View style={styles.sensorDot} />
@@ -69,8 +76,6 @@ export default function DashboardScreen() {
         {!data && !loading && (
           <Text style={styles.emptyText}>Sin accesos recientes</Text>
         )}
-
-        <View style={{ height: 100 }} />
       </ScrollView>
     </View>
   );

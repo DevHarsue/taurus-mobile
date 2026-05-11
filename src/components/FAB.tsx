@@ -1,6 +1,8 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { Pressable, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Plus } from 'lucide-react-native';
 import { gradients, sizes, radii, colors } from '@theme/index';
 
 export interface IFABProps {
@@ -9,10 +11,14 @@ export interface IFABProps {
 }
 
 export function FAB({ onPress, icon }: IFABProps) {
+  const insets = useSafeAreaInsets();
   return (
     <Pressable
       onPress={onPress}
-      style={({ pressed }) => [styles.wrapper, { opacity: pressed ? 0.85 : 1 }]}
+      style={({ pressed }) => [
+        styles.wrapper,
+        { bottom: 80 + insets.bottom + 16, opacity: pressed ? 0.85 : 1 },
+      ]}
     >
       <LinearGradient
         colors={[...gradients.primary]}
@@ -20,7 +26,7 @@ export function FAB({ onPress, icon }: IFABProps) {
         end={{ x: 0.5, y: 1 }}
         style={styles.gradient}
       >
-        {icon ?? <Text style={styles.plus}>+</Text>}
+        {icon ?? <Plus size={28} color={colors.white} strokeWidth={2.4} />}
       </LinearGradient>
     </Pressable>
   );
@@ -29,7 +35,6 @@ export function FAB({ onPress, icon }: IFABProps) {
 const styles = StyleSheet.create({
   wrapper: {
     position: 'absolute',
-    bottom: 100,
     right: 20,
     width: sizes.fabSize,
     height: sizes.fabSize,
@@ -45,11 +50,5 @@ const styles = StyleSheet.create({
     borderRadius: radii.fab,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  plus: {
-    color: colors.white,
-    fontSize: 28,
-    fontWeight: '300',
-    marginTop: -2,
   },
 });
