@@ -1,5 +1,7 @@
 import React from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Settings } from 'lucide-react-native';
 import { ScreenHeader } from '@components/ScreenHeader';
 import { Avatar } from '@components/Avatar';
 import { colors, typography, spacing } from '@theme/index';
@@ -32,6 +34,7 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 export default function RenewalHistoryScreen() {
+  const insets = useSafeAreaInsets();
   return (
     <View style={styles.container}>
       <ScreenHeader
@@ -41,10 +44,14 @@ export default function RenewalHistoryScreen() {
             <Text style={styles.headerTitle}>Hola, Taurus</Text>
           </View>
         }
-        rightIcon={<Text style={styles.headerIcon}>⚙</Text>}
+        rightIcon={<Settings size={20} color={colors.textPrimary} strokeWidth={2} />}
       />
 
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 24 }]}
+        showsVerticalScrollIndicator={false}
+      >
         <Text style={styles.sectionLabel}>PREMIUM PERFORMANCE</Text>
         <Text style={styles.title}>RENEWAL{'\n'}HISTORY</Text>
 
@@ -63,8 +70,6 @@ export default function RenewalHistoryScreen() {
             {index < MOCK_RENEWALS.length - 1 && <View style={styles.divider} />}
           </View>
         ))}
-
-        <View style={{ height: 100 }} />
       </ScrollView>
     </View>
   );

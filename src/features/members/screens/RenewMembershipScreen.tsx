@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { ScreenHeader } from '@components/ScreenHeader';
 import { GradientButton } from '@components/GradientButton';
+import { KeyboardScreen } from '@components/KeyboardScreen';
 import { useRenew } from '../hooks/useRenew';
 import { usePlans } from '@features/plans/hooks/usePlans';
 import { colors, typography, spacing } from '@theme/index';
@@ -30,7 +31,7 @@ export default function RenewMembershipScreen({ route }: RenewMembershipScreenPr
     <View style={styles.container}>
       <ScreenHeader title="Hola, Taurus" onBack={() => nav.goBack()} rightIcon={<Text style={styles.icon}>⚙</Text>} />
 
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
+      <KeyboardScreen contentContainerStyle={styles.scrollContent} dismissOnTap={false}>
         <Text style={styles.title}>RENOVAR{'\n'}MEMBRESIA</Text>
         <Text style={styles.description}>Selecciona un nuevo plan para el usuario</Text>
 
@@ -77,7 +78,7 @@ export default function RenewMembershipScreen({ route }: RenewMembershipScreenPr
           loading={loading}
           disabled={!selectedPlan}
         />
-      </ScrollView>
+      </KeyboardScreen>
     </View>
   );
 }
@@ -85,7 +86,6 @@ export default function RenewMembershipScreen({ route }: RenewMembershipScreenPr
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.white },
   icon: { fontSize: 20, color: colors.textPrimaryAlpha50 },
-  scroll: { flex: 1 },
   scrollContent: { padding: spacing.xxl, gap: 12 },
   title: { fontFamily: typography.titleL.fontFamily, fontSize: typography.titleL.fontSize, color: colors.textPrimary, lineHeight: 38 },
   description: { fontFamily: typography.bodySM.fontFamily, fontSize: typography.bodySM.fontSize, color: colors.textMuted, marginBottom: 8 },

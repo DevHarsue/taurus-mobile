@@ -1,11 +1,13 @@
 import React from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { z } from 'zod';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Input } from '@components/Input';
 import { GradientButton } from '@components/GradientButton';
 import { AlertBanner } from '@components/AlertBanner';
+import { KeyboardScreen } from '@components/KeyboardScreen';
 import { useLogin } from '@features/auth/hooks/useLogin';
 import { colors, typography, spacing } from '@theme/index';
 
@@ -17,6 +19,7 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 export function LoginForm() {
+  const insets = useSafeAreaInsets();
   const { submit, loading, error } = useLogin();
   const {
     control,
@@ -28,10 +31,9 @@ export function LoginForm() {
   });
 
   return (
-    <ScrollView
-      style={styles.scroll}
-      contentContainerStyle={styles.container}
-      keyboardShouldPersistTaps="handled"
+    <KeyboardScreen
+      contentContainerStyle={[styles.container, { paddingTop: insets.top + 40 }]}
+      extraBottomPadding={32}
     >
       {/* Logo Section */}
       <View style={styles.logoSection}>
@@ -114,16 +116,13 @@ export function LoginForm() {
           <Text style={styles.registerLink}>REGISTRATE</Text>
         </Pressable>
       </View>
-    </ScrollView>
+    </KeyboardScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  scroll: { flex: 1 },
   container: {
-    paddingTop: 60,
     paddingHorizontal: 24,
-    paddingBottom: 32,
     gap: 24,
   },
   logoSection: {

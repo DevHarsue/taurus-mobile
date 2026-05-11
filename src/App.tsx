@@ -1,6 +1,8 @@
 import React from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, StatusBar, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AuthProvider } from '@context/AuthContext';
 import { ThemeProvider } from '@context/ThemeContext';
 import { RootNavigator } from '@navigation/RootNavigator';
@@ -18,12 +20,17 @@ export default function App() {
   }
 
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <NavigationContainer>
-          <RootNavigator />
-        </NavigationContainer>
-      </AuthProvider>
-    </ThemeProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
+            <NavigationContainer>
+              <RootNavigator />
+            </NavigationContainer>
+          </AuthProvider>
+        </ThemeProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }

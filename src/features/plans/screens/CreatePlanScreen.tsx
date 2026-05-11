@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { StyleSheet, Switch, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -7,6 +7,7 @@ import { ScreenHeader } from '@components/ScreenHeader';
 import { Input } from '@components/Input';
 import { GradientButton } from '@components/GradientButton';
 import { AlertBanner } from '@components/AlertBanner';
+import { KeyboardScreen } from '@components/KeyboardScreen';
 import { useCreatePlan } from '../hooks/useCreatePlan';
 import { createPlanSchema, type CreatePlanFormValues } from '../schemas/plan.schema';
 import { colors, typography, spacing } from '@theme/index';
@@ -38,7 +39,7 @@ export default function CreatePlanScreen() {
         backgroundColor={colors.backgroundForm}
       />
 
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
+      <KeyboardScreen contentContainerStyle={styles.scrollContent}>
         <Text style={styles.title}>Nuevo Plan</Text>
 
         {error && <AlertBanner message={error} variant="error" />}
@@ -76,14 +77,13 @@ export default function CreatePlanScreen() {
         />
 
         <GradientButton title="Crear plan" onPress={handleSubmit(onSubmit)} loading={loading} />
-      </ScrollView>
+      </KeyboardScreen>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.backgroundForm },
-  scroll: { flex: 1 },
   scrollContent: { padding: spacing.xxl, gap: 8 },
   title: { fontFamily: typography.titleS.fontFamily, fontSize: typography.titleS.fontSize, color: colors.textPrimary, marginBottom: 16 },
   switchRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12 },
