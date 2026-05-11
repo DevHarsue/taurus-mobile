@@ -1,5 +1,7 @@
 import React from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Settings } from 'lucide-react-native';
 import { useAuth } from '@hooks/useAuth';
 import { ScreenHeader } from '@components/ScreenHeader';
 import { Avatar } from '@components/Avatar';
@@ -10,6 +12,7 @@ import { colors, typography, spacing } from '@theme/index';
 
 export default function MyProfileScreen() {
   const { user, logout } = useAuth();
+  const insets = useSafeAreaInsets();
 
   return (
     <View style={styles.container}>
@@ -20,10 +23,14 @@ export default function MyProfileScreen() {
             <Text style={styles.greeting}>Hola, Taurus</Text>
           </View>
         }
-        rightIcon={<Text style={styles.headerIcon}>⚙</Text>}
+        rightIcon={<Settings size={20} color={colors.textPrimary} strokeWidth={2} />}
       />
 
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 24 }]}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Membership Card */}
         <Card style={styles.membershipCard}>
           <Text style={styles.membershipLabel}>MEMBRESIA ACTIVA</Text>
@@ -89,8 +96,6 @@ export default function MyProfileScreen() {
         </Card>
 
         <GradientButton title="FINALIZAR ENTRENAMIENTO" onPress={() => {}} />
-
-        <View style={{ height: 100 }} />
       </ScrollView>
     </View>
   );

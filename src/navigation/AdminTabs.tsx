@@ -1,7 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { LayoutGrid, Users, Tag, ScanLine, User, type LucideIcon } from 'lucide-react-native';
 import DashboardScreen from '@features/dashboard/screens/DashboardScreen';
 import MembersListScreen from '@features/members/screens/MembersListScreen';
 import MemberDetailScreen from '@features/members/screens/MemberDetailScreen';
@@ -14,7 +16,7 @@ import CreatePlanScreen from '@features/plans/screens/CreatePlanScreen';
 import EditPlanScreen from '@features/plans/screens/EditPlanScreen';
 import QRScannerScreen from '@features/scanner/screens/QRScannerScreen';
 import MyProfileScreen from '@features/profile/screens/MyProfileScreen';
-import { colors, typography } from '@theme/index';
+import { colors } from '@theme/index';
 import type {
   AdminTabsParamList,
   MembersStackParamList,
@@ -26,10 +28,10 @@ import type {
 
 const Tabs = createBottomTabNavigator<AdminTabsParamList>();
 
-function TabIcon({ label, focused }: { label: string; focused: boolean }) {
+function TabIcon({ Icon, focused }: { Icon: LucideIcon; focused: boolean }) {
   return (
     <View style={[styles.tabIcon, focused && styles.tabIconActive]}>
-      <Text style={[styles.tabLabel, focused && styles.tabLabelActive]}>{label}</Text>
+      <Icon size={22} color={focused ? colors.navActive : colors.navInactive} strokeWidth={focused ? 2.4 : 2} />
     </View>
   );
 }
@@ -87,19 +89,27 @@ function QRStackNavigator() {
 }
 
 export default function AdminTabs() {
+  const insets = useSafeAreaInsets();
   return (
     <Tabs.Navigator
       screenOptions={{
         headerShown: false,
-        tabBarStyle: styles.tabBar,
+        tabBarStyle: [
+          styles.tabBar,
+          {
+            height: 60 + insets.bottom,
+            paddingBottom: Math.max(insets.bottom, 8),
+          },
+        ],
         tabBarShowLabel: false,
+        sceneStyle: { backgroundColor: colors.white },
       }}
     >
-      <Tabs.Screen name="Dashboard" component={DashboardStackNavigator} options={{ tabBarIcon: ({ focused }) => <TabIcon label="DASHBOARD" focused={focused} /> }} />
-      <Tabs.Screen name="Members" component={MembersStackNavigator} options={{ tabBarIcon: ({ focused }) => <TabIcon label="MEMBERS" focused={focused} /> }} />
-      <Tabs.Screen name="Plans" component={PlansStackNavigator} options={{ tabBarIcon: ({ focused }) => <TabIcon label="PLANS" focused={focused} /> }} />
-      <Tabs.Screen name="QRScanner" component={QRStackNavigator} options={{ tabBarIcon: ({ focused }) => <TabIcon label="QR" focused={focused} /> }} />
-      <Tabs.Screen name="Profile" component={ProfileStackNavigator} options={{ tabBarIcon: ({ focused }) => <TabIcon label="PROFILE" focused={focused} /> }} />
+      <Tabs.Screen name="Dashboard" component={DashboardStackNavigator} options={{ tabBarIcon: ({ focused }) => <TabIcon Icon={LayoutGrid} focused={focused} /> }} />
+      <Tabs.Screen name="Members" component={MembersStackNavigator} options={{ tabBarIcon: ({ focused }) => <TabIcon Icon={Users} focused={focused} /> }} />
+      <Tabs.Screen name="Plans" component={PlansStackNavigator} options={{ tabBarIcon: ({ focused }) => <TabIcon Icon={Tag} focused={focused} /> }} />
+      <Tabs.Screen name="QRScanner" component={QRStackNavigator} options={{ tabBarIcon: ({ focused }) => <TabIcon Icon={ScanLine} focused={focused} /> }} />
+      <Tabs.Screen name="Profile" component={ProfileStackNavigator} options={{ tabBarIcon: ({ focused }) => <TabIcon Icon={User} focused={focused} /> }} />
     </Tabs.Navigator>
   );
 }
@@ -107,32 +117,19 @@ export default function AdminTabs() {
 const styles = StyleSheet.create({
   tabBar: {
     backgroundColor: colors.navBarBg,
-    height: 80,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
     borderTopWidth: 0,
-    position: 'absolute',
-    paddingTop: 12,
-    paddingBottom: 24,
+    paddingTop: 8,
+    elevation: 0,
+    shadowOpacity: 0,
   },
   tabIcon: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 8,
+    width: 40,
+    height: 40,
     borderRadius: 20,
   },
   tabIconActive: {
     backgroundColor: colors.navBarActiveBg,
-  },
-  tabLabel: {
-    fontFamily: typography.caption.fontFamily,
-    fontSize: typography.caption.fontSize,
-    letterSpacing: typography.caption.letterSpacing,
-    color: colors.navInactive,
-    textTransform: 'uppercase',
-  },
-  tabLabelActive: {
-    color: colors.navActive,
   },
 });

@@ -1,7 +1,9 @@
 import React, { useCallback } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Bell } from 'lucide-react-native';
 import { ScreenHeader } from '@components/ScreenHeader';
 import { Avatar } from '@components/Avatar';
 import { Badge } from '@components/Badge';
@@ -25,6 +27,7 @@ type Nav = NativeStackNavigationProp<MembersStackParamList>;
 
 export default function MembersListScreen() {
   const nav = useNavigation<Nav>();
+  const insets = useSafeAreaInsets();
   const { data, loading, search, filter, onSearch, onFilter, refetch } = useMemberSearch();
 
   useFocusEffect(
@@ -44,7 +47,7 @@ export default function MembersListScreen() {
             <Text style={styles.greeting}>Hola, Taurus</Text>
           </View>
         }
-        rightIcon={<Text style={styles.bellIcon}>🔔</Text>}
+        rightIcon={<Bell size={20} color={colors.textPrimary} strokeWidth={2} />}
       />
 
       <View style={styles.content}>
@@ -57,7 +60,9 @@ export default function MembersListScreen() {
           <FlatList
             data={members}
             keyExtractor={(item) => item.id}
-            contentContainerStyle={styles.list}
+            contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 100 }]}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
             renderItem={({ item }) => (
               <Pressable style={styles.memberRow} onPress={() => nav.navigate('MemberDetail', { id: item.id })}>
                 <Avatar size={42} name={item.name} />
@@ -88,7 +93,7 @@ const styles = StyleSheet.create({
   greeting: { fontFamily: typography.headingXS.fontFamily, fontSize: typography.headingXS.fontSize, color: colors.textPrimary },
   bellIcon: { fontSize: 20 },
   content: { flex: 1, paddingHorizontal: spacing.xl, gap: 16 },
-  list: { paddingBottom: 120 },
+  list: {},
   memberRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 14 },
   memberInfo: { flex: 1, gap: 2 },
   memberName: { fontFamily: typography.bodyM.fontFamily, fontSize: typography.bodyM.fontSize, color: colors.textPrimary },

@@ -1,5 +1,7 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Settings } from 'lucide-react-native';
 import QRCode from 'react-native-qrcode-svg';
 import { useAuth } from '@hooks/useAuth';
 import { ScreenHeader } from '@components/ScreenHeader';
@@ -8,6 +10,7 @@ import { colors, typography } from '@theme/index';
 
 export default function MyQRScreen() {
   const { user } = useAuth();
+  const insets = useSafeAreaInsets();
   const qrValue = user?.id ?? 'taurus-member';
 
   return (
@@ -20,10 +23,13 @@ export default function MyQRScreen() {
             <Text style={styles.headerTitle}>Hola, Taurus</Text>
           </View>
         }
-        rightIcon={<Text style={styles.headerIcon}>⚙</Text>}
+        rightIcon={<Settings size={20} color="#FFFFFF99" strokeWidth={2} />}
       />
 
-      <View style={styles.content}>
+      <ScrollView
+        contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 24 }]}
+        showsVerticalScrollIndicator={false}
+      >
         <Text style={styles.accessLabel}>ACCESS IDENTITY</Text>
         <Text style={styles.title}>Digital Pass</Text>
 
@@ -47,7 +53,7 @@ export default function MyQRScreen() {
         <Text style={styles.hint}>
           Muestra este codigo al administrador para renovar{'\n'}rapidamente
         </Text>
-      </View>
+      </ScrollView>
     </View>
   );
 }
@@ -57,7 +63,7 @@ const styles = StyleSheet.create({
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   headerTitle: { fontFamily: typography.headingXS.fontFamily, fontSize: typography.headingXS.fontSize, color: colors.white },
   headerIcon: { fontSize: 20, color: '#FFFFFF60' },
-  content: { flex: 1, alignItems: 'center', paddingHorizontal: 24, paddingTop: 16, gap: 20 },
+  content: { flexGrow: 1, alignItems: 'center', paddingHorizontal: 24, paddingTop: 16, gap: 20 },
   accessLabel: { fontFamily: typography.labelM.fontFamily, fontSize: typography.labelM.fontSize, letterSpacing: 2, color: '#FFFFFF40' },
   title: { fontFamily: typography.titleM.fontFamily, fontSize: typography.titleM.fontSize, color: colors.white },
   qrWrapper: { padding: 16, borderRadius: 20, borderWidth: 3, borderColor: colors.qrBorder, backgroundColor: colors.white },

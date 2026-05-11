@@ -1,7 +1,9 @@
 import React, { useCallback } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Info } from 'lucide-react-native';
 import { ScreenHeader } from '@components/ScreenHeader';
 import { Badge } from '@components/Badge';
 import { Card } from '@components/Card';
@@ -19,6 +21,7 @@ type Nav = NativeStackNavigationProp<MembersStackParamList>;
 export default function MemberDetailScreen({ route }: MemberDetailScreenProps) {
   const { id } = route.params;
   const nav = useNavigation<Nav>();
+  const insets = useSafeAreaInsets();
   const query = useMemberDetail(id);
   const subscriptionsQuery = useMemberSubscriptions(id);
   const { mutate: deleteMember } = useDeleteMember();
@@ -60,7 +63,7 @@ export default function MemberDetailScreen({ route }: MemberDetailScreenProps) {
       <ScreenHeader
         title="Expediente"
         onBack={() => nav.goBack()}
-        rightIcon={<Text style={styles.infoIcon}>ⓘ</Text>}
+        rightIcon={<Info size={20} color={colors.textPrimaryAlpha50} strokeWidth={2} />}
       />
 
       <QueryRenderer query={query} emptyTitle="Miembro no encontrado">
@@ -68,7 +71,11 @@ export default function MemberDetailScreen({ route }: MemberDetailScreenProps) {
           const totalDays = 30;
           const progress = Math.max(0, member.daysLeft / totalDays);
           return (
-            <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
+            <ScrollView
+              style={styles.scroll}
+              contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 32 }]}
+              showsVerticalScrollIndicator={false}
+            >
               <View style={styles.statusRow}>
                 <Badge
                   label={member.subscriptionStatus === 'active' ? 'ACTIVO' : member.subscriptionStatus === 'expired' ? 'VENCIDO' : 'SIN PLAN'}
@@ -138,8 +145,6 @@ export default function MemberDetailScreen({ route }: MemberDetailScreenProps) {
               <Pressable onPress={handleDelete} style={styles.deleteBtn}>
                 <Text style={styles.deleteBtnText}>Eliminar miembro</Text>
               </Pressable>
-
-              <View style={{ height: 40 }} />
             </ScrollView>
           );
         }}

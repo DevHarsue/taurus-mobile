@@ -1,7 +1,9 @@
 import React, { useCallback } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Bell } from 'lucide-react-native';
 import { ScreenHeader } from '@components/ScreenHeader';
 import { Avatar } from '@components/Avatar';
 import { Card } from '@components/Card';
@@ -43,6 +45,7 @@ function PlanCard({ plan, highlighted, onEdit, onDelete }: { plan: Plan; highlig
 
 export default function PlansScreen() {
   const nav = useNavigation<Nav>();
+  const insets = useSafeAreaInsets();
   const query = usePlans();
   const { mutate: deletePlan } = useDeletePlan();
 
@@ -94,11 +97,15 @@ export default function PlansScreen() {
             <Text style={styles.greeting}>Hola, Taurus</Text>
           </View>
         }
-        rightIcon={<Text style={styles.bellIcon}>🔔</Text>}
+        rightIcon={<Bell size={20} color={colors.textPrimary} strokeWidth={2} />}
         backgroundColor={colors.backgroundCard}
       />
 
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 100 }]}
+        showsVerticalScrollIndicator={false}
+      >
         <Text style={styles.title}>Manage Plans.</Text>
         <Text style={styles.description}>Configura los planes del gimnasio, sus precios y caracteristicas.</Text>
 
@@ -117,8 +124,6 @@ export default function PlansScreen() {
             </View>
           )}
         </QueryRenderer>
-
-        <View style={{ height: 120 }} />
       </ScrollView>
 
       <FAB onPress={() => nav.navigate('CreatePlan')} />
