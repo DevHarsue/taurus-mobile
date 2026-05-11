@@ -71,13 +71,15 @@ export function KeyboardScreen({
     </ScrollView>
   );
 
+  const shouldDismissOnTap = dismissOnTap && Platform.OS !== 'web';
+
   return (
     <KeyboardAvoidingView
       style={styles.flex}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={0}
     >
-      {dismissOnTap ? (
+      {shouldDismissOnTap ? (
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
           <View style={styles.flex}>{inner}</View>
         </TouchableWithoutFeedback>
