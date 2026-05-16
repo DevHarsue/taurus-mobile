@@ -9,10 +9,14 @@ import { GradientButton } from '@components/GradientButton';
 import { Card } from '@components/Card';
 import { Badge } from '@components/Badge';
 import { colors, typography, spacing } from '@theme/index';
+import { useMyMemberDetail } from '@features/members/hooks/useMyMemberDetail';
+import { useGenerateMemberCard } from '@features/members/hooks/useGenerateMemberCard';
 
 export default function MyProfileScreen() {
   const { user, logout } = useAuth();
   const insets = useSafeAreaInsets();
+  const { data: myMember } = useMyMemberDetail();
+  const { mutate: generateCard, loading: generatingCard } = useGenerateMemberCard();
 
   return (
     <View style={styles.container}>
@@ -96,6 +100,16 @@ export default function MyProfileScreen() {
         </Card>
 
         <GradientButton title="FINALIZAR ENTRENAMIENTO" onPress={() => {}} />
+
+        {myMember ? (
+          <GradientButton
+            title="Descargar mi carnet"
+            onPress={() => {
+              void generateCard(myMember).catch(() => undefined);
+            }}
+            loading={generatingCard}
+          />
+        ) : null}
       </ScrollView>
     </View>
   );

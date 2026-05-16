@@ -13,6 +13,7 @@ import { QueryRenderer } from '@components/QueryRenderer';
 import { useMemberDetail } from '../hooks/useMemberDetail';
 import { useMemberSubscriptions } from '../hooks/useMemberSubscriptions';
 import { useDeleteMember } from '../hooks/useDeleteMember';
+import { useGenerateMemberCard } from '../hooks/useGenerateMemberCard';
 import { colors, typography, spacing } from '@theme/index';
 import type { MemberDetailScreenProps, MembersStackParamList } from '@navigation/types';
 
@@ -25,6 +26,7 @@ export default function MemberDetailScreen({ route }: MemberDetailScreenProps) {
   const query = useMemberDetail(id);
   const subscriptionsQuery = useMemberSubscriptions(id);
   const { mutate: deleteMember } = useDeleteMember();
+  const { mutate: generateCard, loading: generatingCard } = useGenerateMemberCard();
 
   const handleDelete = async () => {
     if (Platform.OS === 'web') {
@@ -133,6 +135,14 @@ export default function MemberDetailScreen({ route }: MemberDetailScreenProps) {
               <GradientButton
                 title="Editar miembro"
                 onPress={() => nav.navigate('EditMember', { id })}
+              />
+
+              <GradientButton
+                title="Descargar carnet"
+                onPress={() => {
+                  void generateCard(member).catch(() => undefined);
+                }}
+                loading={generatingCard}
               />
 
               <GradientButton

@@ -22,6 +22,10 @@ export class MembersService extends BaseApiService {
     return this.get(`/api/members/${id}`);
   }
 
+  async getMine(): Promise<MemberDetail> {
+    return this.get('/api/members/me');
+  }
+
   async create(body: CreateMemberRequest): Promise<MemberCreated> {
     return this.post('/api/members', body);
   }
