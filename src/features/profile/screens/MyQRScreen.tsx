@@ -7,11 +7,14 @@ import { useAuth } from '@hooks/useAuth';
 import { ScreenHeader } from '@components/ScreenHeader';
 import { Avatar } from '@components/Avatar';
 import { colors, typography } from '@theme/index';
+import { useMyMemberDetail } from '@features/members/hooks/useMyMemberDetail';
+import { buildMemberQrPayload } from '@features/members/utils/memberQr';
 
 export default function MyQRScreen() {
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
-  const qrValue = user?.id ?? 'taurus-member';
+  const { data: myMember } = useMyMemberDetail();
+  const qrValue = myMember ? buildMemberQrPayload(myMember.id) : '';
 
   return (
     <View style={styles.container}>
@@ -35,7 +38,13 @@ export default function MyQRScreen() {
 
         <View style={styles.qrWrapper}>
           <View style={styles.qrInner}>
-            <QRCode value={qrValue} size={200} backgroundColor={colors.white} />
+            {qrValue ? (
+              <QRCode value={qrValue} size={200} backgroundColor={colors.white} />
+            ) : (
+              <View style={styles.qrPlaceholder}>
+                <Text style={styles.qrPlaceholderText}>Cargando…</Text>
+              </View>
+            )}
           </View>
         </View>
 
@@ -68,6 +77,8 @@ const styles = StyleSheet.create({
   title: { fontFamily: typography.titleM.fontFamily, fontSize: typography.titleM.fontSize, color: colors.white },
   qrWrapper: { padding: 16, borderRadius: 20, borderWidth: 3, borderColor: colors.qrBorder, backgroundColor: colors.white },
   qrInner: { borderRadius: 12, overflow: 'hidden' },
+  qrPlaceholder: { width: 200, height: 200, alignItems: 'center', justifyContent: 'center', backgroundColor: '#F4F4F5' },
+  qrPlaceholderText: { fontFamily: typography.bodySM.fontFamily, fontSize: typography.bodySM.fontSize, color: colors.textMuted },
   nameCard: { backgroundColor: colors.textPrimary, borderRadius: 16, paddingVertical: 16, paddingHorizontal: 24, alignItems: 'center', gap: 8, width: '100%' },
   memberName: { fontFamily: typography.headingS.fontFamily, fontSize: typography.headingS.fontSize, color: colors.white },
   tierBadge: { backgroundColor: colors.primaryRed, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 4 },

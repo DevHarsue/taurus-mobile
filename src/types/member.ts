@@ -73,4 +73,6 @@ export interface MemberDetail {
   subscriptionStatus: MemberStatus;
   daysLeft: number;
   fingerprintId?: number | null;
+  currentPlanName?: string;
+  currentExpiresAt?: string;
 }
