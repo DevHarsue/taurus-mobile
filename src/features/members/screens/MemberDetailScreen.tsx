@@ -140,7 +140,15 @@ export default function MemberDetailScreen({ route }: MemberDetailScreenProps) {
               <GradientButton
                 title="Descargar carnet"
                 onPress={() => {
-                  void generateCard(member).catch(() => undefined);
+                  void generateCard(member).catch((e) => {
+                    const msg = e instanceof Error ? e.message : 'Error desconocido';
+                    if (Platform.OS === 'web') {
+                      window.alert(`No se pudo generar el carnet:\n${msg}`);
+                    } else {
+                      const { Alert } = require('react-native');
+                      Alert.alert('No se pudo generar el carnet', msg);
+                    }
+                  });
                 }}
                 loading={generatingCard}
               />

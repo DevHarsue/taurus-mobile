@@ -1,7 +1,7 @@
 import React from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Settings } from 'lucide-react-native';
+import { LogOut, Settings } from 'lucide-react-native';
 import { useAuth } from '@hooks/useAuth';
 import { ScreenHeader } from '@components/ScreenHeader';
 import { Avatar } from '@components/Avatar';
@@ -105,10 +105,43 @@ export default function MyProfileScreen() {
           <GradientButton
             title="Descargar mi carnet"
             onPress={() => {
-              void generateCard(myMember).catch(() => undefined);
+              void generateCard(myMember).catch((e) => {
+                const msg = e instanceof Error ? e.message : 'Error desconocido';
+                if (Platform.OS === 'web') {
+                  window.alert(`No se pudo generar el carnet:\n${msg}`);
+                } else {
+                  const { Alert } = require('react-native');
+                  Alert.alert('No se pudo generar el carnet', msg);
+                }
+              });
             }}
             loading={generatingCard}
           />
+        ) : null}
+
+        <Pressable
+          style={styles.logoutBtn}
+          onPress={() => {
+            const confirmAndLogout = () => {
+              void logout();
+            };
+            if (Platform.OS === 'web') {
+              if (window.confirm('¿Cerrar sesión?')) confirmAndLogout();
+            } else {
+              const { Alert } = require('react-native');
+              Alert.alert('Cerrar sesión', '¿Seguro que quieres salir?', [
+                { text: 'Cancelar', style: 'cancel' },
+                { text: 'Salir', style: 'destructive', onPress: confirmAndLogout },
+              ]);
+            }
+          }}
+        >
+          <LogOut size={18} color={colors.badgeExpired} strokeWidth={2} />
+          <Text style={styles.logoutText}>Cerrar sesión</Text>
+        </Pressable>
+
+        {user?.email ? (
+          <Text style={styles.emailHint}>{user.email}</Text>
         ) : null}
       </ScrollView>
     </View>
@@ -150,4 +183,7 @@ const styles = StyleSheet.create({
   totalRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: 8, borderTopWidth: 1, borderTopColor: colors.textPrimaryAlpha10 },
   totalLabel: { fontFamily: typography.bodySM.fontFamily, fontSize: typography.bodySM.fontSize, color: colors.textMuted },
   totalNumber: { fontFamily: typography.headingM.fontFamily, fontSize: typography.headingM.fontSize, color: colors.primaryRed },
+  logoutBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 14, marginTop: 16 },
+  logoutText: { fontFamily: typography.bodyS.fontFamily, fontSize: typography.bodyS.fontSize, color: colors.badgeExpired, fontWeight: '600' },
+  emailHint: { fontFamily: typography.bodyXS.fontFamily, fontSize: 11, color: colors.textMuted, textAlign: 'center', marginTop: -8 },
 });

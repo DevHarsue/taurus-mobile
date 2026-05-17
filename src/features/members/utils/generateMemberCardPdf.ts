@@ -37,32 +37,53 @@ function printHtmlOnWeb(html: string): void {
 export async function generateMemberCardPdf(
     member: MemberDetail,
 ): Promise<void> {
-    const qrPayload = buildMemberQrPayload(member.id);
-    const qrDataUrl = await QRCode.toDataURL(qrPayload, {
-        width: 480,
-        margin: 1,
-        errorCorrectionLevel: 'M',
-    });
+    try {
+        // eslint-disable-next-line no-console
+        console.log('[CARNET] start for', member.name, 'platform=', Platform.OS);
+        const qrPayload = buildMemberQrPayload(member.id);
+        const qrSvg = await QRCode.toString(qrPayload, {
+            type: 'svg',
+            margin: 1,
+            errorCorrectionLevel: 'M',
+        });
+        const qrDataUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(qrSvg)}`;
+        // eslint-disable-next-line no-console
+        console.log('[CARNET] qr generated, length=', qrDataUrl.length);
 
-    const html = buildMemberCardHtml(member, qrDataUrl);
+        const html = buildMemberCardHtml(member, qrDataUrl);
+        // eslint-disable-next-line no-console
+        console.log('[CARNET] html built, length=', html.length);
 
-    if (Platform.OS === 'web') {
-        printHtmlOnWeb(html);
-        return;
+        if (Platform.OS === 'web') {
+            printHtmlOnWeb(html);
+            return;
+        }
+
+        // eslint-disable-next-line no-console
+        console.log('[CARNET] calling Print.printToFileAsync...');
+        const { uri } = await Print.printToFileAsync({ html, base64: false });
+        // eslint-disable-next-line no-console
+        console.log('[CARNET] pdf generated at', uri);
+
+        const isAvailable = await Sharing.isAvailableAsync();
+        // eslint-disable-next-line no-console
+        console.log('[CARNET] Sharing.isAvailable=', isAvailable);
+        if (!isAvailable) {
+            throw new Error(
+                'No se puede compartir el carnet en este dispositivo.',
+            );
+        }
+
+        await Sharing.shareAsync(uri, {
+            mimeType: 'application/pdf',
+            UTI: 'com.adobe.pdf',
+            dialogTitle: `Carnet · ${member.name}`,
+        });
+        // eslint-disable-next-line no-console
+        console.log('[CARNET] shareAsync completed');
+    } catch (e) {
+        // eslint-disable-next-line no-console
+        console.error('[CARNET] FAILED:', e);
+        throw e;
     }
-
-    const { uri } = await Print.printToFileAsync({ html, base64: false });
-
-    const isAvailable = await Sharing.isAvailableAsync();
-    if (!isAvailable) {
-        throw new Error(
-            'No se puede compartir el carnet en este dispositivo.',
-        );
-    }
-
-    await Sharing.shareAsync(uri, {
-        mimeType: 'application/pdf',
-        UTI: 'com.adobe.pdf',
-        dialogTitle: `Carnet · ${member.name}`,
-    });
 }

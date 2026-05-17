@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import {
   ActivityIndicator,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -83,6 +84,15 @@ export default function DashboardScreen() {
   const renewalData = stats.data?.renewals;
   const accessData = access.data;
 
+  const hasData = !!(stats.data || access.data);
+  const isInitial = loading && !hasData;
+  const isRefreshing = loading && hasData;
+
+  const handleRefresh = useCallback(() => {
+    stats.refetch();
+    access.refetch();
+  }, [stats, access]);
+
   const userName = user?.email?.split('@')[0] ?? 'Admin';
 
   return (
@@ -104,21 +114,29 @@ export default function DashboardScreen() {
           { paddingBottom: insets.bottom + 24 },
         ]}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
+            colors={[colors.primaryRed]}
+            tintColor={colors.primaryRed}
+          />
+        }
       >
-        {loading && (
+        {isInitial && (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={colors.primaryRed} />
             <Text style={styles.loadingText}>Cargando estadisticas...</Text>
           </View>
         )}
 
-        {error && !loading && (
+        {error && !isInitial && (
           <Card style={styles.errorCard}>
             <Text style={styles.errorText}>{error}</Text>
           </Card>
         )}
 
-        {!loading && !error && (
+        {!isInitial && !error && (
           <>
             {/* ── KPI Cards Row ────────────────────────────────── */}
             <View style={styles.statsGrid}>
