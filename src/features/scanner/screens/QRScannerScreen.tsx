@@ -43,6 +43,7 @@ export default function QRScannerScreen() {
         const member = await membersService.getById(memberId);
         navigation.getParent()?.navigate('Members', {
           screen: 'RenewMembership',
+          initial: false,
           params: { memberId: member.id, memberName: member.name },
         });
         // Unlock once we leave so a return to this screen works
