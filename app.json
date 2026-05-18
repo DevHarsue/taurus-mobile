@@ -2,6 +2,7 @@
   "expo": {
     "name": "Taurus",
     "slug": "taurus-mobile",
+    "scheme": "taurus-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -34,7 +35,9 @@
         {
           "cameraPermission": "Permitir a Taurus usar la cámara para escanear el QR de los miembros."
         }
-      ]
+      ],
+      "expo-web-browser",
+      "@react-native-google-signin/google-signin"
     ],
     "extra": {
       "eas": {

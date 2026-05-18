@@ -2,7 +2,7 @@ import React, { createContext, useCallback, useEffect, useMemo, useState } from 
 import { SECURE_STORE_KEYS } from '@utils/constants';
 import { storage } from '@utils/storage';
 import { decodeJwtPayload } from '@utils/jwt';
-import type { AuthUser, JwtPayload, LoginRequest } from '@app-types/auth';
+import type { AuthUser, JwtPayload, LoginRequest, GoogleLoginRequest } from '@app-types/auth';
 import * as authApi from '@api/auth.api';
 import { setLogoutHandler } from '@api/authEvents';
 
@@ -12,6 +12,7 @@ type AuthContextValue = {
   isAuthenticated: boolean;
   isAdmin: boolean;
   login: (body: LoginRequest) => Promise<void>;
+  loginWithGoogle: (body: GoogleLoginRequest) => Promise<void>;
   logout: () => Promise<void>;
 };
 
@@ -70,6 +71,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser({ ...resp.user, role });
   }, []);
 
+  const loginWithGoogle = useCallback(async (body: GoogleLoginRequest) => {
+    const resp = await authApi.loginWithGoogle(body);
+    await writeTokens(resp.accessToken, resp.refreshToken);
+    setAccessToken(resp.accessToken);
+
+    const payload = decodeJwtPayload<JwtPayload>(resp.accessToken);
+    const role = payload?.role ?? resp.user.role;
+    setUser({ ...resp.user, role });
+  }, []);
+
   useEffect(() => {
     setLogoutHandler(logout);
     return () => setLogoutHandler(null);
@@ -118,9 +129,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isAuthenticated,
       isAdmin,
       login,
+      loginWithGoogle,
       logout,
     }),
-    [user, loading, isAuthenticated, isAdmin, login, logout],
+    [user, loading, isAuthenticated, isAdmin, login, loginWithGoogle, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

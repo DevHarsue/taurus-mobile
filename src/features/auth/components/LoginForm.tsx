@@ -9,18 +9,20 @@ import { GradientButton } from '@components/GradientButton';
 import { AlertBanner } from '@components/AlertBanner';
 import { KeyboardScreen } from '@components/KeyboardScreen';
 import { useLogin } from '@features/auth/hooks/useLogin';
+import { useGoogleLogin } from '@features/auth/hooks/useGoogleLogin';
 import { colors, typography, spacing } from '@theme/index';
 
 const schema = z.object({
   email: z.string().email('Email invalido'),
-  password: z.string().min(1, 'Contrasena requerida'),
+  password: z.string().min(1, 'Contraseña requerida'),
 });
 
 type FormValues = z.infer<typeof schema>;
-
 export function LoginForm() {
   const insets = useSafeAreaInsets();
   const { submit, loading, error } = useLogin();
+  const googleLogin = useGoogleLogin();
+
   const {
     control,
     handleSubmit,
@@ -45,7 +47,9 @@ export function LoginForm() {
       </View>
 
       {/* Error */}
-      {!!error && <AlertBanner message={error} variant="error" />}
+      {!!(error || googleLogin.error) && (
+        <AlertBanner message={error || googleLogin.error || ''} variant="error" />
+      )}
 
       {/* Form */}
       <View style={styles.formSection}>
@@ -69,7 +73,7 @@ export function LoginForm() {
           name="password"
           render={({ field: { onChange, value } }) => (
             <Input
-              label="CONTRASENA"
+              label="CONTRASEÑA"
               secureTextEntry
               placeholder="••••••••"
               value={value}
@@ -97,11 +101,17 @@ export function LoginForm() {
         <View style={styles.dividerLine} />
       </View>
 
-      {/* Social Buttons (Solo UI) */}
+      {/* Social Buttons */}
       <View style={styles.socialRow}>
-        <Pressable style={styles.socialBtn}>
+        <Pressable 
+          style={styles.socialBtn}
+          onPress={googleLogin.signIn}
+          disabled={googleLogin.loading}
+        >
           <Text style={styles.socialIcon}>G</Text>
-          <Text style={styles.socialText}>GOOGLE</Text>
+          <Text style={styles.socialText}>
+            {googleLogin.loading ? 'CARGANDO...' : 'GOOGLE'}
+          </Text>
         </Pressable>
         <Pressable style={styles.socialBtn}>
           <Text style={styles.socialIcon}>⬛</Text>
