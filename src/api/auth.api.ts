@@ -8,10 +8,16 @@ import type {
   RegisterResponse,
   LogoutRequest,
   AuthUser,
+  GoogleLoginRequest,
 } from '@app-types/auth';
 
 export async function login(body: LoginRequest): Promise<LoginResponse> {
   const resp = await publicAuthClient.post<LoginResponse>('/api/auth/login', body);
+  return resp.data;
+}
+
+export async function loginWithGoogle(body: GoogleLoginRequest): Promise<LoginResponse> {
+  const resp = await publicAuthClient.post<LoginResponse>('/api/auth/google', body);
   return resp.data;
 }
 
