@@ -5,7 +5,7 @@ import { LoadingSpinner } from '@components/LoadingSpinner';
 import LoginScreen from '@features/auth/screens/LoginScreen';
 import SplashScreen from '@features/splash/screens/SplashScreen';
 import AdminTabs from '@navigation/AdminTabs';
-import MemberTabs from '@navigation/MemberTabs';
+import MemberShell from '@navigation/MemberShell';
 import type { AuthStackParamList } from './types';
 
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
@@ -26,5 +26,5 @@ export function RootNavigator() {
   if (loading) return <LoadingSpinner />;
   if (!isAuthenticated) return <AuthStackNavigator />;
 
-  return isAdmin ? <AdminTabs /> : <MemberTabs />;
+  return isAdmin ? <AdminTabs /> : <MemberShell />;
 }

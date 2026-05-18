@@ -7,6 +7,7 @@ import type {
   CreateMemberRequest,
   GetMembersQuery,
   UpdateMemberRequest,
+  CompleteProfileRequest,
   RenewMemberRequest,
   SubscriptionResponse,
 } from '@app-types/member';
@@ -24,6 +25,10 @@ export class MembersService extends BaseApiService {
 
   async getMine(): Promise<MemberDetail> {
     return this.get('/api/members/me');
+  }
+
+  async completeMyProfile(body: CompleteProfileRequest): Promise<MemberDetail> {
+    return this.post('/api/members/me/complete-profile', body);
   }
 
   async create(body: CreateMemberRequest): Promise<MemberCreated> {

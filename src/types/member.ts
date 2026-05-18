@@ -31,6 +31,11 @@ export interface UpdateMemberRequest {
   email?: string;
 }
 
+export interface CompleteProfileRequest {
+  cedula: string;
+  phone: string;
+}
+
 export interface RenewMemberRequest {
   planId: string;
 }
@@ -67,7 +72,7 @@ export interface MemberListItem {
 export interface MemberDetail {
   id: string;
   name: string;
-  cedula: string;
+  cedula?: string | null;
   phone?: string;
   email?: string;
   subscriptionStatus: MemberStatus;
