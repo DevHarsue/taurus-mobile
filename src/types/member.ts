@@ -80,4 +80,5 @@ export interface MemberDetail {
   fingerprintId?: number | null;
   currentPlanName?: string;
   currentExpiresAt?: string;
+  createdAt?: string;
 }

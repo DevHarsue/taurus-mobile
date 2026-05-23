@@ -10,6 +10,7 @@ import { Card } from '@components/Card';
 import { GradientButton } from '@components/GradientButton';
 import { FAB } from '@components/FAB';
 import { QueryRenderer } from '@components/QueryRenderer';
+import { useGreeting } from '@hooks/useGreeting';
 import { usePlans } from '../hooks/usePlans';
 import { useDeletePlan } from '../hooks/useDeletePlan';
 import { colors, typography, spacing } from '@theme/index';
@@ -45,6 +46,7 @@ function PlanCard({ plan, highlighted, onEdit, onDelete }: { plan: Plan; highlig
 
 export default function PlansScreen() {
   const nav = useNavigation<Nav>();
+  const { displayName } = useGreeting();
   const insets = useSafeAreaInsets();
   const query = usePlans();
   const { mutate: deletePlan } = useDeletePlan();
@@ -93,8 +95,8 @@ export default function PlansScreen() {
       <ScreenHeader
         leftContent={
           <View style={styles.headerLeft}>
-            <Avatar size={32} name="Taurus" backgroundColor={colors.primaryRed} />
-            <Text style={styles.greeting}>Hola, Taurus</Text>
+            <Avatar size={32} name={displayName} backgroundColor={colors.primaryRed} />
+            <Text style={styles.greeting}>Hola, {displayName}</Text>
           </View>
         }
         rightIcon={<Bell size={20} color={colors.textPrimary} strokeWidth={2} />}

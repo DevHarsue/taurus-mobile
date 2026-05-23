@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Settings } from 'lucide-react-native';
 import QRCode from 'react-native-qrcode-svg';
 import { useAuth } from '@hooks/useAuth';
+import { useGreeting } from '@hooks/useGreeting';
 import { ScreenHeader } from '@components/ScreenHeader';
 import { Avatar } from '@components/Avatar';
 import { colors, typography } from '@theme/index';
@@ -12,6 +13,7 @@ import { buildMemberQrPayload } from '@features/members/utils/memberQr';
 
 export default function MyQRScreen() {
   const { user } = useAuth();
+  const { displayName } = useGreeting();
   const insets = useSafeAreaInsets();
   const { data: myMember } = useMyMemberDetail();
   const qrValue = myMember ? buildMemberQrPayload(myMember.id) : '';
@@ -22,8 +24,8 @@ export default function MyQRScreen() {
         backgroundColor={colors.backgroundDark}
         leftContent={
           <View style={styles.headerLeft}>
-            <Avatar size={32} name="Taurus" backgroundColor={colors.primaryRed} />
-            <Text style={styles.headerTitle}>Hola, Taurus</Text>
+            <Avatar size={32} name={displayName} backgroundColor={colors.primaryRed} />
+            <Text style={styles.headerTitle}>Hola, {displayName}</Text>
           </View>
         }
         rightIcon={<Settings size={20} color="#FFFFFF99" strokeWidth={2} />}
@@ -49,9 +51,9 @@ export default function MyQRScreen() {
         </View>
 
         <View style={styles.nameCard}>
-          <Text style={styles.memberName}>{user?.email ?? 'Admin Taurus'}</Text>
+          <Text style={styles.memberName}>{displayName}</Text>
           <View style={styles.tierBadge}>
-            <Text style={styles.tierText}>PREMIUM TIER</Text>
+            <Text style={styles.tierText}>{myMember?.currentPlanName?.toUpperCase() ?? 'MIEMBRO'}</Text>
           </View>
         </View>
 
