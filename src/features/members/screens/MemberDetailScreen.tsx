@@ -14,6 +14,7 @@ import { useMemberDetail } from '../hooks/useMemberDetail';
 import { useMemberSubscriptions } from '../hooks/useMemberSubscriptions';
 import { useDeleteMember } from '../hooks/useDeleteMember';
 import { useGenerateMemberCard } from '../hooks/useGenerateMemberCard';
+import { calculateDurationDays, formatDateSpanish } from '@utils/dates';
 import { colors, typography, spacing } from '@theme/index';
 import type { MemberDetailScreenProps, MembersStackParamList } from '@navigation/types';
 
@@ -70,7 +71,10 @@ export default function MemberDetailScreen({ route }: MemberDetailScreenProps) {
 
       <QueryRenderer query={query} emptyTitle="Miembro no encontrado">
         {(member) => {
-          const totalDays = 30;
+          const activeSub = subscriptionsQuery.data?.find((s) => s.status === 'active');
+          const totalDays = activeSub
+            ? calculateDurationDays(activeSub.startsAt, activeSub.expiresAt)
+            : 30;
           const progress = Math.max(0, member.daysLeft / totalDays);
           return (
             <ScrollView
@@ -88,6 +92,9 @@ export default function MemberDetailScreen({ route }: MemberDetailScreenProps) {
               </View>
 
               <Text style={styles.memberName}>{member.name.toUpperCase()}</Text>
+              {member.createdAt && (
+                <Text style={styles.memberSince}>Miembro desde: {formatDateSpanish(member.createdAt)}</Text>
+              )}
 
               <View style={styles.progressContainer}>
                 <CircularProgress
@@ -105,10 +112,27 @@ export default function MemberDetailScreen({ route }: MemberDetailScreenProps) {
               <Card style={styles.planCard}>
                 <Text style={styles.planIcon}>📋</Text>
                 <View style={styles.planInfo}>
-                  <Text style={styles.planName}>Membresia</Text>
+                  <Text style={styles.planName}>{member.currentPlanName ?? 'Sin plan'}</Text>
                   <Text style={styles.planDateLabel}>{member.daysLeft} dias restantes</Text>
                 </View>
               </Card>
+
+              {(member.email || member.phone) && (
+                <Card style={styles.contactCard}>
+                  {member.email && (
+                    <View style={styles.contactRow}>
+                      <Text style={styles.contactLabel}>Email</Text>
+                      <Text style={styles.contactValue}>{member.email}</Text>
+                    </View>
+                  )}
+                  {member.phone && (
+                    <View style={styles.contactRow}>
+                      <Text style={styles.contactLabel}>Telefono</Text>
+                      <Text style={styles.contactValue}>{member.phone}</Text>
+                    </View>
+                  )}
+                </Card>
+              )}
 
               <Text style={styles.historyTitle}>HISTORIAL DE SUSCRIPCIONES</Text>
 
@@ -198,6 +222,10 @@ const styles = StyleSheet.create({
   historyMeta: { fontFamily: typography.bodyXS.fontFamily, fontSize: 11, color: colors.textMuted },
   historyDate: { fontFamily: typography.bodyXS.fontFamily, fontSize: 11, color: colors.textMuted },
   emptyHistory: { fontFamily: typography.bodySM.fontFamily, fontSize: typography.bodySM.fontSize, color: colors.textMuted, textAlign: 'center', paddingVertical: 20 },
+  contactCard: { padding: 16, gap: 8 },
+  contactRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 4 },
+  contactLabel: { fontFamily: typography.bodyXS.fontFamily, fontSize: 11, color: colors.textMuted },
+  contactValue: { fontFamily: typography.bodyS.fontFamily, fontSize: typography.bodyS.fontSize, color: colors.textPrimary },
   deleteBtn: { alignItems: 'center', paddingVertical: 12, marginTop: 8 },
   deleteBtnText: { fontFamily: typography.bodyS.fontFamily, fontSize: typography.bodyS.fontSize, color: colors.badgeExpired },
 });

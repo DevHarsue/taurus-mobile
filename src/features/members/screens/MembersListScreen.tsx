@@ -11,6 +11,7 @@ import { SearchBar } from '@components/SearchBar';
 import { FilterChips, type IFilterChip } from '@components/FilterChips';
 import { FAB } from '@components/FAB';
 import { LoadingSpinner } from '@components/LoadingSpinner';
+import { useGreeting } from '@hooks/useGreeting';
 import { useMemberSearch } from '../hooks/useMemberSearch';
 import { colors, typography, spacing } from '@theme/index';
 import type { MembersStackParamList } from '@navigation/types';
@@ -28,6 +29,7 @@ type Nav = NativeStackNavigationProp<MembersStackParamList>;
 export default function MembersListScreen() {
   const nav = useNavigation<Nav>();
   const insets = useSafeAreaInsets();
+  const { displayName } = useGreeting();
   const { data, loading, search, filter, onSearch, onFilter, refetch } = useMemberSearch();
 
   useFocusEffect(
@@ -43,8 +45,8 @@ export default function MembersListScreen() {
       <ScreenHeader
         leftContent={
           <View style={styles.headerLeft}>
-            <Avatar size={32} name="Taurus" backgroundColor={colors.primaryRed} />
-            <Text style={styles.greeting}>Hola, Taurus</Text>
+            <Avatar size={32} name={displayName} backgroundColor={colors.primaryRed} />
+            <Text style={styles.greeting}>Hola, {displayName}</Text>
           </View>
         }
         rightIcon={<Bell size={20} color={colors.textPrimary} strokeWidth={2} />}

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LogOut, Settings } from 'lucide-react-native';
@@ -7,24 +7,79 @@ import { ScreenHeader } from '@components/ScreenHeader';
 import { Avatar } from '@components/Avatar';
 import { GradientButton } from '@components/GradientButton';
 import { Card } from '@components/Card';
-import { Badge } from '@components/Badge';
 import { colors, typography, spacing } from '@theme/index';
+import { useGreeting } from '@hooks/useGreeting';
 import { useMyMemberDetail } from '@features/members/hooks/useMyMemberDetail';
 import { useGenerateMemberCard } from '@features/members/hooks/useGenerateMemberCard';
+import { useMyAccessLog } from '@hooks/useMyAccessLog';
+import {
+  formatDateSpanish,
+  formatDateShort,
+  formatMonthYear,
+  getDaysInMonth,
+  getFirstDayOfWeek,
+} from '@utils/dates';
 
 export default function MyProfileScreen() {
   const { user, logout } = useAuth();
+  const { displayName } = useGreeting();
   const insets = useSafeAreaInsets();
   const { data: myMember } = useMyMemberDetail();
   const { mutate: generateCard, loading: generatingCard } = useGenerateMemberCard();
+  const { data: accessLog } = useMyAccessLog();
+
+  const membershipLabel =
+    myMember?.subscriptionStatus === 'active'
+      ? 'MEMBRESIA ACTIVA'
+      : myMember?.subscriptionStatus === 'expired'
+        ? 'MEMBRESIA VENCIDA'
+        : 'SIN MEMBRESIA';
+
+  const planName = myMember?.currentPlanName ?? 'Sin plan';
+
+  const expiryText = myMember?.currentExpiresAt
+    ? `Vence el ${formatDateSpanish(myMember.currentExpiresAt)}`
+    : 'Sin fecha de vencimiento';
+
+  const expiresDate = myMember?.currentExpiresAt
+    ? new Date(myMember.currentExpiresAt)
+    : null;
+
+  const expiresDay = expiresDate?.getDate().toString() ?? '--';
+  const expiresMonth = expiresDate
+    ? new Intl.DateTimeFormat('es', { month: 'short' }).format(expiresDate).toUpperCase()
+    : '---';
+
+  const expiryShort = myMember?.currentExpiresAt
+    ? formatDateShort(myMember.currentExpiresAt)
+    : 'N/A';
+
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const monthName = formatMonthYear(now);
+  const daysInMonth = getDaysInMonth(year, month);
+  const firstDayOffset = getFirstDayOfWeek(year, month);
+
+  const { attendedDays, totalVisits } = useMemo(() => {
+    const days = new Set(
+      (accessLog ?? [])
+        .filter((item) => {
+          const d = new Date(item.timestamp);
+          return d.getMonth() === month && d.getFullYear() === year;
+        })
+        .map((item) => new Date(item.timestamp).getDate()),
+    );
+    return { attendedDays: days, totalVisits: days.size };
+  }, [accessLog, month, year]);
 
   return (
     <View style={styles.container}>
       <ScreenHeader
         leftContent={
           <View style={styles.headerLeft}>
-            <Avatar size={32} name="Taurus" backgroundColor={colors.primaryRed} />
-            <Text style={styles.greeting}>Hola, Taurus</Text>
+            <Avatar size={32} name={displayName} backgroundColor={colors.primaryRed} />
+            <Text style={styles.greeting}>Hola, {displayName}</Text>
           </View>
         }
         rightIcon={<Settings size={20} color={colors.textPrimary} strokeWidth={2} />}
@@ -37,26 +92,28 @@ export default function MyProfileScreen() {
       >
         {/* Membership Card */}
         <Card style={styles.membershipCard}>
-          <Text style={styles.membershipLabel}>MEMBRESIA ACTIVA</Text>
-          <Text style={styles.planName}>Plan Black Elite</Text>
-          <Text style={styles.planExpiry}>Vence el 15 de Octubre, 2024</Text>
+          <Text style={styles.membershipLabel}>{membershipLabel}</Text>
+          <Text style={styles.planName}>{planName}</Text>
+          <Text style={styles.planExpiry}>{expiryText}</Text>
           <View style={styles.dateRow}>
             <View style={styles.dateCircle}>
-              <Text style={styles.dateNumber}>24</Text>
-              <Text style={styles.dateMonth}>OCT</Text>
+              <Text style={styles.dateNumber}>{expiresDay}</Text>
+              <Text style={styles.dateMonth}>{expiresMonth}</Text>
             </View>
             <View style={styles.dateInfo}>
               <View style={styles.dateInfoRow}>
-                <Text style={styles.dateLabel}>Inicio</Text>
-                <Text style={styles.dateValue}>15 Sep 2023</Text>
-              </View>
-              <View style={styles.dateInfoRow}>
-                <Text style={styles.dateLabel}>Renovacion</Text>
-                <Text style={styles.dateValue}>15 Oct 2024</Text>
+                <Text style={styles.dateLabel}>Dias restantes</Text>
+                <Text style={styles.dateValue}>{myMember?.daysLeft ?? 0} dias</Text>
               </View>
               <View style={styles.dateInfoRow}>
                 <Text style={styles.dateLabel}>Vencimiento</Text>
-                <Text style={styles.dateValue}>15 Oct 2024</Text>
+                <Text style={styles.dateValue}>{expiryShort}</Text>
+              </View>
+              <View style={styles.dateInfoRow}>
+                <Text style={styles.dateLabel}>Estado</Text>
+                <Text style={styles.dateValue}>
+                  {myMember?.subscriptionStatus === 'active' ? 'Activa' : myMember?.subscriptionStatus === 'expired' ? 'Vencida' : 'Sin plan'}
+                </Text>
               </View>
             </View>
           </View>
@@ -65,13 +122,13 @@ export default function MyProfileScreen() {
         {/* Stats Row */}
         <View style={styles.statsRow}>
           <Card style={styles.statCard}>
-            <Text style={styles.statLabel}>RACHA ACTUAL</Text>
-            <Text style={styles.statNumber}>5</Text>
+            <Text style={styles.statLabel}>DIAS RESTANTES</Text>
+            <Text style={styles.statNumber}>{myMember?.daysLeft ?? 0}</Text>
             <Text style={styles.statUnit}>dias</Text>
           </Card>
           <Card style={styles.statCard}>
-            <Text style={styles.statLabel}>PROXIMO MES</Text>
-            <Text style={styles.statNumber}>4</Text>
+            <Text style={styles.statLabel}>VISITAS ESTE MES</Text>
+            <Text style={styles.statNumber}>{totalVisits}</Text>
             <Text style={styles.statUnit}>visitas</Text>
           </Card>
         </View>
@@ -80,26 +137,28 @@ export default function MyProfileScreen() {
         <Card style={styles.calendarCard}>
           <View style={styles.calendarHeader}>
             <Text style={styles.calendarTitle}>Mi asistencia este mes</Text>
-            <Text style={styles.calendarMonth}>SEPTIEMBRE</Text>
+            <Text style={styles.calendarMonth}>{monthName}</Text>
           </View>
           <View style={styles.calendarGrid}>
             {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((d, i) => (
               <Text key={i} style={styles.dayHeader}>{d}</Text>
             ))}
-            {[1,2,3,4,5,6,7,8,9,10,11,12,13,14].map((d) => {
-              const attended = [4, 8, 9, 10].includes(d);
+            {Array.from({ length: firstDayOffset }, (_, i) => (
+              <Text key={`empty-${i}`} style={styles.dayNumber}>{' '}</Text>
+            ))}
+            {Array.from({ length: daysInMonth }, (_, i) => {
+              const day = i + 1;
+              const attended = attendedDays.has(day);
               return (
-                <Text key={d} style={[styles.dayNumber, attended && styles.dayAttended]}>{d}</Text>
+                <Text key={day} style={[styles.dayNumber, attended && styles.dayAttended]}>{day}</Text>
               );
             })}
           </View>
           <View style={styles.totalRow}>
             <Text style={styles.totalLabel}>Total Visitas</Text>
-            <Text style={styles.totalNumber}>18</Text>
+            <Text style={styles.totalNumber}>{totalVisits}</Text>
           </View>
         </Card>
-
-        <GradientButton title="FINALIZAR ENTRENAMIENTO" onPress={() => {}} />
 
         {myMember ? (
           <GradientButton
@@ -152,7 +211,6 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.backgroundCard },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   greeting: { fontFamily: typography.headingXS.fontFamily, fontSize: typography.headingXS.fontSize, color: colors.textPrimary },
-  headerIcon: { fontSize: 20, color: colors.textPrimaryAlpha50 },
   scroll: { flex: 1 },
   scrollContent: { padding: spacing.xl, gap: 16 },
   membershipCard: { padding: 20, gap: 4 },

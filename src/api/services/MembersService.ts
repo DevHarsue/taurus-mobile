@@ -27,6 +27,10 @@ export class MembersService extends BaseApiService {
     return this.get('/api/members/me');
   }
 
+  async getMySubscriptions(): Promise<import('@app-types/subscription').Subscription[]> {
+    return this.get('/api/members/me/subscriptions');
+  }
+
   async completeMyProfile(body: CompleteProfileRequest): Promise<MemberDetail> {
     return this.post('/api/members/me/complete-profile', body);
   }

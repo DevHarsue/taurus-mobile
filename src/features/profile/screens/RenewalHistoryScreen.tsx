@@ -1,9 +1,16 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Settings } from 'lucide-react-native';
 import { ScreenHeader } from '@components/ScreenHeader';
 import { Avatar } from '@components/Avatar';
+import { LoadingSpinner } from '@components/LoadingSpinner';
+import { EmptyState } from '@components/EmptyState';
+import { useGreeting } from '@hooks/useGreeting';
+import { useMySubscriptions } from '@hooks/useMySubscriptions';
+import { useMyMemberDetail } from '@features/members/hooks/useMyMemberDetail';
+import { usePlans } from '@features/plans/hooks/usePlans';
+import { formatDateShort, calculateDurationDays, formatDuration } from '@utils/dates';
 import { colors, typography, spacing } from '@theme/index';
 
 interface RenewalItem {
@@ -14,13 +21,6 @@ interface RenewalItem {
   duration: string;
 }
 
-const MOCK_RENEWALS: RenewalItem[] = [
-  { id: '1', type: 'current', planName: 'Elite Performance Tier', date: 'Oct 12, 2023', duration: '12 Months Duration' },
-  { id: '2', type: 'renewal', planName: 'Standard Strength', date: 'Oct 12, 2022', duration: '12 Months Duration' },
-  { id: '3', type: 'renewal', planName: 'Standard Strength', date: 'Apr 12, 2022', duration: '6 Months Duration' },
-  { id: '4', type: 'initial', planName: 'New Member Trial', date: 'Jan 12, 2022', duration: '3 Months Duration' },
-];
-
 const TYPE_ICONS: Record<string, string> = {
   current: '♛',
   renewal: '↻',
@@ -28,20 +28,51 @@ const TYPE_ICONS: Record<string, string> = {
 };
 
 const TYPE_LABELS: Record<string, string> = {
-  current: 'CURRENT PLAN',
-  renewal: 'RENEWAL',
-  initial: 'INITIAL MEMBERSHIP',
+  current: 'PLAN ACTUAL',
+  renewal: 'RENOVACION',
+  initial: 'MEMBRESIA INICIAL',
 };
 
 export default function RenewalHistoryScreen() {
   const insets = useSafeAreaInsets();
+  const { displayName } = useGreeting();
+  const { data: myMember } = useMyMemberDetail();
+  const subsQuery = useMySubscriptions();
+  const plansQuery = usePlans();
+
+  const renewals = useMemo<RenewalItem[]>(() => {
+    const subscriptions = subsQuery.data ?? [];
+    const plans = plansQuery.data ?? [];
+    const planNameMap = new Map(plans.map((p) => [p.id, p.name]));
+
+    return subscriptions.map((sub, index) => {
+      const isCurrent = index === 0;
+      const isFirst = index === subscriptions.length - 1;
+      const durationDays = calculateDurationDays(sub.startsAt, sub.expiresAt);
+
+      const planName = sub.planId
+        ? planNameMap.get(sub.planId) ?? `Plan #${sub.planId.slice(0, 6)}`
+        : myMember?.currentPlanName ?? 'Plan actual';
+
+      return {
+        id: sub.id,
+        type: isCurrent ? 'current' : isFirst ? 'initial' : 'renewal',
+        planName,
+        date: formatDateShort(sub.startsAt),
+        duration: formatDuration(durationDays),
+      };
+    });
+  }, [subsQuery.data, plansQuery.data]);
+
+  const isLoading = subsQuery.loading || plansQuery.loading;
+
   return (
     <View style={styles.container}>
       <ScreenHeader
         leftContent={
           <View style={styles.headerLeft}>
-            <Avatar size={32} name="Taurus" backgroundColor={colors.primaryRed} />
-            <Text style={styles.headerTitle}>Hola, Taurus</Text>
+            <Avatar size={32} name={displayName} backgroundColor={colors.primaryRed} />
+            <Text style={styles.headerTitle}>Hola, {displayName}</Text>
           </View>
         }
         rightIcon={<Settings size={20} color={colors.textPrimary} strokeWidth={2} />}
@@ -52,24 +83,33 @@ export default function RenewalHistoryScreen() {
         contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 24 }]}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.sectionLabel}>PREMIUM PERFORMANCE</Text>
-        <Text style={styles.title}>RENEWAL{'\n'}HISTORY</Text>
+        <Text style={styles.sectionLabel}>MI HISTORIAL</Text>
+        <Text style={styles.title}>HISTORIAL DE{'\n'}RENOVACIONES</Text>
 
-        {MOCK_RENEWALS.map((item, index) => (
-          <View key={item.id}>
-            <View style={styles.renewalRow}>
-              <View style={styles.iconContainer}>
-                <Text style={styles.icon}>{TYPE_ICONS[item.type]}</Text>
+        {isLoading ? (
+          <LoadingSpinner />
+        ) : renewals.length === 0 ? (
+          <EmptyState
+            title="Sin historial de renovaciones"
+            description="Aun no tienes suscripciones registradas"
+          />
+        ) : (
+          renewals.map((item, index) => (
+            <View key={item.id}>
+              <View style={styles.renewalRow}>
+                <View style={styles.iconContainer}>
+                  <Text style={styles.icon}>{TYPE_ICONS[item.type]}</Text>
+                </View>
+                <View style={styles.renewalInfo}>
+                  <Text style={styles.renewalLabel}>{TYPE_LABELS[item.type]}</Text>
+                  <Text style={styles.renewalPlan}>{item.planName}</Text>
+                  <Text style={styles.renewalDate}>{item.date}  ·  {item.duration}</Text>
+                </View>
               </View>
-              <View style={styles.renewalInfo}>
-                <Text style={styles.renewalLabel}>{TYPE_LABELS[item.type]}</Text>
-                <Text style={styles.renewalPlan}>{item.planName}</Text>
-                <Text style={styles.renewalDate}>{item.date}  ·  {item.duration}</Text>
-              </View>
+              {index < renewals.length - 1 && <View style={styles.divider} />}
             </View>
-            {index < MOCK_RENEWALS.length - 1 && <View style={styles.divider} />}
-          </View>
-        ))}
+          ))
+        )}
       </ScrollView>
     </View>
   );
@@ -79,7 +119,6 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.white },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   headerTitle: { fontFamily: typography.headingXS.fontFamily, fontSize: typography.headingXS.fontSize, color: colors.textPrimary },
-  headerIcon: { fontSize: 20, color: colors.textPrimaryAlpha50 },
   scroll: { flex: 1 },
   scrollContent: { padding: spacing.xl, gap: 8 },
   sectionLabel: { fontFamily: typography.labelM.fontFamily, fontSize: typography.labelM.fontSize, letterSpacing: 1.5, color: colors.textMuted },

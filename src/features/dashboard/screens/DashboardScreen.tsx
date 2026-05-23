@@ -26,7 +26,7 @@ import { Avatar } from '@components/Avatar';
 import { Card } from '@components/Card';
 import { BarChart } from '@components/BarChart';
 import { DonutChart, type IDonutSegment } from '@components/DonutChart';
-import { useAuth } from '@hooks/useAuth';
+import { useGreeting } from '@hooks/useGreeting';
 import {
   useDashboardStatistics,
   useAccessStatistics,
@@ -70,7 +70,7 @@ function GrowthIndicator({ current, previous }: { current: number; previous: num
 }
 
 export default function DashboardScreen() {
-  const { user } = useAuth();
+  const { displayName } = useGreeting();
   const stats = useDashboardStatistics();
   const access = useAccessStatistics();
   const insets = useSafeAreaInsets();
@@ -93,15 +93,13 @@ export default function DashboardScreen() {
     access.refetch();
   }, [stats, access]);
 
-  const userName = user?.email?.split('@')[0] ?? 'Admin';
-
   return (
     <View style={styles.container}>
       <ScreenHeader
         leftContent={
           <View style={styles.headerLeft}>
-            <Avatar size={32} name={userName} backgroundColor={colors.primaryRed} />
-            <Text style={styles.greeting}>Hola, {userName}</Text>
+            <Avatar size={32} name={displayName} backgroundColor={colors.primaryRed} />
+            <Text style={styles.greeting}>Hola, {displayName}</Text>
           </View>
         }
         rightIcon={<Bell size={20} color={colors.textPrimary} strokeWidth={2} />}

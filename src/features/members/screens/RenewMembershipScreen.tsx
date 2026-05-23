@@ -1,11 +1,14 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { ScreenHeader } from '@components/ScreenHeader';
 import { GradientButton } from '@components/GradientButton';
 import { KeyboardScreen } from '@components/KeyboardScreen';
 import { useRenew } from '../hooks/useRenew';
+import { useMemberDetail } from '../hooks/useMemberDetail';
+import { useGreeting } from '@hooks/useGreeting';
 import { usePlans } from '@features/plans/hooks/usePlans';
+import { addDays, formatDateSpanish } from '@utils/dates';
 import { colors, typography, spacing } from '@theme/index';
 import type { RenewMembershipScreenProps } from '@navigation/types';
 
@@ -14,12 +17,28 @@ const SUGGESTED_INDEX = 1;
 export default function RenewMembershipScreen({ route }: RenewMembershipScreenProps) {
   const { memberId } = route.params;
   const nav = useNavigation();
+  const { displayName } = useGreeting();
   const { mutate, loading, error } = useRenew();
+  const memberQuery = useMemberDetail(memberId);
   const plansQuery = usePlans();
   const [selectedIndex, setSelectedIndex] = useState(SUGGESTED_INDEX);
 
+  const member = memberQuery.data;
   const plans = plansQuery.data ?? [];
   const selectedPlan = plans[selectedIndex];
+
+  const newExpiryDate = useMemo(() => {
+    if (!selectedPlan) return '';
+    const now = new Date();
+    if (
+      member?.subscriptionStatus === 'active' &&
+      member?.currentExpiresAt &&
+      new Date(member.currentExpiresAt) > now
+    ) {
+      return formatDateSpanish(addDays(member.currentExpiresAt, selectedPlan.durationDays));
+    }
+    return formatDateSpanish(addDays(now.toISOString(), selectedPlan.durationDays));
+  }, [selectedPlan, member]);
 
   const handleConfirm = async () => {
     if (!selectedPlan) return;
@@ -29,7 +48,7 @@ export default function RenewMembershipScreen({ route }: RenewMembershipScreenPr
 
   return (
     <View style={styles.container}>
-      <ScreenHeader title="Hola, Taurus" onBack={() => nav.goBack()} rightIcon={<Text style={styles.icon}>⚙</Text>} />
+      <ScreenHeader title={`Hola, ${displayName}`} onBack={() => nav.goBack()} rightIcon={<Text style={styles.icon}>⚙</Text>} />
 
       <KeyboardScreen contentContainerStyle={styles.scrollContent} dismissOnTap={false}>
         <Text style={styles.title}>RENOVAR{'\n'}MEMBRESIA</Text>
@@ -62,7 +81,7 @@ export default function RenewMembershipScreen({ route }: RenewMembershipScreenPr
             <View style={styles.summaryRow}>
               <View>
                 <Text style={styles.summaryLabel}>NUEVA FECHA DE VENCIMIENTO</Text>
-                <Text style={styles.summaryDate}>15 Enero 2024</Text>
+                <Text style={styles.summaryDate}>{newExpiryDate || 'Calculando...'}</Text>
               </View>
               <View style={styles.summaryRight}>
                 <Text style={styles.summaryLabel}>TOTAL A PAGAR</Text>
