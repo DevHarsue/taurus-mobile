@@ -3,7 +3,6 @@ import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-n
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Bell } from 'lucide-react-native';
 import { ScreenHeader } from '@components/ScreenHeader';
 import { Avatar } from '@components/Avatar';
 import { Card } from '@components/Card';
@@ -99,7 +98,6 @@ export default function PlansScreen() {
             <Text style={styles.greeting}>Hola, {displayName}</Text>
           </View>
         }
-        rightIcon={<Bell size={20} color={colors.textPrimary} strokeWidth={2} />}
         backgroundColor={colors.backgroundCard}
       />
 

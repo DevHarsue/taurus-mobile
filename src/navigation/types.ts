@@ -6,6 +6,9 @@ import type { PlanBase } from '@app-types/plan';
 
 export type AuthStackParamList = {
   Login: undefined;
+  ForgotPassword: undefined;
+  ResetPassword: { token?: string } | undefined;
+  Register: undefined;
 };
 
 export type AdminTabsParamList = {
@@ -37,6 +40,7 @@ export type DashboardStackParamList = {
 
 export type ProfileStackParamList = {
   ProfileHome: undefined;
+  Settings: undefined;
 };
 
 export type QRScannerStackParamList = {
@@ -47,6 +51,21 @@ export type MemberTabsParamList = {
   MyProfile: undefined;
   MyQR: undefined;
   RenewalHistory: undefined;
+};
+
+export type MemberProfileStackParamList = {
+  ProfileHome: undefined;
+  Settings: undefined;
+};
+
+export type MemberQRStackParamList = {
+  QRHome: undefined;
+  Settings: undefined;
+};
+
+export type MemberHistoryStackParamList = {
+  HistoryHome: undefined;
+  Settings: undefined;
 };
 
 // ─── Typed Screen Props ────────────────────────────────────────────────────
@@ -68,3 +87,7 @@ export type ProfileScreenProps = NativeStackScreenProps<ProfileStackParamList, '
 export type MyProfileScreenProps = BottomTabScreenProps<MemberTabsParamList, 'MyProfile'>;
 export type MyQRScreenProps = BottomTabScreenProps<MemberTabsParamList, 'MyQR'>;
 export type RenewalHistoryScreenProps = BottomTabScreenProps<MemberTabsParamList, 'RenewalHistory'>;
+
+export type ForgotPasswordScreenProps = NativeStackScreenProps<AuthStackParamList, 'ForgotPassword'>;
+export type ResetPasswordScreenProps = NativeStackScreenProps<AuthStackParamList, 'ResetPassword'>;
+export type RegisterScreenProps = NativeStackScreenProps<AuthStackParamList, 'Register'>;

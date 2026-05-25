@@ -9,6 +9,12 @@ import type {
   LogoutRequest,
   AuthUser,
   GoogleLoginRequest,
+  ForgotPasswordRequest,
+  ForgotPasswordResponse,
+  ResetPasswordRequest,
+  ResetPasswordResponse,
+  ChangePasswordRequest,
+  ChangePasswordResponse,
 } from '@app-types/auth';
 
 export async function login(body: LoginRequest): Promise<LoginResponse> {
@@ -39,4 +45,24 @@ export async function me(): Promise<AuthUser> {
 
 export async function logout(body: LogoutRequest): Promise<void> {
   await authClient.post('/api/auth/logout', body);
+}
+
+export async function publicRegister(body: { email: string; password: string }): Promise<RegisterResponse> {
+  const resp = await publicAuthClient.post<RegisterResponse>('/api/auth/register', body);
+  return resp.data;
+}
+
+export async function forgotPassword(body: ForgotPasswordRequest): Promise<ForgotPasswordResponse> {
+  const resp = await publicAuthClient.post<ForgotPasswordResponse>('/api/auth/forgot-password', body);
+  return resp.data;
+}
+
+export async function resetPassword(body: ResetPasswordRequest): Promise<ResetPasswordResponse> {
+  const resp = await publicAuthClient.post<ResetPasswordResponse>('/api/auth/reset-password', body);
+  return resp.data;
+}
+
+export async function changePassword(body: ChangePasswordRequest): Promise<ChangePasswordResponse> {
+  const resp = await authClient.put<ChangePasswordResponse>('/api/auth/change-password', body);
+  return resp.data;
 }

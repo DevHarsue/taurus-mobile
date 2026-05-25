@@ -4,11 +4,15 @@ import { useNavigation } from '@react-navigation/native';
 import { ScreenHeader } from '@components/ScreenHeader';
 import { GradientButton } from '@components/GradientButton';
 import { KeyboardScreen } from '@components/KeyboardScreen';
+import { Card } from '@components/Card';
+import { Avatar } from '@components/Avatar';
+import { Badge } from '@components/Badge';
+import { AlertBanner } from '@components/AlertBanner';
 import { useRenew } from '../hooks/useRenew';
 import { useMemberDetail } from '../hooks/useMemberDetail';
 import { useGreeting } from '@hooks/useGreeting';
 import { usePlans } from '@features/plans/hooks/usePlans';
-import { addDays, formatDateSpanish } from '@utils/dates';
+import { addDays, formatDateSpanish, formatDateShort } from '@utils/dates';
 import { colors, typography, spacing } from '@theme/index';
 import type { RenewMembershipScreenProps } from '@navigation/types';
 
@@ -53,6 +57,29 @@ export default function RenewMembershipScreen({ route }: RenewMembershipScreenPr
       <KeyboardScreen contentContainerStyle={styles.scrollContent} dismissOnTap={false}>
         <Text style={styles.title}>RENOVAR{'\n'}MEMBRESIA</Text>
         <Text style={styles.description}>Selecciona un nuevo plan para el usuario</Text>
+
+        {member && (
+          <Card style={styles.memberInfoCard}>
+            <View style={styles.memberInfoRow}>
+              <Avatar size={42} name={member.name} />
+              <View style={styles.memberInfoText}>
+                <Text style={styles.memberInfoName}>{member.name}</Text>
+                <Badge
+                  label={member.subscriptionStatus === 'active' ? 'ACTIVO' : member.subscriptionStatus === 'expired' ? 'VENCIDO' : 'SIN PLAN'}
+                  variant={member.subscriptionStatus === 'active' ? 'active' : member.subscriptionStatus === 'expired' ? 'expired' : 'neutral'}
+                  badgeStyle="pill"
+                />
+              </View>
+            </View>
+          </Card>
+        )}
+
+        {member?.subscriptionStatus === 'active' && member?.currentExpiresAt && (
+          <AlertBanner
+            message={`La nueva suscripcion comenzara al vencer la actual (${formatDateShort(member.currentExpiresAt)})`}
+            variant="info"
+          />
+        )}
 
         {error && <Text style={styles.error}>{error}</Text>}
 
@@ -109,6 +136,10 @@ const styles = StyleSheet.create({
   title: { fontFamily: typography.titleL.fontFamily, fontSize: typography.titleL.fontSize, color: colors.textPrimary, lineHeight: 38 },
   description: { fontFamily: typography.bodySM.fontFamily, fontSize: typography.bodySM.fontSize, color: colors.textMuted, marginBottom: 8 },
   error: { fontFamily: typography.bodySM.fontFamily, color: colors.badgeExpired },
+  memberInfoCard: { padding: 16, marginBottom: 4 },
+  memberInfoRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  memberInfoText: { flex: 1, gap: 4 },
+  memberInfoName: { fontFamily: typography.bodyM.fontFamily, fontSize: typography.bodyM.fontSize, color: colors.textPrimary },
   planOption: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, borderRadius: 16, borderWidth: 1, borderColor: colors.divider },
   planOptionSelected: { borderWidth: 2, borderColor: colors.primaryRed },
   planOptionLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },

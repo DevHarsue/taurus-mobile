@@ -9,7 +9,6 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
-  Bell,
   Users,
   UserCheck,
   DollarSign,
@@ -102,7 +101,6 @@ export default function DashboardScreen() {
             <Text style={styles.greeting}>Hola, {displayName}</Text>
           </View>
         }
-        rightIcon={<Bell size={20} color={colors.textPrimary} strokeWidth={2} />}
       />
 
       <ScrollView
