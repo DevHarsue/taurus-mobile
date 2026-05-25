@@ -1,6 +1,8 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { z } from 'zod';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -11,6 +13,7 @@ import { KeyboardScreen } from '@components/KeyboardScreen';
 import { useLogin } from '@features/auth/hooks/useLogin';
 import { useGoogleLogin } from '@features/auth/hooks/useGoogleLogin';
 import { colors, typography, spacing } from '@theme/index';
+import type { AuthStackParamList } from '@navigation/types';
 
 const schema = z.object({
   email: z.string().email('Email invalido'),
@@ -18,8 +21,11 @@ const schema = z.object({
 });
 
 type FormValues = z.infer<typeof schema>;
+type Nav = NativeStackNavigationProp<AuthStackParamList>;
+
 export function LoginForm() {
   const insets = useSafeAreaInsets();
+  const nav = useNavigation<Nav>();
   const { submit, loading, error } = useLogin();
   const googleLogin = useGoogleLogin();
 
@@ -74,7 +80,7 @@ export function LoginForm() {
           render={({ field: { onChange, value } }) => (
             <Input
               label="CONTRASEÑA"
-              secureTextEntry
+              showToggle
               placeholder="••••••••"
               value={value}
               onChangeText={onChange}
@@ -92,7 +98,9 @@ export function LoginForm() {
       />
 
       {/* Forgot Password */}
-      <Text style={styles.forgotLink}>¿Olvidaste tu contrasena?</Text>
+      <Pressable onPress={() => nav.navigate('ForgotPassword')}>
+        <Text style={styles.forgotLink}>¿Olvidaste tu contrasena?</Text>
+      </Pressable>
 
       {/* Divider */}
       <View style={styles.dividerRow}>
@@ -113,19 +121,8 @@ export function LoginForm() {
             {googleLogin.loading ? 'CARGANDO...' : 'GOOGLE'}
           </Text>
         </Pressable>
-        <Pressable style={styles.socialBtn}>
-          <Text style={styles.socialIcon}>⬛</Text>
-          <Text style={styles.socialText}>APPLE</Text>
-        </Pressable>
       </View>
 
-      {/* Register Link */}
-      <View style={styles.registerRow}>
-        <Text style={styles.registerText}>¿No tienes una cuenta? </Text>
-        <Pressable>
-          <Text style={styles.registerLink}>REGISTRATE</Text>
-        </Pressable>
-      </View>
     </KeyboardScreen>
   );
 }

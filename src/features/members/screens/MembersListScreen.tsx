@@ -3,7 +3,6 @@ import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Bell } from 'lucide-react-native';
 import { ScreenHeader } from '@components/ScreenHeader';
 import { Avatar } from '@components/Avatar';
 import { Badge } from '@components/Badge';
@@ -49,7 +48,6 @@ export default function MembersListScreen() {
             <Text style={styles.greeting}>Hola, {displayName}</Text>
           </View>
         }
-        rightIcon={<Bell size={20} color={colors.textPrimary} strokeWidth={2} />}
       />
 
       <View style={styles.content}>

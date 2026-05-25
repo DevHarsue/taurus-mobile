@@ -1,8 +1,11 @@
 import React, { useMemo } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Settings } from 'lucide-react-native';
 import { ScreenHeader } from '@components/ScreenHeader';
+import type { MemberHistoryStackParamList } from '@navigation/types';
 import { Avatar } from '@components/Avatar';
 import { LoadingSpinner } from '@components/LoadingSpinner';
 import { EmptyState } from '@components/EmptyState';
@@ -36,6 +39,7 @@ const TYPE_LABELS: Record<string, string> = {
 export default function RenewalHistoryScreen() {
   const insets = useSafeAreaInsets();
   const { displayName } = useGreeting();
+  const nav = useNavigation<NativeStackNavigationProp<MemberHistoryStackParamList>>();
   const { data: myMember } = useMyMemberDetail();
   const subsQuery = useMySubscriptions();
   const plansQuery = usePlans();
@@ -76,6 +80,7 @@ export default function RenewalHistoryScreen() {
           </View>
         }
         rightIcon={<Settings size={20} color={colors.textPrimary} strokeWidth={2} />}
+        onRightPress={() => nav.navigate('Settings')}
       />
 
       <ScrollView

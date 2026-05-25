@@ -1,8 +1,11 @@
 import React, { useMemo } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { LogOut, Settings } from 'lucide-react-native';
 import { useAuth } from '@hooks/useAuth';
+import type { MemberProfileStackParamList, ProfileStackParamList } from '@navigation/types';
 import { ScreenHeader } from '@components/ScreenHeader';
 import { Avatar } from '@components/Avatar';
 import { GradientButton } from '@components/GradientButton';
@@ -23,6 +26,7 @@ import {
 export default function MyProfileScreen() {
   const { user, logout } = useAuth();
   const { displayName } = useGreeting();
+  const nav = useNavigation<NativeStackNavigationProp<MemberProfileStackParamList | ProfileStackParamList>>();
   const insets = useSafeAreaInsets();
   const { data: myMember } = useMyMemberDetail();
   const { mutate: generateCard, loading: generatingCard } = useGenerateMemberCard();
@@ -83,6 +87,7 @@ export default function MyProfileScreen() {
           </View>
         }
         rightIcon={<Settings size={20} color={colors.textPrimary} strokeWidth={2} />}
+        onRightPress={() => nav.navigate('Settings')}
       />
 
       <ScrollView

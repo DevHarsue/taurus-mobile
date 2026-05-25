@@ -16,6 +16,7 @@ import CreatePlanScreen from '@features/plans/screens/CreatePlanScreen';
 import EditPlanScreen from '@features/plans/screens/EditPlanScreen';
 import QRScannerScreen from '@features/scanner/screens/QRScannerScreen';
 import MyProfileScreen from '@features/profile/screens/MyProfileScreen';
+import SettingsScreen from '@features/settings/screens/SettingsScreen';
 import { colors } from '@theme/index';
 import type {
   AdminTabsParamList,
@@ -75,6 +76,7 @@ function ProfileStackNavigator() {
   return (
     <ProfileStack.Navigator screenOptions={{ headerShown: false }}>
       <ProfileStack.Screen name="ProfileHome" component={MyProfileScreen} />
+      <ProfileStack.Screen name="Settings" component={SettingsScreen} />
     </ProfileStack.Navigator>
   );
 }

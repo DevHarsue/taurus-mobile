@@ -3,8 +3,11 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Settings } from 'lucide-react-native';
 import QRCode from 'react-native-qrcode-svg';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '@hooks/useAuth';
 import { useGreeting } from '@hooks/useGreeting';
+import type { MemberQRStackParamList } from '@navigation/types';
 import { ScreenHeader } from '@components/ScreenHeader';
 import { Avatar } from '@components/Avatar';
 import { colors, typography } from '@theme/index';
@@ -14,6 +17,7 @@ import { buildMemberQrPayload } from '@features/members/utils/memberQr';
 export default function MyQRScreen() {
   const { user } = useAuth();
   const { displayName } = useGreeting();
+  const nav = useNavigation<NativeStackNavigationProp<MemberQRStackParamList>>();
   const insets = useSafeAreaInsets();
   const { data: myMember } = useMyMemberDetail();
   const qrValue = myMember ? buildMemberQrPayload(myMember.id) : '';
@@ -29,6 +33,7 @@ export default function MyQRScreen() {
           </View>
         }
         rightIcon={<Settings size={20} color="#FFFFFF99" strokeWidth={2} />}
+        onRightPress={() => nav.navigate('Settings')}
       />
 
       <ScrollView

@@ -11,11 +11,12 @@ type Props = {
 
 export function AlertBanner({ message, variant = 'info' }: Props) {
   const backgroundColor =
-    variant === 'warning' ? theme.colors.warning : variant === 'error' ? theme.colors.badgeExpired : '#E5E7EB';
+    variant === 'warning' ? theme.colors.warning : variant === 'error' ? theme.colors.badgeExpired : '#DBEAFE';
+  const textColor = variant === 'info' ? '#1E40AF' : theme.colors.white;
 
   return (
     <View style={[styles.container, { backgroundColor }]}>
-      <Text style={styles.text}>{message}</Text>
+      <Text style={[styles.text, { color: textColor }]}>{message}</Text>
     </View>
   );
 }
