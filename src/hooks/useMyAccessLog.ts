@@ -5,20 +5,12 @@ import type { IAccessLogItem } from '@app-types/access';
 
 export function useMyAccessLog() {
   const { data: myMember } = useMyMemberDetail();
-  const memberName = myMember?.name;
+  const memberId = myMember?.id;
 
   return useQuery<IAccessLogItem[]>({
-    queryFn: async () => {
-      const log = await accessService.getLog({ limit: 200 });
-      if (!memberName) return [];
-      return log.filter(
-        (item) =>
-          item.member_name.toLowerCase() === memberName.toLowerCase() &&
-          item.granted,
-      );
-    },
-    deps: [memberName],
-    enabled: !!memberName,
+    queryFn: () => accessService.getLog({ limit: 365, memberId }),
+    deps: [memberId],
+    enabled: !!memberId,
     errorMessage: 'No se pudo cargar tu historial de acceso',
   });
 }

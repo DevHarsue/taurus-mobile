@@ -12,6 +12,7 @@ import { GradientButton } from '@components/GradientButton';
 import { QueryRenderer } from '@components/QueryRenderer';
 import { useMemberDetail } from '../hooks/useMemberDetail';
 import { useMemberSubscriptions } from '../hooks/useMemberSubscriptions';
+import { useMemberAccessLog } from '../hooks/useMemberAccessLog';
 import { useDeleteMember } from '../hooks/useDeleteMember';
 import { useGenerateMemberCard } from '../hooks/useGenerateMemberCard';
 import { calculateDurationDays, formatDateSpanish } from '@utils/dates';
@@ -26,6 +27,7 @@ export default function MemberDetailScreen({ route }: MemberDetailScreenProps) {
   const insets = useSafeAreaInsets();
   const query = useMemberDetail(id);
   const subscriptionsQuery = useMemberSubscriptions(id);
+  const accessLogQuery = useMemberAccessLog(id);
   const { mutate: deleteMember } = useDeleteMember();
   const { mutate: generateCard, loading: generatingCard } = useGenerateMemberCard();
 
@@ -58,7 +60,8 @@ export default function MemberDetailScreen({ route }: MemberDetailScreenProps) {
     useCallback(() => {
       query.refetch();
       subscriptionsQuery.refetch();
-    }, [query.refetch, subscriptionsQuery.refetch])
+      accessLogQuery.refetch();
+    }, [query.refetch, subscriptionsQuery.refetch, accessLogQuery.refetch])
   );
 
   return (
@@ -149,6 +152,43 @@ export default function MemberDetailScreen({ route }: MemberDetailScreenProps) {
                 ))
               ) : (
                 <Text style={styles.emptyHistory}>Sin suscripciones registradas</Text>
+              )}
+
+              <Text style={styles.historyTitle}>ULTIMOS ACCESOS</Text>
+
+              {accessLogQuery.data?.length ? (
+                accessLogQuery.data.map((entry, index) => (
+                  <View key={index} style={styles.historyRow}>
+                    <Text style={styles.historyIcon}>
+                      {entry.granted ? '✓' : '✕'}
+                    </Text>
+                    <View style={styles.historyInfo}>
+                      <Text style={styles.historyName}>
+                        {entry.granted ? 'Acceso concedido' : 'Acceso denegado'}
+                      </Text>
+                      <Text style={styles.historyMeta}>
+                        {entry.reason === 'expired'
+                          ? 'Suscripcion vencida'
+                          : entry.reason === 'not_found'
+                            ? 'No encontrado'
+                            : 'Activo'}
+                      </Text>
+                    </View>
+                    <Text style={styles.historyDate}>
+                      {new Date(entry.timestamp)
+                        .toLocaleDateString('es', {
+                          day: '2-digit',
+                          month: 'short',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })
+                        .toUpperCase()}
+                    </Text>
+                  </View>
+                ))
+              ) : (
+                <Text style={styles.emptyHistory}>Sin accesos registrados</Text>
               )}
 
               <GradientButton

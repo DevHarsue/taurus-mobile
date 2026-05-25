@@ -17,6 +17,8 @@ import EditPlanScreen from '@features/plans/screens/EditPlanScreen';
 import QRScannerScreen from '@features/scanner/screens/QRScannerScreen';
 import MyProfileScreen from '@features/profile/screens/MyProfileScreen';
 import SettingsScreen from '@features/settings/screens/SettingsScreen';
+import AccessLogScreen from '@features/dashboard/screens/AccessLogScreen';
+import DevicesScreen from '@features/dashboard/screens/DevicesScreen';
 import { colors } from '@theme/index';
 import type {
   AdminTabsParamList,
@@ -67,6 +69,8 @@ function DashboardStackNavigator() {
   return (
     <DashboardStack.Navigator screenOptions={{ headerShown: false }}>
       <DashboardStack.Screen name="DashboardHome" component={DashboardScreen} />
+      <DashboardStack.Screen name="AccessLog" component={AccessLogScreen} />
+      <DashboardStack.Screen name="Devices" component={DevicesScreen} />
     </DashboardStack.Navigator>
   );
 }

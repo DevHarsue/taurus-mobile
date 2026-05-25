@@ -36,6 +36,8 @@ export type PlansStackParamList = {
 
 export type DashboardStackParamList = {
   DashboardHome: undefined;
+  AccessLog: undefined;
+  Devices: undefined;
 };
 
 export type ProfileStackParamList = {
@@ -72,6 +74,8 @@ export type MemberHistoryStackParamList = {
 
 export type LoginScreenProps = NativeStackScreenProps<AuthStackParamList, 'Login'>;
 export type DashboardScreenProps = NativeStackScreenProps<DashboardStackParamList, 'DashboardHome'>;
+export type AccessLogScreenProps = NativeStackScreenProps<DashboardStackParamList, 'AccessLog'>;
+export type DevicesScreenProps = NativeStackScreenProps<DashboardStackParamList, 'Devices'>;
 export type MembersListScreenProps = NativeStackScreenProps<MembersStackParamList, 'MembersList'>;
 export type MemberDetailScreenProps = NativeStackScreenProps<MembersStackParamList, 'MemberDetail'>;
 export type CreateMemberScreenProps = NativeStackScreenProps<MembersStackParamList, 'CreateMember'>;

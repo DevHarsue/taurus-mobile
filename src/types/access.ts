@@ -8,4 +8,5 @@ export interface IAccessLogItem {
 export interface GetAccessLogQuery {
   limit?: number;
   offset?: number;
+  memberId?: string;
 }

@@ -1,9 +1,9 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { LogOut, Settings } from 'lucide-react-native';
+import { ChevronLeft, ChevronRight, LogOut, Settings } from 'lucide-react-native';
 import { useAuth } from '@hooks/useAuth';
 import type { MemberProfileStackParamList, ProfileStackParamList } from '@navigation/types';
 import { ScreenHeader } from '@components/ScreenHeader';
@@ -59,11 +59,22 @@ export default function MyProfileScreen() {
     : 'N/A';
 
   const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
-  const monthName = formatMonthYear(now);
+  const [calendarDate, setCalendarDate] = useState(() => new Date());
+  const year = calendarDate.getFullYear();
+  const month = calendarDate.getMonth();
+  const monthName = formatMonthYear(calendarDate);
   const daysInMonth = getDaysInMonth(year, month);
   const firstDayOffset = getFirstDayOfWeek(year, month);
+  const isCurrentMonth = month === now.getMonth() && year === now.getFullYear();
+
+  const goToPrevMonth = () => {
+    setCalendarDate(new Date(year, month - 1, 1));
+  };
+  const goToNextMonth = () => {
+    if (!isCurrentMonth) {
+      setCalendarDate(new Date(year, month + 1, 1));
+    }
+  };
 
   const { attendedDays, totalVisits } = useMemo(() => {
     const days = new Set(
@@ -140,9 +151,15 @@ export default function MyProfileScreen() {
 
         {/* Attendance Calendar */}
         <Card style={styles.calendarCard}>
+          <Text style={styles.calendarTitle}>Mi asistencia</Text>
           <View style={styles.calendarHeader}>
-            <Text style={styles.calendarTitle}>Mi asistencia este mes</Text>
+            <Pressable onPress={goToPrevMonth} hitSlop={8}>
+              <ChevronLeft size={20} color={colors.textPrimary} strokeWidth={2} />
+            </Pressable>
             <Text style={styles.calendarMonth}>{monthName}</Text>
+            <Pressable onPress={goToNextMonth} hitSlop={8} disabled={isCurrentMonth}>
+              <ChevronRight size={20} color={isCurrentMonth ? colors.textMuted : colors.textPrimary} strokeWidth={2} />
+            </Pressable>
           </View>
           <View style={styles.calendarGrid}>
             {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((d, i) => (
@@ -236,7 +253,7 @@ const styles = StyleSheet.create({
   statNumber: { fontFamily: typography.statL.fontFamily, fontSize: typography.statL.fontSize, color: colors.primaryRed },
   statUnit: { fontFamily: typography.bodyXS.fontFamily, fontSize: typography.bodyXS.fontSize, color: colors.textMuted },
   calendarCard: { padding: 16, gap: 12 },
-  calendarHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  calendarHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 4 },
   calendarTitle: { fontFamily: typography.bodyS.fontFamily, fontSize: typography.bodyS.fontSize, color: colors.textPrimary },
   calendarMonth: { fontFamily: typography.labelM.fontFamily, fontSize: typography.labelM.fontSize, letterSpacing: 1.5, color: colors.primaryRed },
   calendarGrid: { flexDirection: 'row', flexWrap: 'wrap' },
