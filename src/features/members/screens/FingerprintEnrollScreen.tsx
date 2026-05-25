@@ -4,7 +4,6 @@ import {
   Pressable,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -13,11 +12,10 @@ import { GradientButton } from '@components/GradientButton';
 import { KeyboardScreen } from '@components/KeyboardScreen';
 import { Card } from '@components/Card';
 import { Badge } from '@components/Badge';
+import { DeviceSelector } from '../components/DeviceSelector';
 import { useEnrollFingerprint } from '../hooks/useEnrollFingerprint';
 import { colors, typography, spacing } from '@theme/index';
 import type { FingerprintEnrollScreenProps } from '@navigation/types';
-
-const DEFAULT_DEVICE_ID = 'esp32-recepcion';
 
 const STEP_LABEL: Record<string, string> = {
   idle: 'Listo para empezar',
@@ -35,7 +33,7 @@ export default function FingerprintEnrollScreen({
 }: FingerprintEnrollScreenProps) {
   const { memberId, memberName } = route.params;
   const nav = useNavigation();
-  const [deviceId, setDeviceId] = useState(DEFAULT_DEVICE_ID);
+  const [deviceId, setDeviceId] = useState('');
   const { state, start, cancel, reset } = useEnrollFingerprint(
     memberId,
     deviceId,
@@ -64,18 +62,11 @@ export default function FingerprintEnrollScreen({
         <Text style={styles.title}>HUELLA{'\n'}DEL MIEMBRO</Text>
         <Text style={styles.subtitle}>{memberName}</Text>
 
-        <Card style={styles.card}>
-          <Text style={styles.cardLabel}>Dispositivo (device_id MQTT)</Text>
-          <TextInput
-            value={deviceId}
-            onChangeText={setDeviceId}
-            editable={!isInProgress}
-            placeholder="esp32-recepcion"
-            placeholderTextColor={colors.textMuted}
-            style={styles.input}
-            autoCapitalize="none"
-          />
-        </Card>
+        <DeviceSelector
+          selectedDeviceCode={deviceId}
+          onSelect={setDeviceId}
+          disabled={isInProgress}
+        />
 
         <Card style={styles.statusCard}>
           <View style={styles.statusHeader}>
@@ -162,21 +153,6 @@ const styles = StyleSheet.create({
     fontFamily: typography.bodySM.fontFamily,
     fontSize: typography.bodySM.fontSize,
     color: colors.textMuted,
-  },
-  card: { padding: 16, gap: 8 },
-  cardLabel: {
-    fontFamily: typography.labelS.fontFamily,
-    fontSize: 11,
-    letterSpacing: 1,
-    color: colors.textMuted,
-  },
-  input: {
-    fontFamily: typography.bodyS.fontFamily,
-    fontSize: typography.bodyS.fontSize,
-    color: colors.textPrimary,
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.divider,
   },
   statusCard: { padding: 16, gap: 12 },
   statusHeader: {

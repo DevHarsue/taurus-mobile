@@ -1,12 +1,15 @@
 import React, { useCallback } from 'react';
 import {
   ActivityIndicator,
+  Pressable,
   RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   Users,
@@ -31,6 +34,7 @@ import {
   useAccessStatistics,
 } from '../hooks/useStatistics';
 import { colors, typography, spacing } from '@theme/index';
+import type { DashboardStackParamList } from '@navigation/types';
 
 const CHART_COLORS = [
   colors.primaryRed,
@@ -70,6 +74,7 @@ function GrowthIndicator({ current, previous }: { current: number; previous: num
 
 export default function DashboardScreen() {
   const { displayName } = useGreeting();
+  const nav = useNavigation<NativeStackNavigationProp<DashboardStackParamList>>();
   const stats = useDashboardStatistics();
   const access = useAccessStatistics();
   const insets = useSafeAreaInsets();
@@ -373,8 +378,19 @@ export default function DashboardScreen() {
                     <Text style={styles.accessLabel}>Denegados hoy</Text>
                   </View>
                 </View>
+                <Pressable onPress={() => nav.navigate('AccessLog')} style={styles.linkRow}>
+                  <Text style={styles.linkText}>Ver registro completo →</Text>
+                </Pressable>
               </Card>
             )}
+
+            {/* ── Quick Actions ──────────────────────────────────── */}
+            <Pressable onPress={() => nav.navigate('Devices')}>
+              <Card style={styles.quickAction}>
+                <Text style={styles.quickActionText}>📡 Dispositivos IoT</Text>
+                <Text style={styles.quickActionArrow}>→</Text>
+              </Card>
+            </Pressable>
 
             {/* ── Top Members ──────────────────────────────────── */}
             {accessData?.topMembers && accessData.topMembers.length > 0 && (
@@ -607,6 +623,35 @@ const styles = StyleSheet.create({
     fontSize: typography.labelM.fontSize,
     color: colors.textMuted,
     letterSpacing: 1,
+  },
+
+  // Quick actions & links
+  linkRow: {
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: colors.divider,
+    alignItems: 'center',
+  },
+  linkText: {
+    fontFamily: typography.bodyS.fontFamily,
+    fontSize: typography.bodyS.fontSize,
+    color: colors.primaryRed,
+  },
+  quickAction: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+  },
+  quickActionText: {
+    fontFamily: typography.bodyS.fontFamily,
+    fontSize: typography.bodyS.fontSize,
+    color: colors.textPrimary,
+  },
+  quickActionArrow: {
+    fontFamily: typography.bodyS.fontFamily,
+    fontSize: typography.bodyS.fontSize,
+    color: colors.textMuted,
   },
 
   // Top members
