@@ -10,6 +10,7 @@ import { Card } from '@components/Card';
 import { CircularProgress } from '@components/CircularProgress';
 import { GradientButton } from '@components/GradientButton';
 import { QueryRenderer } from '@components/QueryRenderer';
+import { Skeleton } from '@components/Skeleton';
 import { useMemberDetail } from '../hooks/useMemberDetail';
 import { useMemberSubscriptions } from '../hooks/useMemberSubscriptions';
 import { useMemberAccessLog } from '../hooks/useMemberAccessLog';
@@ -62,7 +63,29 @@ export default function MemberDetailScreen({ route }: MemberDetailScreenProps) {
         rightIcon={<Info size={20} color={colors.textPrimaryAlpha50} strokeWidth={2} />}
       />
 
-      <QueryRenderer query={query} emptyTitle="Miembro no encontrado">
+      <QueryRenderer
+        query={query}
+        emptyTitle="Miembro no encontrado"
+        skeleton={
+          <View style={styles.scrollContent}>
+            <View style={styles.statusRow}>
+              <Skeleton width={70} height={20} borderRadius={10} />
+              <Skeleton width={80} height={11} borderRadius={5} />
+            </View>
+            <Skeleton width="70%" height={32} borderRadius={8} style={styles.skelGap} />
+            <Skeleton width="50%" height={13} borderRadius={6} />
+            <View style={styles.skelProgress}>
+              <Skeleton width={140} height={140} borderRadius={70} />
+            </View>
+            <Skeleton width="100%" height={72} borderRadius={12} />
+            <Skeleton width="100%" height={88} borderRadius={12} style={styles.skelGap} />
+            <Skeleton width="55%" height={12} borderRadius={6} style={styles.skelGap} />
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} width="100%" height={44} borderRadius={8} style={styles.skelGap} />
+            ))}
+          </View>
+        }
+      >
         {(member) => {
           const activeSub = subscriptionsQuery.data?.find((s) => s.status === 'active');
           const totalDays = activeSub
@@ -225,6 +248,8 @@ const styles = StyleSheet.create({
   infoIcon: { fontSize: 20, color: colors.textPrimaryAlpha50 },
   scroll: { flex: 1 },
   scrollContent: { padding: spacing.xxl, gap: 8 },
+  skelGap: { marginTop: 6 },
+  skelProgress: { alignItems: 'center', paddingVertical: 16 },
   statusRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   memberId: { fontFamily: typography.bodyXS.fontFamily, fontSize: 11, color: colors.textMuted },
   memberName: { fontFamily: typography.titleM.fontFamily, fontSize: typography.titleM.fontSize, color: colors.textPrimary, lineHeight: 36, marginTop: 4 },
