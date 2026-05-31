@@ -14,6 +14,7 @@ import { KeyboardScreen } from '@components/KeyboardScreen';
 import { useCreateMember } from '../hooks/useCreateMember';
 import { useRenew } from '../hooks/useRenew';
 import { usePlans } from '@features/plans/hooks/usePlans';
+import { useToast } from '@hooks/useToast';
 import { createMemberSchema, type CreateMemberFormValues } from '../schemas/createMember.schema';
 import { colors, typography, spacing } from '@theme/index';
 import type { MemberCreated } from '@app-types/member';
@@ -23,6 +24,7 @@ export default function CreateMemberScreen() {
   const createMutation = useCreateMember();
   const renewMutation = useRenew();
   const plansQuery = usePlans();
+  const { toast } = useToast();
 
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<CreateMemberFormValues | null>(null);
@@ -56,6 +58,7 @@ export default function CreateMemberScreen() {
     if (!formData) return;
     const result = await createMutation.mutate(formData);
     setCreatedResult(result);
+    toast.success('Miembro creado correctamente');
 
     if (selectedPlanId && result.id) {
       try {

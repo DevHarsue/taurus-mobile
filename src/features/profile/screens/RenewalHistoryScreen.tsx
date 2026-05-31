@@ -1,14 +1,14 @@
-import React, { useMemo } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useCallback, useMemo } from 'react';
+import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Settings } from 'lucide-react-native';
+import { History, Settings } from 'lucide-react-native';
 import { ScreenHeader } from '@components/ScreenHeader';
 import type { MemberHistoryStackParamList } from '@navigation/types';
 import { Avatar } from '@components/Avatar';
-import { LoadingSpinner } from '@components/LoadingSpinner';
 import { EmptyState } from '@components/EmptyState';
+import { Skeleton, SkeletonList } from '@components/Skeleton';
 import { useGreeting } from '@hooks/useGreeting';
 import { useMySubscriptions } from '@hooks/useMySubscriptions';
 import { useMyMemberDetail } from '@features/members/hooks/useMyMemberDetail';
@@ -35,6 +35,19 @@ const TYPE_LABELS: Record<string, string> = {
   renewal: 'RENOVACION',
   initial: 'MEMBRESIA INICIAL',
 };
+
+function RenewalRowSkeleton() {
+  return (
+    <View style={styles.renewalRow}>
+      <Skeleton width={48} height={48} borderRadius={12} />
+      <View style={styles.renewalInfo}>
+        <Skeleton width="40%" height={10} borderRadius={5} />
+        <Skeleton width="60%" height={14} borderRadius={7} />
+        <Skeleton width="50%" height={10} borderRadius={5} />
+      </View>
+    </View>
+  );
+}
 
 export default function RenewalHistoryScreen() {
   const insets = useSafeAreaInsets();
@@ -66,9 +79,16 @@ export default function RenewalHistoryScreen() {
         duration: formatDuration(durationDays),
       };
     });
-  }, [subsQuery.data, plansQuery.data]);
+  }, [subsQuery.data, plansQuery.data, myMember]);
 
   const isLoading = subsQuery.loading || plansQuery.loading;
+  const isInitial = isLoading && renewals.length === 0;
+  const isRefreshing = isLoading && renewals.length > 0;
+
+  const handleRefresh = useCallback(() => {
+    subsQuery.refetch();
+    plansQuery.refetch();
+  }, [subsQuery, plansQuery]);
 
   return (
     <View style={styles.container}>
@@ -87,16 +107,25 @@ export default function RenewalHistoryScreen() {
         style={styles.scroll}
         contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 24 }]}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
+            tintColor={colors.primaryRed}
+            colors={[colors.primaryRed]}
+          />
+        }
       >
         <Text style={styles.sectionLabel}>MI HISTORIAL</Text>
         <Text style={styles.title}>HISTORIAL DE{'\n'}RENOVACIONES</Text>
 
-        {isLoading ? (
-          <LoadingSpinner />
+        {isInitial ? (
+          <SkeletonList count={4} renderItem={() => <RenewalRowSkeleton />} />
         ) : renewals.length === 0 ? (
           <EmptyState
-            title="Sin historial de renovaciones"
-            description="Aun no tienes suscripciones registradas"
+            icon={History}
+            title="Aun no tienes suscripciones"
+            description="Tu historial de renovaciones aparecera aqui"
           />
         ) : (
           renewals.map((item, index) => (

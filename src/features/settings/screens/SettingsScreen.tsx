@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import React from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LogOut } from 'lucide-react-native';
@@ -15,6 +15,8 @@ import { Badge } from '@components/Badge';
 import { KeyboardScreen } from '@components/KeyboardScreen';
 import { useAuth } from '@hooks/useAuth';
 import { useChangePassword } from '../hooks/useChangePassword';
+import { useToast } from '@hooks/useToast';
+import { confirmDialog } from '@utils/confirmDialog';
 import { passwordSchema } from '@utils/validators';
 import { colors, typography, spacing } from '@theme/index';
 
@@ -36,7 +38,7 @@ export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const { user, logout } = useAuth();
   const { mutate, loading, error } = useChangePassword();
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const { control, handleSubmit, formState: { errors }, reset: resetForm } = useForm<ChangePasswordFormValues>({
     resolver: zodResolver(changePasswordSchema),
@@ -44,26 +46,20 @@ export default function SettingsScreen() {
   });
 
   const onChangePassword = async (values: ChangePasswordFormValues) => {
-    setSuccessMessage(null);
-    const result = await mutate({
+    await mutate({
       currentPassword: values.currentPassword,
       newPassword: values.newPassword,
     });
-    setSuccessMessage(result.message);
+    toast.success('Contrasena actualizada');
     resetForm();
   };
 
-  const handleLogout = () => {
-    const confirmAndLogout = () => { void logout(); };
-    if (Platform.OS === 'web') {
-      if (window.confirm('¿Cerrar sesion?')) confirmAndLogout();
-    } else {
-      const { Alert } = require('react-native');
-      Alert.alert('Cerrar sesion', '¿Seguro que quieres salir?', [
-        { text: 'Cancelar', style: 'cancel' },
-        { text: 'Salir', style: 'destructive', onPress: confirmAndLogout },
-      ]);
-    }
+  const handleLogout = async () => {
+    const ok = await confirmDialog('Cerrar sesion', '¿Seguro que quieres salir?', {
+      destructive: true,
+      confirmLabel: 'Salir',
+    });
+    if (ok) void logout();
   };
 
   return (
@@ -95,7 +91,6 @@ export default function SettingsScreen() {
           <Text style={styles.sectionTitle}>Cambiar contrasena</Text>
 
           {!!error && <AlertBanner message={error} variant="error" />}
-          {!!successMessage && <AlertBanner message={successMessage} variant="info" />}
 
           <Controller
             control={control}

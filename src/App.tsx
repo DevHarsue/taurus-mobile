@@ -5,6 +5,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AuthProvider } from '@context/AuthContext';
 import { ThemeProvider } from '@context/ThemeContext';
+import { ToastProvider } from '@context/ToastContext';
 import { RootNavigator } from '@navigation/RootNavigator';
 import { useAppFonts } from '@theme/fonts';
 
@@ -24,10 +25,12 @@ export default function App() {
       <SafeAreaProvider>
         <ThemeProvider>
           <AuthProvider>
-            <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
-            <NavigationContainer>
-              <RootNavigator />
-            </NavigationContainer>
+            <ToastProvider>
+              <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
+              <NavigationContainer>
+                <RootNavigator />
+              </NavigationContainer>
+            </ToastProvider>
           </AuthProvider>
         </ThemeProvider>
       </SafeAreaProvider>

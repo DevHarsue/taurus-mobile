@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -15,6 +15,8 @@ import { useGreeting } from '@hooks/useGreeting';
 import { useMyMemberDetail } from '@features/members/hooks/useMyMemberDetail';
 import { useGenerateMemberCard } from '@features/members/hooks/useGenerateMemberCard';
 import { useMyAccessLog } from '@hooks/useMyAccessLog';
+import { useToast } from '@hooks/useToast';
+import { confirmDialog } from '@utils/confirmDialog';
 import {
   formatDateSpanish,
   formatDateShort,
@@ -31,6 +33,7 @@ export default function MyProfileScreen() {
   const { data: myMember } = useMyMemberDetail();
   const { mutate: generateCard, loading: generatingCard } = useGenerateMemberCard();
   const { data: accessLog } = useMyAccessLog();
+  const { toast } = useToast();
 
   const membershipLabel =
     myMember?.subscriptionStatus === 'active'
@@ -188,12 +191,7 @@ export default function MyProfileScreen() {
             onPress={() => {
               void generateCard(myMember).catch((e) => {
                 const msg = e instanceof Error ? e.message : 'Error desconocido';
-                if (Platform.OS === 'web') {
-                  window.alert(`No se pudo generar el carnet:\n${msg}`);
-                } else {
-                  const { Alert } = require('react-native');
-                  Alert.alert('No se pudo generar el carnet', msg);
-                }
+                toast.error(`No se pudo generar el carnet: ${msg}`);
               });
             }}
             loading={generatingCard}
@@ -202,19 +200,12 @@ export default function MyProfileScreen() {
 
         <Pressable
           style={styles.logoutBtn}
-          onPress={() => {
-            const confirmAndLogout = () => {
-              void logout();
-            };
-            if (Platform.OS === 'web') {
-              if (window.confirm('¿Cerrar sesión?')) confirmAndLogout();
-            } else {
-              const { Alert } = require('react-native');
-              Alert.alert('Cerrar sesión', '¿Seguro que quieres salir?', [
-                { text: 'Cancelar', style: 'cancel' },
-                { text: 'Salir', style: 'destructive', onPress: confirmAndLogout },
-              ]);
-            }
+          onPress={async () => {
+            const ok = await confirmDialog('Cerrar sesion', '¿Seguro que quieres salir?', {
+              destructive: true,
+              confirmLabel: 'Salir',
+            });
+            if (ok) void logout();
           }}
         >
           <LogOut size={18} color={colors.badgeExpired} strokeWidth={2} />

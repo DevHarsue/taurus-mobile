@@ -11,6 +11,7 @@ import { GradientButton } from '@components/GradientButton';
 import { AlertBanner } from '@components/AlertBanner';
 import { KeyboardScreen } from '@components/KeyboardScreen';
 import { useForgotPassword } from '../hooks/useForgotPassword';
+import { useToast } from '@hooks/useToast';
 import { emailSchema } from '@utils/validators';
 import { colors, typography, spacing } from '@theme/index';
 import type { AuthStackParamList } from '@navigation/types';
@@ -22,6 +23,7 @@ type Nav = NativeStackNavigationProp<AuthStackParamList>;
 export default function ForgotPasswordScreen() {
   const nav = useNavigation<Nav>();
   const { mutate, loading, error } = useForgotPassword();
+  const { toast } = useToast();
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const { control, handleSubmit, formState: { errors } } = useForm<FormValues>({
@@ -32,6 +34,7 @@ export default function ForgotPasswordScreen() {
   const onSubmit = async (values: FormValues) => {
     const result = await mutate(values);
     setSuccessMessage(result.message);
+    toast.success('Si el email existe, recibiras instrucciones');
   };
 
   return (

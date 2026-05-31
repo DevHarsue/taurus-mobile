@@ -1,5 +1,5 @@
 import React from 'react';
-import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useForm, Controller } from 'react-hook-form';
@@ -10,6 +10,7 @@ import { GradientButton } from '@components/GradientButton';
 import { AlertBanner } from '@components/AlertBanner';
 import { KeyboardScreen } from '@components/KeyboardScreen';
 import { useRegister } from '../hooks/useRegister';
+import { useToast } from '@hooks/useToast';
 import { registerSchema, type RegisterFormValues } from '../schemas/register.schema';
 import { colors, typography } from '@theme/index';
 import type { AuthStackParamList } from '@navigation/types';
@@ -19,6 +20,7 @@ type Nav = NativeStackNavigationProp<AuthStackParamList>;
 export default function RegisterScreen() {
   const nav = useNavigation<Nav>();
   const { mutate, loading, error } = useRegister();
+  const { toast } = useToast();
 
   const { control, handleSubmit, formState: { errors } } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
@@ -27,13 +29,7 @@ export default function RegisterScreen() {
 
   const onSubmit = async (values: RegisterFormValues) => {
     await mutate({ email: values.email, password: values.password });
-    const msg = 'Cuenta creada exitosamente. Ahora puedes iniciar sesion.';
-    if (Platform.OS === 'web') {
-      window.alert(msg);
-    } else {
-      const { Alert } = require('react-native');
-      Alert.alert('Registro exitoso', msg);
-    }
+    toast.success('Cuenta creada, ya puedes iniciar sesion');
     nav.navigate('Login');
   };
 

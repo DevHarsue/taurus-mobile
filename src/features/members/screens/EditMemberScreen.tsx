@@ -11,6 +11,7 @@ import { KeyboardScreen } from '@components/KeyboardScreen';
 import { QueryRenderer } from '@components/QueryRenderer';
 import { useMemberDetail } from '../hooks/useMemberDetail';
 import { useUpdateMember } from '../hooks/useUpdateMember';
+import { useToast } from '@hooks/useToast';
 import { updateMemberSchema, type UpdateMemberFormValues } from '../schemas/updateMember.schema';
 import { colors, typography, spacing } from '@theme/index';
 import type { EditMemberScreenProps } from '@navigation/types';
@@ -18,6 +19,7 @@ import type { EditMemberScreenProps } from '@navigation/types';
 function EditMemberForm({ id, defaultValues }: { id: string; defaultValues: UpdateMemberFormValues }) {
   const nav = useNavigation();
   const { mutate, loading, error } = useUpdateMember();
+  const { toast } = useToast();
 
   const { control, handleSubmit, formState: { errors } } = useForm<UpdateMemberFormValues>({
     resolver: zodResolver(updateMemberSchema),
@@ -26,6 +28,7 @@ function EditMemberForm({ id, defaultValues }: { id: string; defaultValues: Upda
 
   const onSubmit = async (values: UpdateMemberFormValues) => {
     await mutate({ id, body: values });
+    toast.success('Cambios guardados');
     nav.goBack();
   };
 

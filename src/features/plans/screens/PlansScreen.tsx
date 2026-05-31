@@ -1,15 +1,20 @@
 import React, { useCallback } from 'react';
-import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Package } from 'lucide-react-native';
 import { ScreenHeader } from '@components/ScreenHeader';
 import { Avatar } from '@components/Avatar';
 import { Card } from '@components/Card';
 import { GradientButton } from '@components/GradientButton';
 import { FAB } from '@components/FAB';
 import { QueryRenderer } from '@components/QueryRenderer';
+import { EmptyState } from '@components/EmptyState';
+import { SkeletonCard, SkeletonList } from '@components/Skeleton';
 import { useGreeting } from '@hooks/useGreeting';
+import { useToast } from '@hooks/useToast';
+import { confirmDialog } from '@utils/confirmDialog';
 import { usePlans } from '../hooks/usePlans';
 import { useDeletePlan } from '../hooks/useDeletePlan';
 import { colors, typography, spacing } from '@theme/index';
@@ -49,6 +54,7 @@ export default function PlansScreen() {
   const insets = useSafeAreaInsets();
   const query = usePlans();
   const { mutate: deletePlan } = useDeletePlan();
+  const { toast } = useToast();
 
   useFocusEffect(
     useCallback(() => {
@@ -57,28 +63,15 @@ export default function PlansScreen() {
   );
 
   const handleDeletePlan = async (planId: string, planName: string) => {
-    if (Platform.OS === 'web') {
-      if (!window.confirm(`Esta seguro que desea eliminar "${planName}"?`)) return;
-      await deletePlan(planId);
-      query.refetch();
-    } else {
-      const { Alert } = require('react-native');
-      Alert.alert(
-        'Eliminar plan',
-        `Esta seguro que desea eliminar "${planName}"?`,
-        [
-          { text: 'Cancelar', style: 'cancel' },
-          {
-            text: 'Eliminar',
-            style: 'destructive',
-            onPress: async () => {
-              await deletePlan(planId);
-              query.refetch();
-            },
-          },
-        ],
-      );
-    }
+    const ok = await confirmDialog(
+      'Eliminar plan',
+      `¿Seguro que deseas eliminar "${planName}"?`,
+      { destructive: true, confirmLabel: 'Eliminar' },
+    );
+    if (!ok) return;
+    await deletePlan(planId);
+    query.refetch();
+    toast.success('Plan eliminado');
   };
 
   const toPlanBase = (plan: Plan): PlanBase => ({
@@ -105,11 +98,34 @@ export default function PlansScreen() {
         style={styles.scroll}
         contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 100 }]}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={query.loading}
+            onRefresh={query.refetch}
+            tintColor={colors.primaryRed}
+            colors={[colors.primaryRed]}
+          />
+        }
       >
         <Text style={styles.title}>Manage Plans.</Text>
         <Text style={styles.description}>Configura los planes del gimnasio, sus precios y caracteristicas.</Text>
 
-        <QueryRenderer query={query} emptyTitle="Sin planes" isEmpty={(d) => d.length === 0}>
+        <QueryRenderer
+          query={query}
+          isEmpty={(d) => d.length === 0}
+          skeleton={
+            <SkeletonList count={3} renderItem={() => <SkeletonCard height={170} />} />
+          }
+          empty={
+            <EmptyState
+              icon={Package}
+              title="No hay planes creados"
+              description="Crea tu primer plan para empezar"
+              actionLabel="Crear primer plan"
+              onAction={() => nav.navigate('CreatePlan')}
+            />
+          }
+        >
           {(plans) => (
             <View style={styles.plansList}>
               {plans.map((plan, i) => (
@@ -135,7 +151,6 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.backgroundCard },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   greeting: { fontFamily: typography.headingXS.fontFamily, fontSize: typography.headingXS.fontSize, color: colors.textPrimary },
-  bellIcon: { fontSize: 20 },
   scroll: { flex: 1 },
   scrollContent: { padding: spacing.xl, gap: 8 },
   title: { fontFamily: typography.titleS.fontFamily, fontSize: typography.titleS.fontSize, color: colors.textPrimary },
