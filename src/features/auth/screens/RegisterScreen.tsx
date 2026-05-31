@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -12,7 +12,8 @@ import { KeyboardScreen } from '@components/KeyboardScreen';
 import { useRegister } from '../hooks/useRegister';
 import { useToast } from '@hooks/useToast';
 import { registerSchema, type RegisterFormValues } from '../schemas/register.schema';
-import { colors, typography } from '@theme/index';
+import { typography, type Colors } from '@theme/index';
+import { useTheme } from '@hooks/useTheme';
 import type { AuthStackParamList } from '@navigation/types';
 
 type Nav = NativeStackNavigationProp<AuthStackParamList>;
@@ -21,6 +22,8 @@ export default function RegisterScreen() {
   const nav = useNavigation<Nav>();
   const { mutate, loading, error } = useRegister();
   const { toast } = useToast();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const { control, handleSubmit, formState: { errors } } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
@@ -112,8 +115,8 @@ export default function RegisterScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.white },
+const createStyles = (colors: Colors) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.background },
   scrollContent: { paddingHorizontal: 24, gap: 16 },
   logoSection: { alignItems: 'center', gap: 4, marginBottom: 8 },
   logoIcon: {

@@ -23,7 +23,7 @@ export type MembersStackParamList = {
   MembersList: undefined;
   MemberDetail: { id: string };
   CreateMember: undefined;
-  RenewMembership: { memberId: string; memberName: string };
+  RenewMembership: { memberId: string; memberName?: string };
   EditMember: { id: string };
   FingerprintEnroll: { memberId: string; memberName: string };
 };

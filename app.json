@@ -2,11 +2,11 @@
   "expo": {
     "name": "Taurus",
     "slug": "taurus-mobile",
-    "scheme": "taurus-mobile",
+    "scheme": ["taurus-mobile", "gymtaurus"],
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash-icon.png",
@@ -38,7 +38,8 @@
       ],
       "expo-web-browser",
       "expo-font",
-      "expo-sharing"
+      "expo-sharing",
+      "expo-audio"
     ],
     "extra": {
       "eas": {

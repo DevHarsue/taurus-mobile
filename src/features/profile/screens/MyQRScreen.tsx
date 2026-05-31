@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Settings } from 'lucide-react-native';
@@ -9,7 +9,8 @@ import { useGreeting } from '@hooks/useGreeting';
 import type { MemberQRStackParamList } from '@navigation/types';
 import { ScreenHeader } from '@components/ScreenHeader';
 import { Avatar } from '@components/Avatar';
-import { colors, typography } from '@theme/index';
+import { typography, type Colors } from '@theme/index';
+import { useTheme } from '@hooks/useTheme';
 import { useMyMemberDetail } from '@features/members/hooks/useMyMemberDetail';
 import { buildMemberQrPayload } from '@features/members/utils/memberQr';
 
@@ -19,6 +20,8 @@ export default function MyQRScreen() {
   const insets = useSafeAreaInsets();
   const { data: myMember } = useMyMemberDetail();
   const qrValue = myMember ? buildMemberQrPayload(myMember.id) : '';
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   return (
     <View style={styles.container}>
@@ -72,7 +75,7 @@ export default function MyQRScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: Colors) => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.backgroundDark },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   headerTitle: { fontFamily: typography.headingXS.fontFamily, fontSize: typography.headingXS.fontSize, color: colors.white },

@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
-import { colors, typography, spacing } from '@theme/index';
+import { colors as staticColors, typography, spacing, type Colors } from '@theme/index';
+import { useTheme } from '@hooks/useTheme';
 
 export interface IDonutSegment {
   label: string;
@@ -16,7 +17,7 @@ interface Props {
 }
 
 const CHART_COLORS = [
-  colors.primaryRed,
+  staticColors.primaryRed,
   '#E67E22',
   '#2A7A3A',
   '#3498DB',
@@ -25,6 +26,8 @@ const CHART_COLORS = [
 ];
 
 export function DonutChart({ data, size = 120, strokeWidth = 14 }: Props) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const total = data.reduce((sum, d) => sum + d.value, 0) || 1;
@@ -92,50 +95,51 @@ export function DonutChart({ data, size = 120, strokeWidth = 14 }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.lg,
-  },
-  center: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  totalValue: {
-    fontFamily: typography.statM.fontFamily,
-    fontSize: 20,
-    color: colors.textPrimary,
-  },
-  totalLabel: {
-    fontFamily: typography.caption.fontFamily,
-    fontSize: typography.caption.fontSize,
-    letterSpacing: 1,
-    color: colors.textMuted,
-  },
-  legend: {
-    flex: 1,
-    gap: spacing.sm,
-  },
-  legendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  legendDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  legendLabel: {
-    flex: 1,
-    fontFamily: typography.bodyXS.fontFamily,
-    fontSize: typography.bodyXS.fontSize,
-    color: colors.textSecondary,
-  },
-  legendValue: {
-    fontFamily: typography.bodyS.fontFamily,
-    fontSize: typography.bodyS.fontSize,
-    color: colors.textPrimary,
-  },
-});
+const createStyles = (colors: Colors) =>
+  StyleSheet.create({
+    container: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.lg,
+    },
+    center: {
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    totalValue: {
+      fontFamily: typography.statM.fontFamily,
+      fontSize: 20,
+      color: colors.textPrimary,
+    },
+    totalLabel: {
+      fontFamily: typography.caption.fontFamily,
+      fontSize: typography.caption.fontSize,
+      letterSpacing: 1,
+      color: colors.textMuted,
+    },
+    legend: {
+      flex: 1,
+      gap: spacing.sm,
+    },
+    legendItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+    },
+    legendDot: {
+      width: 8,
+      height: 8,
+      borderRadius: 4,
+    },
+    legendLabel: {
+      flex: 1,
+      fontFamily: typography.bodyXS.fontFamily,
+      fontSize: typography.bodyXS.fontSize,
+      color: colors.textSecondary,
+    },
+    legendValue: {
+      fontFamily: typography.bodyS.fontFamily,
+      fontSize: typography.bodyS.fontSize,
+      color: colors.textPrimary,
+    },
+  });

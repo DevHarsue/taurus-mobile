@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -14,7 +14,9 @@ import { Card } from '@components/Card';
 import { Badge } from '@components/Badge';
 import { DeviceSelector } from '../components/DeviceSelector';
 import { useEnrollFingerprint } from '../hooks/useEnrollFingerprint';
-import { colors, typography, spacing } from '@theme/index';
+import { useTheme } from '@hooks/useTheme';
+import { haptics } from '@utils/haptics';
+import { typography, spacing, type Colors } from '@theme/index';
 import type { FingerprintEnrollScreenProps } from '@navigation/types';
 
 const STEP_LABEL: Record<string, string> = {
@@ -33,6 +35,8 @@ export default function FingerprintEnrollScreen({
 }: FingerprintEnrollScreenProps) {
   const { memberId, memberName } = route.params;
   const nav = useNavigation();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [deviceId, setDeviceId] = useState('');
   const { state, start, cancel, reset } = useEnrollFingerprint(
     memberId,
@@ -51,6 +55,12 @@ export default function FingerprintEnrollScreen({
   const isInProgress = state.status === 'in_progress' || state.starting;
   const isDone = state.status === 'success';
   const isFailed = state.status === 'failed' || state.status === 'timeout';
+
+  useEffect(() => {
+    if (isDone) {
+      haptics.success();
+    }
+  }, [isDone]);
 
   const stepLabel = STEP_LABEL[state.step] ?? state.step;
 
@@ -140,8 +150,9 @@ export default function FingerprintEnrollScreen({
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.white },
+const createStyles = (colors: Colors) =>
+  StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.background },
   scrollContent: { padding: spacing.xxl, gap: 16 },
   title: {
     fontFamily: typography.titleM.fontFamily,

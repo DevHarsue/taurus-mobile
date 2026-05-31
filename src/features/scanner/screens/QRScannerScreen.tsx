@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Modal,
@@ -16,7 +16,10 @@ import { Zap, Keyboard as KeyboardIcon } from 'lucide-react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { ScreenHeader } from '@components/ScreenHeader';
 import { GradientButton } from '@components/GradientButton';
-import { colors, typography, spacing } from '@theme/index';
+import { useTheme } from '@hooks/useTheme';
+import { typography, spacing, type Colors } from '@theme/index';
+import { haptics } from '@utils/haptics';
+import { useScannerBeep } from '@hooks/useScannerBeep';
 import { membersService } from '@api/services';
 import { parseMemberIdFromQr } from '@features/members/utils/memberQr';
 
@@ -28,6 +31,9 @@ type ScanState =
 export default function QRScannerScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<any>();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+  const { playBeep } = useScannerBeep();
   const [permission, requestPermission] = useCameraPermissions();
   const [scanState, setScanState] = useState<ScanState>({ type: 'idle' });
   const [manualOpen, setManualOpen] = useState(false);
@@ -38,6 +44,9 @@ export default function QRScannerScreen() {
     async (memberId: string) => {
       if (lockRef.current) return;
       lockRef.current = true;
+      // Feedback dual al detectar un QR/codigo valido.
+      playBeep();
+      haptics.success();
       setScanState({ type: 'looking-up', memberId });
       try {
         const member = await membersService.getById(memberId);
@@ -53,13 +62,14 @@ export default function QRScannerScreen() {
         }, 800);
       } catch {
         lockRef.current = false;
+        haptics.error();
         setScanState({
           type: 'error',
           message: 'No se encontró el miembro con ese QR.',
         });
       }
     },
-    [navigation],
+    [navigation, playBeep],
   );
 
   const handleBarcode = useCallback(
@@ -68,6 +78,7 @@ export default function QRScannerScreen() {
       const id = parseMemberIdFromQr(data);
       if (!id) {
         lockRef.current = true;
+        haptics.error();
         setScanState({
           type: 'error',
           message: 'Código QR no reconocido como carnet de Taurus.',
@@ -86,6 +97,7 @@ export default function QRScannerScreen() {
   const handleManualSubmit = useCallback(() => {
     const id = parseMemberIdFromQr(manualInput);
     if (!id) {
+      haptics.error();
       setScanState({
         type: 'error',
         message: 'El código no es un UUID válido.',
@@ -186,7 +198,7 @@ export default function QRScannerScreen() {
               value={manualInput}
               onChangeText={setManualInput}
               placeholder="ej. 8f4a9c2b-3e1d-... o https://gymtaurus.com/verify/..."
-              placeholderTextColor="#9ca3af"
+              placeholderTextColor={colors.textMuted}
               style={styles.modalInput}
               autoCapitalize="none"
               autoCorrect={false}
@@ -212,162 +224,164 @@ export default function QRScannerScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.black },
-  content: {
-    flexGrow: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: spacing.xxl,
-    paddingVertical: 24,
-    gap: 24,
-  },
-  instruction: {
-    fontFamily: typography.labelL.fontFamily,
-    fontSize: typography.labelL.fontSize,
-    letterSpacing: 2,
-    color: '#FFFFFF60',
-    textAlign: 'center',
-  },
-  viewfinder: {
-    width: 280,
-    height: 280,
-    borderRadius: 24,
-    borderWidth: 3,
-    borderColor: colors.primaryRed,
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-    overflow: 'hidden',
-    backgroundColor: '#0a0000',
-  },
-  corner: { position: 'absolute', width: 40, height: 40, borderColor: colors.white, zIndex: 5 },
-  cornerTL: { top: -2, left: -2, borderTopWidth: 4, borderLeftWidth: 4, borderTopLeftRadius: 24 },
-  cornerTR: { top: -2, right: -2, borderTopWidth: 4, borderRightWidth: 4, borderTopRightRadius: 24 },
-  cornerBL: { bottom: -2, left: -2, borderBottomWidth: 4, borderLeftWidth: 4, borderBottomLeftRadius: 24 },
-  cornerBR: { bottom: -2, right: -2, borderBottomWidth: 4, borderRightWidth: 4, borderBottomRightRadius: 24 },
-  scanPlaceholder: {
-    fontFamily: typography.bodySM.fontFamily,
-    fontSize: typography.bodySM.fontSize,
-    color: '#FFFFFF60',
-    textAlign: 'center',
-  },
-  permissionBox: { padding: 16, alignItems: 'center', gap: 12 },
-  permissionText: {
-    fontFamily: typography.bodyS.fontFamily,
-    fontSize: typography.bodyS.fontSize,
-    color: '#FFFFFFCC',
-    textAlign: 'center',
-  },
-  permissionBtn: {
-    paddingHorizontal: 18,
-    paddingVertical: 10,
-    backgroundColor: colors.primaryRed,
-    borderRadius: 999,
-  },
-  permissionBtnText: {
-    fontFamily: typography.bodyS.fontFamily,
-    fontSize: typography.bodyS.fontSize,
-    color: colors.white,
-    fontWeight: '600',
-  },
-  overlayBox: {
-    ...StyleSheet.absoluteFillObject,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: '#0a0000CC',
-    zIndex: 10,
-  },
-  overlayText: {
-    fontFamily: typography.bodyS.fontFamily,
-    fontSize: typography.bodyS.fontSize,
-    color: colors.white,
-  },
-  errorBox: {
-    backgroundColor: '#7f1d1d',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 12,
-  },
-  errorText: {
-    fontFamily: typography.bodyS.fontFamily,
-    fontSize: typography.bodyS.fontSize,
-    color: colors.white,
-    textAlign: 'center',
-  },
-  hint: {
-    fontFamily: typography.bodySM.fontFamily,
-    fontSize: typography.bodySM.fontSize,
-    color: '#FFFFFF40',
-    textAlign: 'center',
-    lineHeight: 20,
-  },
-  manualBtn: {
-    backgroundColor: '#FFFFFF10',
-    borderRadius: 16,
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    width: '100%',
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  manualBtnText: {
-    fontFamily: typography.bodyS.fontFamily,
-    fontSize: typography.bodyS.fontSize,
-    color: '#FFFFFF80',
-  },
-  modalBackdrop: {
-    flex: 1,
-    backgroundColor: '#000000AA',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-  },
-  modalCard: {
-    width: '100%',
-    maxWidth: 420,
-    backgroundColor: colors.white,
-    borderRadius: 20,
-    padding: 24,
-    gap: 12,
-  },
-  modalTitle: {
-    fontFamily: typography.headingS.fontFamily,
-    fontSize: typography.headingS.fontSize,
-    color: colors.textPrimary,
-  },
-  modalSub: {
-    fontFamily: typography.bodySM.fontFamily,
-    fontSize: typography.bodySM.fontSize,
-    color: colors.textMuted,
-  },
-  modalInput: {
-    borderWidth: 1,
-    borderColor: colors.divider,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontFamily: typography.bodyM.fontFamily,
-    fontSize: 14,
-    color: colors.textPrimary,
-  },
-  modalActions: {
-    flexDirection: 'row',
-    gap: 12,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  modalCancel: {
-    paddingHorizontal: 18,
-    paddingVertical: 12,
-  },
-  modalCancelText: {
-    fontFamily: typography.bodyS.fontFamily,
-    fontSize: typography.bodyS.fontSize,
-    color: colors.textMuted,
-    fontWeight: '600',
-  },
-});
+const createStyles = (colors: Colors) =>
+  StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.black },
+    content: {
+      flexGrow: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: spacing.xxl,
+      paddingVertical: 24,
+      gap: 24,
+    },
+    instruction: {
+      fontFamily: typography.labelL.fontFamily,
+      fontSize: typography.labelL.fontSize,
+      letterSpacing: 2,
+      color: '#FFFFFF60',
+      textAlign: 'center',
+    },
+    viewfinder: {
+      width: 280,
+      height: 280,
+      borderRadius: 24,
+      borderWidth: 3,
+      borderColor: colors.primaryRed,
+      alignItems: 'center',
+      justifyContent: 'center',
+      position: 'relative',
+      overflow: 'hidden',
+      backgroundColor: '#0a0000',
+    },
+    corner: { position: 'absolute', width: 40, height: 40, borderColor: colors.white, zIndex: 5 },
+    cornerTL: { top: -2, left: -2, borderTopWidth: 4, borderLeftWidth: 4, borderTopLeftRadius: 24 },
+    cornerTR: { top: -2, right: -2, borderTopWidth: 4, borderRightWidth: 4, borderTopRightRadius: 24 },
+    cornerBL: { bottom: -2, left: -2, borderBottomWidth: 4, borderLeftWidth: 4, borderBottomLeftRadius: 24 },
+    cornerBR: { bottom: -2, right: -2, borderBottomWidth: 4, borderRightWidth: 4, borderBottomRightRadius: 24 },
+    scanPlaceholder: {
+      fontFamily: typography.bodySM.fontFamily,
+      fontSize: typography.bodySM.fontSize,
+      color: '#FFFFFF60',
+      textAlign: 'center',
+    },
+    permissionBox: { padding: 16, alignItems: 'center', gap: 12 },
+    permissionText: {
+      fontFamily: typography.bodyS.fontFamily,
+      fontSize: typography.bodyS.fontSize,
+      color: '#FFFFFFCC',
+      textAlign: 'center',
+    },
+    permissionBtn: {
+      paddingHorizontal: 18,
+      paddingVertical: 10,
+      backgroundColor: colors.primaryRed,
+      borderRadius: 999,
+    },
+    permissionBtnText: {
+      fontFamily: typography.bodyS.fontFamily,
+      fontSize: typography.bodyS.fontSize,
+      color: colors.white,
+      fontWeight: '600',
+    },
+    overlayBox: {
+      ...StyleSheet.absoluteFillObject,
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 8,
+      backgroundColor: '#0a0000CC',
+      zIndex: 10,
+    },
+    overlayText: {
+      fontFamily: typography.bodyS.fontFamily,
+      fontSize: typography.bodyS.fontSize,
+      color: colors.white,
+    },
+    errorBox: {
+      backgroundColor: '#7f1d1d',
+      paddingHorizontal: 16,
+      paddingVertical: 10,
+      borderRadius: 12,
+    },
+    errorText: {
+      fontFamily: typography.bodyS.fontFamily,
+      fontSize: typography.bodyS.fontSize,
+      color: colors.white,
+      textAlign: 'center',
+    },
+    hint: {
+      fontFamily: typography.bodySM.fontFamily,
+      fontSize: typography.bodySM.fontSize,
+      color: '#FFFFFF40',
+      textAlign: 'center',
+      lineHeight: 20,
+    },
+    manualBtn: {
+      backgroundColor: '#FFFFFF10',
+      borderRadius: 16,
+      paddingVertical: 16,
+      paddingHorizontal: 24,
+      width: '100%',
+      alignItems: 'center',
+      flexDirection: 'row',
+      justifyContent: 'center',
+      gap: 8,
+    },
+    manualBtnText: {
+      fontFamily: typography.bodyS.fontFamily,
+      fontSize: typography.bodyS.fontSize,
+      color: '#FFFFFF80',
+    },
+    modalBackdrop: {
+      flex: 1,
+      backgroundColor: '#000000AA',
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 24,
+    },
+    modalCard: {
+      width: '100%',
+      maxWidth: 420,
+      backgroundColor: colors.surface,
+      borderRadius: 20,
+      padding: 24,
+      gap: 12,
+    },
+    modalTitle: {
+      fontFamily: typography.headingS.fontFamily,
+      fontSize: typography.headingS.fontSize,
+      color: colors.textPrimary,
+    },
+    modalSub: {
+      fontFamily: typography.bodySM.fontFamily,
+      fontSize: typography.bodySM.fontSize,
+      color: colors.textMuted,
+    },
+    modalInput: {
+      borderWidth: 1,
+      borderColor: colors.divider,
+      borderRadius: 12,
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      fontFamily: typography.bodyM.fontFamily,
+      fontSize: 14,
+      color: colors.textPrimary,
+      backgroundColor: colors.inputBg,
+    },
+    modalActions: {
+      flexDirection: 'row',
+      gap: 12,
+      alignItems: 'center',
+      marginTop: 8,
+    },
+    modalCancel: {
+      paddingHorizontal: 18,
+      paddingVertical: 12,
+    },
+    modalCancelText: {
+      fontFamily: typography.bodyS.fontFamily,
+      fontSize: typography.bodyS.fontSize,
+      color: colors.textMuted,
+      fontWeight: '600',
+    },
+  });

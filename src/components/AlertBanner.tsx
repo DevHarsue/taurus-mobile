@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { theme } from '@theme/index';
+import { radii, spacing, type Colors } from '@theme/index';
+import { useTheme } from '@hooks/useTheme';
 
 type Variant = 'info' | 'warning' | 'error';
 
@@ -10,9 +11,11 @@ type Props = {
 };
 
 export function AlertBanner({ message, variant = 'info' }: Props) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const backgroundColor =
-    variant === 'warning' ? theme.colors.warning : variant === 'error' ? theme.colors.badgeExpired : '#DBEAFE';
-  const textColor = variant === 'info' ? '#1E40AF' : theme.colors.white;
+    variant === 'warning' ? colors.warning : variant === 'error' ? colors.badgeExpired : '#DBEAFE';
+  const textColor = variant === 'info' ? '#1E40AF' : colors.white;
 
   return (
     <View style={[styles.container, { backgroundColor }]}>
@@ -21,14 +24,15 @@ export function AlertBanner({ message, variant = 'info' }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    padding: theme.spacing.sm,
-    borderRadius: theme.radii.sm,
-    marginVertical: theme.spacing.sm
-  },
-  text: {
-    color: theme.colors.white,
-    fontWeight: '600'
-  }
-});
+const createStyles = (colors: Colors) =>
+  StyleSheet.create({
+    container: {
+      padding: spacing.sm,
+      borderRadius: radii.sm,
+      marginVertical: spacing.sm
+    },
+    text: {
+      color: colors.white,
+      fontWeight: '600'
+    }
+  });

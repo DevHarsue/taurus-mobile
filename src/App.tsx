@@ -6,8 +6,30 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AuthProvider } from '@context/AuthContext';
 import { ThemeProvider } from '@context/ThemeContext';
 import { ToastProvider } from '@context/ToastContext';
+import { ConfirmModalProvider } from '@context/ConfirmModalContext';
 import { RootNavigator } from '@navigation/RootNavigator';
+import { navigationRef } from '@navigation/navigationRef';
 import { useAppFonts } from '@theme/fonts';
+import { useTheme } from '@hooks/useTheme';
+import { useDeepLinks } from '@hooks/useDeepLinks';
+
+/** StatusBar que sigue el tema activo (claro/oscuro). */
+function ThemedStatusBar() {
+  const { colorScheme } = useTheme();
+  return (
+    <StatusBar
+      barStyle={colorScheme === 'dark' ? 'light-content' : 'dark-content'}
+      backgroundColor="transparent"
+      translucent
+    />
+  );
+}
+
+/** Monta el manejador de deep links (necesita Auth + Toast + navigationRef). */
+function DeepLinkHandler() {
+  useDeepLinks();
+  return null;
+}
 
 export default function App() {
   const fontsLoaded = useAppFonts();
@@ -26,10 +48,13 @@ export default function App() {
         <ThemeProvider>
           <AuthProvider>
             <ToastProvider>
-              <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
-              <NavigationContainer>
-                <RootNavigator />
-              </NavigationContainer>
+              <ConfirmModalProvider>
+                <ThemedStatusBar />
+                <NavigationContainer ref={navigationRef}>
+                  <RootNavigator />
+                </NavigationContainer>
+                <DeepLinkHandler />
+              </ConfirmModalProvider>
             </ToastProvider>
           </AuthProvider>
         </ThemeProvider>

@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import {
   Pressable,
   RefreshControl,
@@ -33,11 +33,13 @@ import {
   useDashboardStatistics,
   useAccessStatistics,
 } from '../hooks/useStatistics';
-import { colors, typography, spacing } from '@theme/index';
+import { useTheme } from '@hooks/useTheme';
+import { haptics } from '@utils/haptics';
+import { colors as staticColors, typography, spacing, type Colors } from '@theme/index';
 import type { DashboardStackParamList } from '@navigation/types';
 
 const CHART_COLORS = [
-  colors.primaryRed,
+  staticColors.primaryRed,
   '#E67E22',
   '#2A7A3A',
   '#3498DB',
@@ -50,6 +52,8 @@ function formatCurrency(value: number): string {
 }
 
 function GrowthIndicator({ current, previous }: { current: number; previous: number }) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   if (previous === 0 && current === 0) return null;
   const pct =
     previous === 0 ? 100 : Math.round(((current - previous) / previous) * 100);
@@ -73,6 +77,8 @@ function GrowthIndicator({ current, previous }: { current: number; previous: num
 }
 
 function DashboardSkeleton() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   return (
     <>
       <View style={styles.statsGrid}>
@@ -95,6 +101,8 @@ function DashboardSkeleton() {
 }
 
 export default function DashboardScreen() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { displayName } = useGreeting();
   const nav = useNavigation<NativeStackNavigationProp<DashboardStackParamList>>();
   const stats = useDashboardStatistics();
@@ -115,6 +123,7 @@ export default function DashboardScreen() {
   const isRefreshing = loading && hasData;
 
   const handleRefresh = useCallback(() => {
+    haptics.light();
     stats.refetch();
     access.refetch();
   }, [stats, access]);
@@ -467,7 +476,8 @@ export default function DashboardScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: Colors) =>
+  StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.backgroundCard },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   greeting: {

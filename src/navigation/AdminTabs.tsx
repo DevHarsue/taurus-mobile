@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -19,7 +19,8 @@ import MyProfileScreen from '@features/profile/screens/MyProfileScreen';
 import SettingsScreen from '@features/settings/screens/SettingsScreen';
 import AccessLogScreen from '@features/dashboard/screens/AccessLogScreen';
 import DevicesScreen from '@features/dashboard/screens/DevicesScreen';
-import { colors } from '@theme/index';
+import { type Colors } from '@theme/index';
+import { useTheme } from '@hooks/useTheme';
 import type {
   AdminTabsParamList,
   MembersStackParamList,
@@ -32,6 +33,8 @@ import type {
 const Tabs = createBottomTabNavigator<AdminTabsParamList>();
 
 function TabIcon({ Icon, focused }: { Icon: LucideIcon; focused: boolean }) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   return (
     <View style={[styles.tabIcon, focused && styles.tabIconActive]}>
       <Icon size={22} color={focused ? colors.navActive : colors.navInactive} strokeWidth={focused ? 2.4 : 2} />
@@ -95,6 +98,8 @@ function QRStackNavigator() {
 }
 
 export default function AdminTabs() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const insets = useSafeAreaInsets();
   return (
     <Tabs.Navigator
@@ -108,7 +113,7 @@ export default function AdminTabs() {
           },
         ],
         tabBarShowLabel: false,
-        sceneStyle: { backgroundColor: colors.white },
+        sceneStyle: { backgroundColor: colors.background },
       }}
     >
       <Tabs.Screen name="Dashboard" component={DashboardStackNavigator} options={{ tabBarIcon: ({ focused }) => <TabIcon Icon={LayoutGrid} focused={focused} /> }} />
@@ -120,22 +125,23 @@ export default function AdminTabs() {
   );
 }
 
-const styles = StyleSheet.create({
-  tabBar: {
-    backgroundColor: colors.navBarBg,
-    borderTopWidth: 0,
-    paddingTop: 8,
-    elevation: 0,
-    shadowOpacity: 0,
-  },
-  tabIcon: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-  },
-  tabIconActive: {
-    backgroundColor: colors.navBarActiveBg,
-  },
-});
+const createStyles = (colors: Colors) =>
+  StyleSheet.create({
+    tabBar: {
+      backgroundColor: colors.navBarBg,
+      borderTopWidth: 0,
+      paddingTop: 8,
+      elevation: 0,
+      shadowOpacity: 0,
+    },
+    tabIcon: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+    },
+    tabIconActive: {
+      backgroundColor: colors.navBarActiveBg,
+    },
+  });

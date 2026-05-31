@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -16,9 +16,11 @@ import { KeyboardScreen } from '@components/KeyboardScreen';
 import { useAuth } from '@hooks/useAuth';
 import { useChangePassword } from '../hooks/useChangePassword';
 import { useToast } from '@hooks/useToast';
+import { useTheme } from '@hooks/useTheme';
 import { confirmDialog } from '@utils/confirmDialog';
 import { passwordSchema } from '@utils/validators';
-import { colors, typography, spacing } from '@theme/index';
+import { typography, spacing, type Colors } from '@theme/index';
+import type { ThemeMode } from '@context/ThemeContext';
 
 const changePasswordSchema = z
   .object({
@@ -33,12 +35,20 @@ const changePasswordSchema = z
 
 type ChangePasswordFormValues = z.infer<typeof changePasswordSchema>;
 
+const THEME_OPTIONS: { mode: ThemeMode; label: string }[] = [
+  { mode: 'light', label: 'Claro' },
+  { mode: 'dark', label: 'Oscuro' },
+  { mode: 'system', label: 'Sistema' },
+];
+
 export default function SettingsScreen() {
   const nav = useNavigation();
   const insets = useSafeAreaInsets();
   const { user, logout } = useAuth();
   const { mutate, loading, error } = useChangePassword();
   const { toast } = useToast();
+  const { colors, mode, setMode } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const { control, handleSubmit, formState: { errors }, reset: resetForm } = useForm<ChangePasswordFormValues>({
     resolver: zodResolver(changePasswordSchema),
@@ -83,6 +93,27 @@ export default function SettingsScreen() {
               variant={user?.role === 'admin' ? 'active' : 'neutral'}
               badgeStyle="pill"
             />
+          </View>
+        </Card>
+
+        {/* Tema (dark mode) */}
+        <Card style={styles.section}>
+          <Text style={styles.sectionTitle}>Tema</Text>
+          <View style={styles.segment}>
+            {THEME_OPTIONS.map((opt) => {
+              const active = mode === opt.mode;
+              return (
+                <Pressable
+                  key={opt.mode}
+                  onPress={() => setMode(opt.mode)}
+                  style={[styles.segmentItem, active && styles.segmentItemActive]}
+                >
+                  <Text style={[styles.segmentText, active && styles.segmentTextActive]}>
+                    {opt.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
           </View>
         </Card>
 
@@ -164,14 +195,20 @@ export default function SettingsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.backgroundCard },
-  scrollContent: { padding: spacing.xl, gap: 16 },
-  section: { padding: 20, gap: 12 },
-  sectionTitle: { fontFamily: typography.headingXS.fontFamily, fontSize: typography.headingXS.fontSize, color: colors.textPrimary, marginBottom: 4 },
-  infoRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  infoLabel: { fontFamily: typography.bodySM.fontFamily, fontSize: typography.bodySM.fontSize, color: colors.textMuted },
-  infoValue: { fontFamily: typography.bodyS.fontFamily, fontSize: typography.bodyS.fontSize, color: colors.textPrimary },
-  logoutBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 14, marginTop: 8 },
-  logoutText: { fontFamily: typography.bodyS.fontFamily, fontSize: typography.bodyS.fontSize, color: colors.badgeExpired, fontWeight: '600' },
-});
+const createStyles = (colors: Colors) =>
+  StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.backgroundCard },
+    scrollContent: { padding: spacing.xl, gap: 16 },
+    section: { padding: 20, gap: 12 },
+    sectionTitle: { fontFamily: typography.headingXS.fontFamily, fontSize: typography.headingXS.fontSize, color: colors.textPrimary, marginBottom: 4 },
+    infoRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    infoLabel: { fontFamily: typography.bodySM.fontFamily, fontSize: typography.bodySM.fontSize, color: colors.textMuted },
+    infoValue: { fontFamily: typography.bodyS.fontFamily, fontSize: typography.bodyS.fontSize, color: colors.textPrimary },
+    segment: { flexDirection: 'row', backgroundColor: colors.inputBg, borderRadius: 12, padding: 4, gap: 4 },
+    segmentItem: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 10, borderRadius: 8 },
+    segmentItemActive: { backgroundColor: colors.primaryRed },
+    segmentText: { fontFamily: typography.bodyS.fontFamily, fontSize: typography.bodyS.fontSize, color: colors.textSecondary, fontWeight: '600' },
+    segmentTextActive: { color: colors.white },
+    logoutBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 14, marginTop: 8 },
+    logoutText: { fontFamily: typography.bodyS.fontFamily, fontSize: typography.bodyS.fontSize, color: colors.badgeExpired, fontWeight: '600' },
+  });

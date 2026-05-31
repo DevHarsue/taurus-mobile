@@ -1,7 +1,8 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { colors, typography } from '@theme/index';
+import { typography, type Colors } from '@theme/index';
+import { useTheme } from '@hooks/useTheme';
 
 interface ISplashScreenProps {
   onFinish: () => void;
@@ -9,6 +10,8 @@ interface ISplashScreenProps {
 
 export default function SplashScreen({ onFinish }: ISplashScreenProps) {
   const progress = useRef(new Animated.Value(0)).current;
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   useEffect(() => {
     Animated.timing(progress, {
@@ -51,7 +54,7 @@ export default function SplashScreen({ onFinish }: ISplashScreenProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: Colors) => StyleSheet.create({
   container: {
     flex: 1,
   },

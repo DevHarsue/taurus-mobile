@@ -1,11 +1,12 @@
-import React, { useCallback } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useCallback, useMemo } from 'react';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Info } from 'lucide-react-native';
+import { Info, Pencil, Download, Fingerprint } from 'lucide-react-native';
 import { ScreenHeader } from '@components/ScreenHeader';
 import { Badge } from '@components/Badge';
+import { Button } from '@components/Button';
 import { Card } from '@components/Card';
 import { CircularProgress } from '@components/CircularProgress';
 import { GradientButton } from '@components/GradientButton';
@@ -17,9 +18,11 @@ import { useMemberAccessLog } from '../hooks/useMemberAccessLog';
 import { useDeleteMember } from '../hooks/useDeleteMember';
 import { useGenerateMemberCard } from '../hooks/useGenerateMemberCard';
 import { useToast } from '@hooks/useToast';
+import { useTheme } from '@hooks/useTheme';
+import { haptics } from '@utils/haptics';
 import { confirmDialog } from '@utils/confirmDialog';
 import { calculateDurationDays, formatDateSpanish } from '@utils/dates';
-import { colors, typography, spacing } from '@theme/index';
+import { typography, spacing, type Colors } from '@theme/index';
 import type { MemberDetailScreenProps, MembersStackParamList } from '@navigation/types';
 
 type Nav = NativeStackNavigationProp<MembersStackParamList>;
@@ -28,6 +31,8 @@ export default function MemberDetailScreen({ route }: MemberDetailScreenProps) {
   const { id } = route.params;
   const nav = useNavigation<Nav>();
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const query = useMemberDetail(id);
   const subscriptionsQuery = useMemberSubscriptions(id);
   const accessLogQuery = useMemberAccessLog(id);
@@ -43,6 +48,7 @@ export default function MemberDetailScreen({ route }: MemberDetailScreenProps) {
     );
     if (!ok) return;
     await deleteMember(id);
+    haptics.warning();
     toast.success('Miembro eliminado');
     nav.goBack();
   };
@@ -209,32 +215,44 @@ export default function MemberDetailScreen({ route }: MemberDetailScreenProps) {
                 onPress={() => nav.navigate('RenewMembership', { memberId: id, memberName: member.name })}
               />
 
-              <GradientButton
-                title="Editar miembro"
-                onPress={() => nav.navigate('EditMember', { id })}
-              />
+              <View style={styles.actionRow}>
+                <Button
+                  variant="outline"
+                  title="Editar"
+                  icon={<Pencil size={18} color={colors.primaryRed} strokeWidth={2} />}
+                  onPress={() => nav.navigate('EditMember', { id })}
+                  style={styles.actionBtn}
+                />
+                <Button
+                  variant="outline"
+                  title="Carnet"
+                  icon={<Download size={18} color={colors.primaryRed} strokeWidth={2} />}
+                  onPress={() => {
+                    void generateCard(member).catch((e) => {
+                      const msg = e instanceof Error ? e.message : 'Error desconocido';
+                      toast.error(`No se pudo generar el carnet: ${msg}`);
+                    });
+                  }}
+                  loading={generatingCard}
+                  style={styles.actionBtn}
+                />
+                <Button
+                  variant="outline"
+                  title="Huella"
+                  icon={<Fingerprint size={18} color={colors.primaryRed} strokeWidth={2} />}
+                  onPress={() =>
+                    nav.navigate('FingerprintEnroll', { memberId: id, memberName: member.name })
+                  }
+                  style={styles.actionBtn}
+                />
+              </View>
 
-              <GradientButton
-                title="Descargar carnet"
-                onPress={() => {
-                  void generateCard(member).catch((e) => {
-                    const msg = e instanceof Error ? e.message : 'Error desconocido';
-                    toast.error(`No se pudo generar el carnet: ${msg}`);
-                  });
-                }}
-                loading={generatingCard}
+              <Button
+                variant="danger"
+                title="Eliminar miembro"
+                onPress={handleDelete}
+                style={styles.deleteBtn}
               />
-
-              <GradientButton
-                title={member.fingerprintId ? 'Re-enrolar huella' : 'Enrolar huella'}
-                onPress={() =>
-                  nav.navigate('FingerprintEnroll', { memberId: id, memberName: member.name })
-                }
-              />
-
-              <Pressable onPress={handleDelete} style={styles.deleteBtn}>
-                <Text style={styles.deleteBtnText}>Eliminar miembro</Text>
-              </Pressable>
             </ScrollView>
           );
         }}
@@ -243,8 +261,9 @@ export default function MemberDetailScreen({ route }: MemberDetailScreenProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.white },
+const createStyles = (colors: Colors) =>
+  StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.background },
   scroll: { flex: 1 },
   scrollContent: { padding: spacing.xxl, gap: 8 },
   skelGap: { marginTop: 6 },
@@ -273,6 +292,7 @@ const styles = StyleSheet.create({
   contactRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 4 },
   contactLabel: { fontFamily: typography.bodyXS.fontFamily, fontSize: 11, color: colors.textMuted },
   contactValue: { fontFamily: typography.bodyS.fontFamily, fontSize: typography.bodyS.fontSize, color: colors.textPrimary },
-  deleteBtn: { alignItems: 'center', paddingVertical: 12, marginTop: 8 },
-  deleteBtnText: { fontFamily: typography.bodyS.fontFamily, fontSize: typography.bodyS.fontSize, color: colors.badgeExpired },
+  actionRow: { flexDirection: 'row', gap: 8, marginTop: 4 },
+  actionBtn: { flex: 1 },
+  deleteBtn: { marginTop: 16 },
 });

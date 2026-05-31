@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useForm, Controller } from 'react-hook-form';
@@ -12,12 +12,15 @@ import { QueryRenderer } from '@components/QueryRenderer';
 import { useMemberDetail } from '../hooks/useMemberDetail';
 import { useUpdateMember } from '../hooks/useUpdateMember';
 import { useToast } from '@hooks/useToast';
+import { useTheme } from '@hooks/useTheme';
 import { updateMemberSchema, type UpdateMemberFormValues } from '../schemas/updateMember.schema';
-import { colors, typography, spacing } from '@theme/index';
+import { typography, spacing, type Colors } from '@theme/index';
 import type { EditMemberScreenProps } from '@navigation/types';
 
 function EditMemberForm({ id, defaultValues }: { id: string; defaultValues: UpdateMemberFormValues }) {
   const nav = useNavigation();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { mutate, loading, error } = useUpdateMember();
   const { toast } = useToast();
 
@@ -61,6 +64,8 @@ function EditMemberForm({ id, defaultValues }: { id: string; defaultValues: Upda
 export default function EditMemberScreen({ route }: EditMemberScreenProps) {
   const { id } = route.params;
   const nav = useNavigation();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const query = useMemberDetail(id);
 
   return (
@@ -86,8 +91,9 @@ export default function EditMemberScreen({ route }: EditMemberScreenProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.backgroundForm },
-  scrollContent: { padding: spacing.xxl, gap: 8 },
-  title: { fontFamily: typography.titleS.fontFamily, fontSize: typography.titleS.fontSize, color: colors.textPrimary, marginBottom: 16 },
-});
+const createStyles = (colors: Colors) =>
+  StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.backgroundForm },
+    scrollContent: { padding: spacing.xxl, gap: 8 },
+    title: { fontFamily: typography.titleS.fontFamily, fontSize: typography.titleS.fontSize, color: colors.textPrimary, marginBottom: 16 },
+  });

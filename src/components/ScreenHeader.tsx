@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronLeft } from 'lucide-react-native';
-import { colors, sizes, spacing, typography } from '@theme/index';
+import { sizes, spacing, typography, type Colors } from '@theme/index';
+import { useTheme } from '@hooks/useTheme';
 
 export interface IScreenHeaderProps {
   title?: string;
@@ -19,15 +20,20 @@ export function ScreenHeader({
   rightIcon,
   onBack,
   onRightPress,
-  backgroundColor = colors.white,
+  backgroundColor,
 }: IScreenHeaderProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+  const bg = backgroundColor ?? colors.background;
   const insets = useSafeAreaInsets();
+  const onDark = bg === colors.black || bg === colors.backgroundDark;
+  const titleColor = onDark ? colors.white : colors.textPrimary;
   return (
     <View
       style={[
         styles.container,
         {
-          backgroundColor,
+          backgroundColor: bg,
           paddingTop: insets.top,
           height: sizes.headerHeight + insets.top,
         },
@@ -39,7 +45,7 @@ export function ScreenHeader({
             <ChevronLeft
               size={26}
               strokeWidth={2}
-              color={backgroundColor === colors.black || backgroundColor === colors.backgroundDark ? colors.white : colors.textPrimary}
+              color={titleColor}
             />
           </Pressable>
         )}
@@ -49,10 +55,7 @@ export function ScreenHeader({
             style={[
               styles.title,
               {
-                color:
-                  backgroundColor === colors.black || backgroundColor === colors.backgroundDark
-                    ? colors.white
-                    : colors.textPrimary,
+                color: titleColor,
               },
             ]}
           >
@@ -69,25 +72,26 @@ export function ScreenHeader({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    height: sizes.headerHeight,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.xl,
-  },
-  left: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  backArrow: {
-    fontSize: 22,
-    fontWeight: '300',
-  },
-  title: {
-    fontFamily: typography.bodyM.fontFamily,
-    fontSize: typography.bodyM.fontSize,
-  },
-});
+const createStyles = (_colors: Colors) =>
+  StyleSheet.create({
+    container: {
+      height: sizes.headerHeight,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: spacing.xl,
+    },
+    left: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+    },
+    backArrow: {
+      fontSize: 22,
+      fontWeight: '300',
+    },
+    title: {
+      fontFamily: typography.bodyM.fontFamily,
+      fontSize: typography.bodyM.fontSize,
+    },
+  });

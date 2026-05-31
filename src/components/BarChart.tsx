@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { colors, typography, spacing } from '@theme/index';
+import { typography, spacing, type Colors } from '@theme/index';
+import { useTheme } from '@hooks/useTheme';
 
 export interface IBarChartItem {
   label: string;
@@ -13,7 +14,10 @@ interface Props {
   height?: number;
 }
 
-export function BarChart({ data, barColor = colors.primaryRed, height = 140 }: Props) {
+export function BarChart({ data, barColor, height = 140 }: Props) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+  const resolvedBarColor = barColor ?? colors.primaryRed;
   const max = Math.max(...data.map((d) => d.value), 1);
 
   return (
@@ -29,7 +33,7 @@ export function BarChart({ data, barColor = colors.primaryRed, height = 140 }: P
                     styles.bar,
                     {
                       height: Math.max(barHeight, 2),
-                      backgroundColor: barColor,
+                      backgroundColor: resolvedBarColor,
                     },
                   ]}
                 />
@@ -45,38 +49,39 @@ export function BarChart({ data, barColor = colors.primaryRed, height = 140 }: P
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    width: '100%',
-  },
-  barsRow: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    gap: 4,
-  },
-  barCol: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-  },
-  barWrapper: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    width: '100%',
-    alignItems: 'center',
-  },
-  bar: {
-    width: '60%',
-    minWidth: 6,
-    maxWidth: 28,
-    borderRadius: 4,
-  },
-  label: {
-    marginTop: spacing.xs,
-    fontFamily: typography.caption.fontFamily,
-    fontSize: typography.caption.fontSize,
-    color: colors.textMuted,
-    textAlign: 'center',
-  },
-});
+const createStyles = (colors: Colors) =>
+  StyleSheet.create({
+    container: {
+      width: '100%',
+    },
+    barsRow: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'flex-end',
+      gap: 4,
+    },
+    barCol: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'flex-end',
+    },
+    barWrapper: {
+      flex: 1,
+      justifyContent: 'flex-end',
+      width: '100%',
+      alignItems: 'center',
+    },
+    bar: {
+      width: '60%',
+      minWidth: 6,
+      maxWidth: 28,
+      borderRadius: 4,
+    },
+    label: {
+      marginTop: spacing.xs,
+      fontFamily: typography.caption.fontFamily,
+      fontSize: typography.caption.fontSize,
+      color: colors.textMuted,
+      textAlign: 'center',
+    },
+  });

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useForm, Controller } from 'react-hook-form';
@@ -15,12 +15,16 @@ import { useCreateMember } from '../hooks/useCreateMember';
 import { useRenew } from '../hooks/useRenew';
 import { usePlans } from '@features/plans/hooks/usePlans';
 import { useToast } from '@hooks/useToast';
+import { useTheme } from '@hooks/useTheme';
+import { haptics } from '@utils/haptics';
 import { createMemberSchema, type CreateMemberFormValues } from '../schemas/createMember.schema';
-import { colors, typography, spacing } from '@theme/index';
+import { typography, spacing, type Colors } from '@theme/index';
 import type { MemberCreated } from '@app-types/member';
 
 export default function CreateMemberScreen() {
   const nav = useNavigation();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const createMutation = useCreateMember();
   const renewMutation = useRenew();
   const plansQuery = usePlans();
@@ -59,6 +63,7 @@ export default function CreateMemberScreen() {
     const result = await createMutation.mutate(formData);
     setCreatedResult(result);
     toast.success('Miembro creado correctamente');
+    haptics.success();
 
     if (selectedPlanId && result.id) {
       try {
@@ -253,7 +258,8 @@ export default function CreateMemberScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: Colors) =>
+  StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.backgroundForm },
   stepText: { fontFamily: typography.labelM.fontFamily, fontSize: typography.labelM.fontSize, letterSpacing: 1, color: colors.textMuted },
   scrollContent: { padding: spacing.xxl, gap: 8 },

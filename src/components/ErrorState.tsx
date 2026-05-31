@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { AlertCircle } from 'lucide-react-native';
-import { colors, typography, spacing } from '@theme/index';
+import { typography, spacing, type Colors } from '@theme/index';
+import { useTheme } from '@hooks/useTheme';
 import { GradientButton } from './GradientButton';
 
 export interface IErrorStateProps {
@@ -17,6 +18,8 @@ export function ErrorState({
   message = 'Ocurrio un error al cargar los datos',
   onRetry,
 }: IErrorStateProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   return (
     <View style={styles.container}>
       <AlertCircle size={48} color={colors.badgeExpired} strokeWidth={1.5} />
@@ -30,22 +33,23 @@ export function ErrorState({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: spacing.xxl,
-    gap: spacing.md,
-  },
-  message: {
-    fontFamily: typography.bodyS.fontFamily,
-    fontSize: typography.bodyS.fontSize,
-    color: colors.textSecondary,
-    textAlign: 'center',
-  },
-  button: {
-    width: 200,
-    marginTop: spacing.sm,
-  },
-});
+const createStyles = (colors: Colors) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: spacing.xxl,
+      gap: spacing.md,
+    },
+    message: {
+      fontFamily: typography.bodyS.fontFamily,
+      fontSize: typography.bodyS.fontSize,
+      color: colors.textSecondary,
+      textAlign: 'center',
+    },
+    button: {
+      width: 200,
+      marginTop: spacing.sm,
+    },
+  });

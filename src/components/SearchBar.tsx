@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, TextInput, View } from 'react-native';
-import { colors, radii, typography } from '@theme/index';
+import { radii, typography, type Colors } from '@theme/index';
+import { useTheme } from '@hooks/useTheme';
 
 export interface ISearchBarProps {
   value: string;
@@ -13,6 +14,8 @@ export function SearchBar({
   onChangeText,
   placeholder = 'Search members...',
 }: ISearchBarProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   return (
     <View style={styles.container}>
       <TextInput
@@ -26,17 +29,18 @@ export function SearchBar({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    height: 44,
-    backgroundColor: colors.backgroundCard,
-    borderRadius: radii.md,
-    paddingHorizontal: 16,
-    justifyContent: 'center',
-  },
-  input: {
-    fontFamily: typography.bodySM.fontFamily,
-    fontSize: typography.bodySM.fontSize,
-    color: colors.textPrimary,
-  },
-});
+const createStyles = (colors: Colors) =>
+  StyleSheet.create({
+    container: {
+      height: 44,
+      backgroundColor: colors.backgroundCard,
+      borderRadius: radii.md,
+      paddingHorizontal: 16,
+      justifyContent: 'center',
+    },
+    input: {
+      fontFamily: typography.bodySM.fontFamily,
+      fontSize: typography.bodySM.fontSize,
+      color: colors.textPrimary,
+    },
+  });

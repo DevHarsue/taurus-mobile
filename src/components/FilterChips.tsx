@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
-import { colors, radii, spacing, typography } from '@theme/index';
+import { radii, spacing, typography, type Colors } from '@theme/index';
+import { useTheme } from '@hooks/useTheme';
 
 export interface IFilterChip {
   key: string;
@@ -14,6 +15,8 @@ export interface IFilterChipsProps {
 }
 
 export function FilterChips({ chips, activeKey, onSelect }: IFilterChipsProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   return (
     <ScrollView
       horizontal
@@ -39,35 +42,36 @@ export function FilterChips({ chips, activeKey, onSelect }: IFilterChipsProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  scroll: {
-    flexGrow: 0,
-    flexShrink: 0,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    paddingVertical: 2,
-  },
-  chip: {
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: radii.pill,
-    borderWidth: 1,
-    borderColor: colors.divider,
-    backgroundColor: colors.white,
-  },
-  chipActive: {
-    backgroundColor: colors.textPrimary,
-    borderColor: colors.textPrimary,
-  },
-  chipText: {
-    fontFamily: typography.bodyS.fontFamily,
-    fontSize: typography.bodyXS.fontSize,
-    color: colors.textPrimary,
-  },
-  chipTextActive: {
-    color: colors.white,
-  },
-});
+const createStyles = (colors: Colors) =>
+  StyleSheet.create({
+    scroll: {
+      flexGrow: 0,
+      flexShrink: 0,
+    },
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+      paddingVertical: 2,
+    },
+    chip: {
+      paddingHorizontal: 14,
+      paddingVertical: 6,
+      borderRadius: radii.pill,
+      borderWidth: 1,
+      borderColor: colors.divider,
+      backgroundColor: colors.surface,
+    },
+    chipActive: {
+      backgroundColor: colors.textPrimary,
+      borderColor: colors.textPrimary,
+    },
+    chipText: {
+      fontFamily: typography.bodyS.fontFamily,
+      fontSize: typography.bodyXS.fontSize,
+      color: colors.textPrimary,
+    },
+    chipTextActive: {
+      color: colors.background,
+    },
+  });

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, Switch, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useForm, Controller } from 'react-hook-form';
@@ -10,8 +10,9 @@ import { AlertBanner } from '@components/AlertBanner';
 import { KeyboardScreen } from '@components/KeyboardScreen';
 import { useUpdatePlan } from '../hooks/useUpdatePlan';
 import { useToast } from '@hooks/useToast';
+import { useTheme } from '@hooks/useTheme';
 import { createPlanSchema, type CreatePlanFormValues } from '../schemas/plan.schema';
-import { colors, typography, spacing } from '@theme/index';
+import { typography, spacing, type Colors } from '@theme/index';
 import type { EditPlanScreenProps } from '@navigation/types';
 
 export default function EditPlanScreen({ route }: EditPlanScreenProps) {
@@ -19,6 +20,8 @@ export default function EditPlanScreen({ route }: EditPlanScreenProps) {
   const nav = useNavigation();
   const { mutate, loading, error } = useUpdatePlan();
   const { toast } = useToast();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const { control, handleSubmit, formState: { errors } } = useForm<CreatePlanFormValues>({
     resolver: zodResolver(createPlanSchema),
@@ -95,7 +98,7 @@ export default function EditPlanScreen({ route }: EditPlanScreenProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: Colors) => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.backgroundForm },
   scrollContent: { padding: spacing.xxl, gap: 8 },
   title: { fontFamily: typography.titleS.fontFamily, fontSize: typography.titleS.fontSize, color: colors.textPrimary, marginBottom: 16 },

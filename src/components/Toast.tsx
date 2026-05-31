@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { Animated, Pressable, StyleSheet, Text } from 'react-native';
 import {
   AlertTriangle,
@@ -7,20 +7,22 @@ import {
   X,
   XCircle,
 } from 'lucide-react-native';
-import { colors, typography, radii, spacing } from '@theme/index';
+import { typography, radii, spacing, type Colors } from '@theme/index';
+import { useTheme } from '@hooks/useTheme';
 
 export type ToastVariant = 'success' | 'error' | 'warning' | 'info';
 
-const VARIANT_STYLE: Record<
-  ToastVariant,
-  { bg: string; Icon: typeof CheckCircle }
-> = {
-  success: { bg: colors.badgeActive, Icon: CheckCircle },
-  error: { bg: colors.badgeExpired, Icon: XCircle },
-  warning: { bg: colors.warning, Icon: AlertTriangle },
-  // No hay token azul en el theme; se usa el mismo azul "info" que AlertBanner.
-  info: { bg: '#1E40AF', Icon: Info },
-};
+function variantStyle(
+  colors: Colors,
+): Record<ToastVariant, { bg: string; Icon: typeof CheckCircle }> {
+  return {
+    success: { bg: colors.badgeActive, Icon: CheckCircle },
+    error: { bg: colors.badgeExpired, Icon: XCircle },
+    warning: { bg: colors.warning, Icon: AlertTriangle },
+    // No hay token azul en el theme; se usa el mismo azul "info" que AlertBanner.
+    info: { bg: '#1E40AF', Icon: Info },
+  };
+}
 
 export interface IToastItemProps {
   id: string;
@@ -37,9 +39,11 @@ export function ToastItem({
   duration,
   onDismiss,
 }: IToastItemProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const opacity = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(-24)).current;
-  const { bg, Icon } = VARIANT_STYLE[variant];
+  const { bg, Icon } = variantStyle(colors)[variant];
 
   const dismiss = useCallback(() => {
     Animated.parallel([
@@ -90,25 +94,26 @@ export function ToastItem({
   );
 }
 
-const styles = StyleSheet.create({
-  toast: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.lg,
-    borderRadius: radii.md,
-    marginBottom: spacing.sm,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-  message: {
-    flex: 1,
-    fontFamily: typography.bodyS.fontFamily,
-    fontSize: typography.bodyS.fontSize,
-    color: colors.white,
-  },
-});
+const createStyles = (colors: Colors) =>
+  StyleSheet.create({
+    toast: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.md,
+      paddingVertical: spacing.md,
+      paddingHorizontal: spacing.lg,
+      borderRadius: radii.md,
+      marginBottom: spacing.sm,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.2,
+      shadowRadius: 8,
+      elevation: 6,
+    },
+    message: {
+      flex: 1,
+      fontFamily: typography.bodyS.fontFamily,
+      fontSize: typography.bodyS.fontSize,
+      color: colors.white,
+    },
+  });

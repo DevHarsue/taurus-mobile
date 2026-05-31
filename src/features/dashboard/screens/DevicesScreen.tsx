@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   FlatList,
   Modal,
@@ -23,7 +23,8 @@ import { Skeleton, SkeletonList } from '@components/Skeleton';
 import { useToast } from '@hooks/useToast';
 import { confirmDialog } from '@utils/confirmDialog';
 import { useDevices, useCreateDevice, useDeleteDevice } from '../hooks/useDevices';
-import { colors, typography, spacing, radii } from '@theme/index';
+import { useTheme } from '@hooks/useTheme';
+import { typography, spacing, radii, type Colors } from '@theme/index';
 import type { IDevice } from '@app-types/device';
 
 function formatRelativeTime(dateStr?: string): string {
@@ -41,6 +42,8 @@ function formatRelativeTime(dateStr?: string): string {
 export default function DevicesScreen() {
   const nav = useNavigation();
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { toast } = useToast();
   const devicesQuery = useDevices();
   const { mutate: createDevice, loading: creating } = useCreateDevice(() => {
@@ -206,7 +209,8 @@ export default function DevicesScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: Colors) =>
+  StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.backgroundCard },
   list: { padding: spacing.xl, gap: 12 },
   empty: {
@@ -257,7 +261,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.5)',
   },
   modalContent: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
     borderTopLeftRadius: radii.lg,
     borderTopRightRadius: radii.lg,
     padding: spacing.xxl,
