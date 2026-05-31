@@ -3,28 +3,11 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Badge } from '@components/Badge';
 import { useTheme } from '@hooks/useTheme';
 import { typography, spacing, type Colors } from '@theme/index';
+import { formatRelativeTime } from '@utils/dates';
 import type { IAccessLogItem } from '@app-types/access';
 
 interface Props {
   item: IAccessLogItem;
-}
-
-function formatTime(timestamp: string): string {
-  const d = new Date(timestamp);
-  const now = new Date();
-  const diffMs = now.getTime() - d.getTime();
-  const diffMin = Math.floor(diffMs / 60_000);
-
-  if (diffMin < 1) return 'Ahora';
-  if (diffMin < 60) return `Hace ${diffMin} min`;
-  const diffHours = Math.floor(diffMin / 60);
-  if (diffHours < 24) return `Hace ${diffHours}h`;
-  return d.toLocaleDateString('es', {
-    day: '2-digit',
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
 }
 
 const REASON_LABELS: Record<string, string> = {
@@ -54,7 +37,7 @@ export function AccessLogItem({ item }: Props) {
           variant={item.granted ? 'active' : 'expired'}
           badgeStyle="pill"
         />
-        <Text style={styles.time}>{formatTime(item.timestamp)}</Text>
+        <Text style={styles.time}>{formatRelativeTime(item.timestamp)}</Text>
       </View>
     </View>
   );

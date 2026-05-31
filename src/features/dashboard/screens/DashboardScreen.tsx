@@ -418,6 +418,13 @@ export default function DashboardScreen() {
               </Card>
             </Pressable>
 
+            <Pressable onPress={() => nav.navigate('AuditTrail')}>
+              <Card style={styles.quickAction}>
+                <Text style={styles.quickActionText}>📜 Auditoria del sistema</Text>
+                <Text style={styles.quickActionArrow}>→</Text>
+              </Card>
+            </Pressable>
+
             {/* ── Top Members ──────────────────────────────────── */}
             {accessData?.topMembers && accessData.topMembers.length > 0 && (
               <Card style={styles.chartCard}>

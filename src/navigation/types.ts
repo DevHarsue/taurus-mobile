@@ -38,6 +38,8 @@ export type DashboardStackParamList = {
   DashboardHome: undefined;
   AccessLog: undefined;
   Devices: undefined;
+  AuditTrail: undefined;
+  AuditDetail: { id: string };
 };
 
 export type ProfileStackParamList = {
@@ -76,6 +78,8 @@ export type LoginScreenProps = NativeStackScreenProps<AuthStackParamList, 'Login
 export type DashboardScreenProps = NativeStackScreenProps<DashboardStackParamList, 'DashboardHome'>;
 export type AccessLogScreenProps = NativeStackScreenProps<DashboardStackParamList, 'AccessLog'>;
 export type DevicesScreenProps = NativeStackScreenProps<DashboardStackParamList, 'Devices'>;
+export type AuditTrailScreenProps = NativeStackScreenProps<DashboardStackParamList, 'AuditTrail'>;
+export type AuditDetailScreenProps = NativeStackScreenProps<DashboardStackParamList, 'AuditDetail'>;
 export type MembersListScreenProps = NativeStackScreenProps<MembersStackParamList, 'MembersList'>;
 export type MemberDetailScreenProps = NativeStackScreenProps<MembersStackParamList, 'MemberDetail'>;
 export type CreateMemberScreenProps = NativeStackScreenProps<MembersStackParamList, 'CreateMember'>;

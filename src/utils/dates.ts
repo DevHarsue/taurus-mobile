@@ -53,3 +53,41 @@ export function getFirstDayOfWeek(year: number, month: number): number {
 export function formatIsoDate(iso: string): string {
   return formatDateSpanish(iso);
 }
+
+/**
+ * Formato relativo corto para timestamps:
+ * < 1 min  → "Ahora"
+ * < 60 min → "Hace N min"
+ * < 24 h   → "Hace Nh"
+ * resto    → "DD MMM HH:MM"
+ */
+export function formatRelativeTime(timestamp: string): string {
+  const d = new Date(timestamp);
+  const now = new Date();
+  const diffMs = now.getTime() - d.getTime();
+  const diffMin = Math.floor(diffMs / 60_000);
+
+  if (diffMin < 1) return 'Ahora';
+  if (diffMin < 60) return `Hace ${diffMin} min`;
+  const diffHours = Math.floor(diffMin / 60);
+  if (diffHours < 24) return `Hace ${diffHours}h`;
+  return d.toLocaleDateString('es', {
+    day: '2-digit',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+/** Fecha + hora completa con segundos. Usado en detalle de auditoria. */
+export function formatFullTimestamp(timestamp: string): string {
+  const d = new Date(timestamp);
+  return d.toLocaleString('es', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  });
+}

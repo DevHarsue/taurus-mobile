@@ -19,6 +19,8 @@ import MyProfileScreen from '@features/profile/screens/MyProfileScreen';
 import SettingsScreen from '@features/settings/screens/SettingsScreen';
 import AccessLogScreen from '@features/dashboard/screens/AccessLogScreen';
 import DevicesScreen from '@features/dashboard/screens/DevicesScreen';
+import AuditTrailScreen from '@features/dashboard/screens/AuditTrailScreen';
+import AuditDetailScreen from '@features/dashboard/screens/AuditDetailScreen';
 import { type Colors } from '@theme/index';
 import { useTheme } from '@hooks/useTheme';
 import type {
@@ -74,6 +76,8 @@ function DashboardStackNavigator() {
       <DashboardStack.Screen name="DashboardHome" component={DashboardScreen} />
       <DashboardStack.Screen name="AccessLog" component={AccessLogScreen} />
       <DashboardStack.Screen name="Devices" component={DevicesScreen} />
+      <DashboardStack.Screen name="AuditTrail" component={AuditTrailScreen} />
+      <DashboardStack.Screen name="AuditDetail" component={AuditDetailScreen} />
     </DashboardStack.Navigator>
   );
 }
