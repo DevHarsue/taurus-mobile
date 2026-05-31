@@ -13,7 +13,7 @@ import { KeyboardScreen } from '@components/KeyboardScreen';
 import { useForgotPassword } from '../hooks/useForgotPassword';
 import { useToast } from '@hooks/useToast';
 import { emailSchema } from '@utils/validators';
-import { colors, typography, spacing } from '@theme/index';
+import { colors, typography } from '@theme/index';
 import type { AuthStackParamList } from '@navigation/types';
 
 const schema = z.object({ email: emailSchema });
