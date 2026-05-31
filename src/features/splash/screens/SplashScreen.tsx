@@ -36,7 +36,7 @@ export default function SplashScreen({ onFinish }: ISplashScreenProps) {
         </View>
 
         <Text style={styles.title}>TAURUS</Text>
-        <Text style={styles.subtitle}>ELITE PERFORMANCE ARCHITECTURE</Text>
+        <Text style={styles.subtitle}>ARQUITECTURA DE ALTO RENDIMIENTO</Text>
 
         <View style={styles.spacer} />
 
@@ -44,7 +44,7 @@ export default function SplashScreen({ onFinish }: ISplashScreenProps) {
           <View style={styles.progressTrack}>
             <Animated.View style={[styles.progressFill, { width: progressWidth }]} />
           </View>
-          <Text style={styles.progressText}>INITIALIZING PROTOCOL</Text>
+          <Text style={styles.progressText}>INICIANDO PROTOCOLO</Text>
         </View>
       </View>
     </LinearGradient>

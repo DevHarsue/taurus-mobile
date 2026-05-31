@@ -8,11 +8,9 @@ export interface PlanBase {
   isActive: boolean;
 }
 
-// ─── Frontend-enriched (PlansScreen usa tier, benefits, isHighlighted) ────
+// ─── Frontend-enriched (PlansScreen usa isHighlighted para destacar visualmente) ────
 
 export interface Plan extends PlanBase {
-  tier?: string;
-  benefits?: string[];
   isHighlighted?: boolean;
 }
 

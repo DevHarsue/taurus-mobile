@@ -478,18 +478,6 @@ const styles = StyleSheet.create({
   scroll: { flex: 1 },
   scrollContent: { padding: spacing.xl, gap: 14 },
 
-  // Loading / Error
-  loadingContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 60,
-    gap: 12,
-  },
-  loadingText: {
-    fontFamily: typography.bodySM.fontFamily,
-    fontSize: typography.bodySM.fontSize,
-    color: colors.textMuted,
-  },
   skelGap: { marginTop: 6 },
   errorCard: {
     padding: spacing.lg,

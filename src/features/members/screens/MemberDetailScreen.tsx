@@ -245,7 +245,6 @@ export default function MemberDetailScreen({ route }: MemberDetailScreenProps) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.white },
-  infoIcon: { fontSize: 20, color: colors.textPrimaryAlpha50 },
   scroll: { flex: 1 },
   scrollContent: { padding: spacing.xxl, gap: 8 },
   skelGap: { marginTop: 6 },
@@ -261,9 +260,7 @@ const styles = StyleSheet.create({
   planIcon: { fontSize: 20 },
   planInfo: { flex: 1, gap: 8 },
   planName: { fontFamily: typography.bodyS.fontFamily, fontSize: typography.bodyS.fontSize, color: colors.textPrimary },
-  planDates: { flexDirection: 'row', justifyContent: 'space-between' },
   planDateLabel: { fontFamily: typography.labelS.fontFamily, fontSize: 8, letterSpacing: 0.5, color: colors.textMuted },
-  planDateValue: { fontFamily: typography.bodyS.fontFamily, fontSize: 13, color: colors.textPrimary },
   historyTitle: { fontFamily: typography.labelL.fontFamily, fontSize: typography.labelL.fontSize, letterSpacing: 1.5, color: colors.textMuted, marginTop: 16 },
   historyRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12 },
   historyIcon: { fontSize: 16, width: 24, textAlign: 'center' },
