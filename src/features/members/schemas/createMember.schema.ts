@@ -15,7 +15,7 @@ export const createMemberSchema = z.object({
     .optional()
     .refine((v) => !v || phoneSchema.safeParse(v).success, {
       message:
-        'Telefono invalido. Formato: 58 + prefijo (412/414/416/424/426) + 7 digitos. Ej: 584141771490',
+        'Telefono invalido. Formato: 58 + prefijo (412/414/416/418/422/424/426) + 7 digitos. Ej: 584141771490',
     }),
   password: z
     .string()

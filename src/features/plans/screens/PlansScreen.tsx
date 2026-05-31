@@ -26,19 +26,17 @@ type Nav = NativeStackNavigationProp<PlansStackParamList>;
 function PlanCard({ plan, highlighted, onEdit, onDelete }: { plan: Plan; highlighted: boolean; onEdit: () => void; onDelete: () => void }) {
   return (
     <Card style={[styles.planCard, highlighted && styles.planCardDark]}>
-      <Text style={[styles.planTier, highlighted && styles.textWhite60]}>{plan.tier || 'BASIC TIER'}</Text>
+      <Text style={[styles.planName, highlighted && styles.textWhite]}>{plan.name}</Text>
       <View style={styles.priceRow}>
         <Text style={[styles.priceDollar, highlighted && styles.textWhite]}>$</Text>
         <Text style={[styles.priceAmount, highlighted && styles.textWhite]}>{plan.referencePrice}</Text>
       </View>
-      {plan.benefits?.map((b, i) => (
-        <Text key={i} style={[styles.benefit, highlighted && styles.textWhite80]}>{b}</Text>
-      ))}
+      <Text style={[styles.planDuration, highlighted && styles.textWhite80]}>{plan.durationDays} dias de duracion</Text>
       {highlighted ? (
-        <GradientButton title="EDIT PLAN" onPress={onEdit} />
+        <GradientButton title="EDITAR PLAN" onPress={onEdit} />
       ) : (
         <Pressable style={styles.editBtn} onPress={onEdit}>
-          <Text style={styles.editBtnText}>EDIT PLAN</Text>
+          <Text style={styles.editBtnText}>EDITAR PLAN</Text>
         </Pressable>
       )}
       <Pressable onPress={onDelete} style={styles.deleteBtn}>
@@ -107,7 +105,7 @@ export default function PlansScreen() {
           />
         }
       >
-        <Text style={styles.title}>Manage Plans.</Text>
+        <Text style={styles.title}>Gestionar Planes.</Text>
         <Text style={styles.description}>Configura los planes del gimnasio, sus precios y caracteristicas.</Text>
 
         <QueryRenderer
@@ -158,11 +156,11 @@ const styles = StyleSheet.create({
   plansList: { gap: 16 },
   planCard: { padding: 20, gap: 8 },
   planCardDark: { backgroundColor: colors.textPrimary },
-  planTier: { fontFamily: typography.labelM.fontFamily, fontSize: typography.labelM.fontSize, letterSpacing: 1.5, color: colors.textMuted },
+  planName: { fontFamily: typography.titleS.fontFamily, fontSize: typography.titleS.fontSize, color: colors.textPrimary },
   priceRow: { flexDirection: 'row', alignItems: 'flex-start' },
   priceDollar: { fontFamily: typography.bodyS.fontFamily, fontSize: 14, color: colors.textPrimary, marginTop: 4 },
   priceAmount: { fontFamily: typography.statM.fontFamily, fontSize: typography.statM.fontSize, color: colors.textPrimary },
-  benefit: { fontFamily: typography.bodySM.fontFamily, fontSize: typography.bodySM.fontSize, color: colors.textMuted },
+  planDuration: { fontFamily: typography.bodySM.fontFamily, fontSize: typography.bodySM.fontSize, color: colors.textMuted },
   editBtn: { borderWidth: 1, borderColor: colors.divider, borderRadius: 12, paddingVertical: 12, alignItems: 'center', marginTop: 8 },
   editBtnText: { fontFamily: typography.bodyS.fontFamily, fontSize: typography.bodyS.fontSize, color: colors.textPrimary, letterSpacing: 0.5 },
   deleteBtn: { alignItems: 'center', paddingVertical: 8 },

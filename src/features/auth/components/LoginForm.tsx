@@ -49,7 +49,7 @@ export function LoginForm() {
           <Text style={styles.logoText}>T</Text>
         </View>
         <Text style={styles.brandName}>TAURUS</Text>
-        <Text style={styles.brandSub}>PREMIUM PERFORMANCE</Text>
+        <Text style={styles.brandSub}>RENDIMIENTO PREMIUM</Text>
       </View>
 
       {/* Error */}

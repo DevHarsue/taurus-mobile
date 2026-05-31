@@ -40,8 +40,8 @@ export default function MyQRScreen() {
         contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 24 }]}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.accessLabel}>ACCESS IDENTITY</Text>
-        <Text style={styles.title}>Digital Pass</Text>
+        <Text style={styles.accessLabel}>IDENTIDAD DE ACCESO</Text>
+        <Text style={styles.title}>Pase Digital</Text>
 
         <View style={styles.qrWrapper}>
           <View style={styles.qrInner}>
@@ -63,7 +63,7 @@ export default function MyQRScreen() {
         </View>
 
         <View style={styles.brightnessNote}>
-          <Text style={styles.brightnessText}>☀ Screen brightness optimized for scanning</Text>
+          <Text style={styles.brightnessText}>☀ Brillo de pantalla optimizado para escanear</Text>
         </View>
 
         <Text style={styles.hint}>
@@ -78,7 +78,6 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.backgroundDark },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   headerTitle: { fontFamily: typography.headingXS.fontFamily, fontSize: typography.headingXS.fontSize, color: colors.white },
-  headerIcon: { fontSize: 20, color: '#FFFFFF60' },
   content: { flexGrow: 1, alignItems: 'center', paddingHorizontal: 24, paddingTop: 16, gap: 20 },
   accessLabel: { fontFamily: typography.labelM.fontFamily, fontSize: typography.labelM.fontSize, letterSpacing: 2, color: '#FFFFFF40' },
   title: { fontFamily: typography.titleM.fontFamily, fontSize: typography.titleM.fontSize, color: colors.white },
