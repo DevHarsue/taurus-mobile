@@ -12,12 +12,16 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Trash2 } from 'lucide-react-native';
+import { Cpu, Trash2 } from 'lucide-react-native';
 import { ScreenHeader } from '@components/ScreenHeader';
 import { Card } from '@components/Card';
 import { Badge } from '@components/Badge';
 import { FAB } from '@components/FAB';
 import { GradientButton } from '@components/GradientButton';
+import { EmptyState } from '@components/EmptyState';
+import { Skeleton, SkeletonList } from '@components/Skeleton';
+import { useToast } from '@hooks/useToast';
+import { confirmDialog } from '@utils/confirmDialog';
 import { useDevices, useCreateDevice, useDeleteDevice } from '../hooks/useDevices';
 import { colors, typography, spacing, radii } from '@theme/index';
 import type { IDevice } from '@app-types/device';
@@ -37,13 +41,18 @@ function formatRelativeTime(dateStr?: string): string {
 export default function DevicesScreen() {
   const nav = useNavigation();
   const insets = useSafeAreaInsets();
+  const { toast } = useToast();
   const devicesQuery = useDevices();
   const { mutate: createDevice, loading: creating } = useCreateDevice(() => {
     devicesQuery.refetch();
     setModalVisible(false);
     resetForm();
+    toast.success('Dispositivo registrado');
   });
-  const { mutate: deleteDevice } = useDeleteDevice(() => devicesQuery.refetch());
+  const { mutate: deleteDevice } = useDeleteDevice(() => {
+    devicesQuery.refetch();
+    toast.success('Dispositivo eliminado');
+  });
 
   const [modalVisible, setModalVisible] = useState(false);
   const [formCode, setFormCode] = useState('');
@@ -65,17 +74,13 @@ export default function DevicesScreen() {
     });
   };
 
-  const handleDelete = (device: IDevice) => {
-    const doDelete = () => void deleteDevice(device.id);
-    if (Platform.OS === 'web') {
-      if (window.confirm(`¿Eliminar el dispositivo "${device.name}"?`)) doDelete();
-    } else {
-      const { Alert } = require('react-native');
-      Alert.alert('Eliminar dispositivo', `¿Eliminar "${device.name}"?`, [
-        { text: 'Cancelar', style: 'cancel' },
-        { text: 'Eliminar', style: 'destructive', onPress: doDelete },
-      ]);
-    }
+  const handleDelete = async (device: IDevice) => {
+    const ok = await confirmDialog(
+      'Eliminar dispositivo',
+      `¿Eliminar el dispositivo "${device.name}"?`,
+      { destructive: true, confirmLabel: 'Eliminar' },
+    );
+    if (ok) void deleteDevice(device.id);
   };
 
   const renderDevice = ({ item }: { item: IDevice }) => (
@@ -125,9 +130,20 @@ export default function DevicesScreen() {
         ]}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
-          !devicesQuery.loading ? (
-            <Text style={styles.empty}>No hay dispositivos registrados</Text>
-          ) : null
+          devicesQuery.loading ? (
+            <SkeletonList
+              count={5}
+              renderItem={() => <Skeleton width="100%" height={96} borderRadius={16} />}
+            />
+          ) : (
+            <EmptyState
+              icon={Cpu}
+              title="No hay dispositivos registrados"
+              description="Registra tu primer lector para empezar"
+              actionLabel="Registrar dispositivo"
+              onAction={() => setModalVisible(true)}
+            />
+          )
         }
       />
 

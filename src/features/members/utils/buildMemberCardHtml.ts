@@ -108,7 +108,7 @@ export function buildMemberCardHtml(
     qrDataUrl: string,
 ): string {
     const name = escapeHtml(member.name.toUpperCase());
-    const cedula = escapeHtml(member.cedula);
+    const cedula = escapeHtml(member.cedula ?? '—');
     const phone = escapeHtml(member.phone ?? '—');
     const email = escapeHtml(member.email ?? '—');
     const planName = escapeHtml(

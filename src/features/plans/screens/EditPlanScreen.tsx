@@ -9,6 +9,7 @@ import { GradientButton } from '@components/GradientButton';
 import { AlertBanner } from '@components/AlertBanner';
 import { KeyboardScreen } from '@components/KeyboardScreen';
 import { useUpdatePlan } from '../hooks/useUpdatePlan';
+import { useToast } from '@hooks/useToast';
 import { createPlanSchema, type CreatePlanFormValues } from '../schemas/plan.schema';
 import { colors, typography, spacing } from '@theme/index';
 import type { EditPlanScreenProps } from '@navigation/types';
@@ -17,6 +18,7 @@ export default function EditPlanScreen({ route }: EditPlanScreenProps) {
   const { plan } = route.params;
   const nav = useNavigation();
   const { mutate, loading, error } = useUpdatePlan();
+  const { toast } = useToast();
 
   const { control, handleSubmit, formState: { errors } } = useForm<CreatePlanFormValues>({
     resolver: zodResolver(createPlanSchema),
@@ -38,6 +40,7 @@ export default function EditPlanScreen({ route }: EditPlanScreenProps) {
         isActive: values.isActive,
       },
     });
+    toast.success('Cambios guardados');
     nav.goBack();
   };
 

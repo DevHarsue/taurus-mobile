@@ -9,12 +9,14 @@ import { GradientButton } from '@components/GradientButton';
 import { AlertBanner } from '@components/AlertBanner';
 import { KeyboardScreen } from '@components/KeyboardScreen';
 import { useCreatePlan } from '../hooks/useCreatePlan';
+import { useToast } from '@hooks/useToast';
 import { createPlanSchema, type CreatePlanFormValues } from '../schemas/plan.schema';
 import { colors, typography, spacing } from '@theme/index';
 
 export default function CreatePlanScreen() {
   const nav = useNavigation();
   const { mutate, loading, error } = useCreatePlan();
+  const { toast } = useToast();
 
   const { control, handleSubmit, formState: { errors } } = useForm<CreatePlanFormValues>({
     resolver: zodResolver(createPlanSchema),
@@ -28,6 +30,7 @@ export default function CreatePlanScreen() {
       referencePrice: values.referencePrice ? Number(values.referencePrice) : 0,
       isActive: values.isActive,
     });
+    toast.success('Plan creado correctamente');
     nav.goBack();
   };
 

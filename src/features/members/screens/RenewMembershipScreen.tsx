@@ -11,6 +11,7 @@ import { AlertBanner } from '@components/AlertBanner';
 import { useRenew } from '../hooks/useRenew';
 import { useMemberDetail } from '../hooks/useMemberDetail';
 import { useGreeting } from '@hooks/useGreeting';
+import { useToast } from '@hooks/useToast';
 import { usePlans } from '@features/plans/hooks/usePlans';
 import { addDays, formatDateSpanish, formatDateShort } from '@utils/dates';
 import { colors, typography, spacing } from '@theme/index';
@@ -23,6 +24,7 @@ export default function RenewMembershipScreen({ route }: RenewMembershipScreenPr
   const nav = useNavigation();
   const { displayName } = useGreeting();
   const { mutate, loading, error } = useRenew();
+  const { toast } = useToast();
   const memberQuery = useMemberDetail(memberId);
   const plansQuery = usePlans();
   const [selectedIndex, setSelectedIndex] = useState(SUGGESTED_INDEX);
@@ -47,6 +49,11 @@ export default function RenewMembershipScreen({ route }: RenewMembershipScreenPr
   const handleConfirm = async () => {
     if (!selectedPlan) return;
     await mutate({ memberId, planId: selectedPlan.id });
+    toast.success(
+      newExpiryDate
+        ? `Membresia renovada hasta ${newExpiryDate}`
+        : 'Membresia renovada',
+    );
     nav.goBack();
   };
 

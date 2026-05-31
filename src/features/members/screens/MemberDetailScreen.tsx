@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -15,6 +15,8 @@ import { useMemberSubscriptions } from '../hooks/useMemberSubscriptions';
 import { useMemberAccessLog } from '../hooks/useMemberAccessLog';
 import { useDeleteMember } from '../hooks/useDeleteMember';
 import { useGenerateMemberCard } from '../hooks/useGenerateMemberCard';
+import { useToast } from '@hooks/useToast';
+import { confirmDialog } from '@utils/confirmDialog';
 import { calculateDurationDays, formatDateSpanish } from '@utils/dates';
 import { colors, typography, spacing } from '@theme/index';
 import type { MemberDetailScreenProps, MembersStackParamList } from '@navigation/types';
@@ -30,30 +32,18 @@ export default function MemberDetailScreen({ route }: MemberDetailScreenProps) {
   const accessLogQuery = useMemberAccessLog(id);
   const { mutate: deleteMember } = useDeleteMember();
   const { mutate: generateCard, loading: generatingCard } = useGenerateMemberCard();
+  const { toast } = useToast();
 
   const handleDelete = async () => {
-    if (Platform.OS === 'web') {
-      if (!window.confirm('Esta seguro que desea eliminar este miembro? Esta accion no se puede deshacer.')) return;
-      await deleteMember(id);
-      nav.goBack();
-    } else {
-      const { Alert } = require('react-native');
-      Alert.alert(
-        'Eliminar miembro',
-        'Esta seguro que desea eliminar este miembro? Esta accion no se puede deshacer.',
-        [
-          { text: 'Cancelar', style: 'cancel' },
-          {
-            text: 'Eliminar',
-            style: 'destructive',
-            onPress: async () => {
-              await deleteMember(id);
-              nav.goBack();
-            },
-          },
-        ],
-      );
-    }
+    const ok = await confirmDialog(
+      'Eliminar miembro',
+      'Esta seguro que desea eliminar este miembro? Esta accion no se puede deshacer.',
+      { destructive: true, confirmLabel: 'Eliminar' },
+    );
+    if (!ok) return;
+    await deleteMember(id);
+    toast.success('Miembro eliminado');
+    nav.goBack();
   };
 
   useFocusEffect(
@@ -206,12 +196,7 @@ export default function MemberDetailScreen({ route }: MemberDetailScreenProps) {
                 onPress={() => {
                   void generateCard(member).catch((e) => {
                     const msg = e instanceof Error ? e.message : 'Error desconocido';
-                    if (Platform.OS === 'web') {
-                      window.alert(`No se pudo generar el carnet:\n${msg}`);
-                    } else {
-                      const { Alert } = require('react-native');
-                      Alert.alert('No se pudo generar el carnet', msg);
-                    }
+                    toast.error(`No se pudo generar el carnet: ${msg}`);
                   });
                 }}
                 loading={generatingCard}

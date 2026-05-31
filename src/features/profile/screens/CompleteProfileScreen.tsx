@@ -1,5 +1,5 @@
 import React from 'react';
-import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LogOut } from 'lucide-react-native';
 import { useForm, Controller } from 'react-hook-form';
@@ -10,6 +10,7 @@ import { AlertBanner } from '@components/AlertBanner';
 import { KeyboardScreen } from '@components/KeyboardScreen';
 import { useAuth } from '@hooks/useAuth';
 import { useCompleteProfile } from '@features/members/hooks/useCompleteProfile';
+import { confirmDialog } from '@utils/confirmDialog';
 import {
   completeProfileSchema,
   type CompleteProfileFormValues,
@@ -88,19 +89,12 @@ export default function CompleteProfileScreen({ onCompleted }: Props) {
 
         <Pressable
           style={styles.logoutBtn}
-          onPress={() => {
-            const confirmAndLogout = () => {
-              void logout();
-            };
-            if (Platform.OS === 'web') {
-              if (window.confirm('¿Cerrar sesión?')) confirmAndLogout();
-            } else {
-              const { Alert } = require('react-native');
-              Alert.alert('Cerrar sesión', '¿Seguro que quieres salir?', [
-                { text: 'Cancelar', style: 'cancel' },
-                { text: 'Salir', style: 'destructive', onPress: confirmAndLogout },
-              ]);
-            }
+          onPress={async () => {
+            const ok = await confirmDialog('Cerrar sesion', '¿Seguro que quieres salir?', {
+              destructive: true,
+              confirmLabel: 'Salir',
+            });
+            if (ok) void logout();
           }}
         >
           <LogOut size={18} color={colors.badgeExpired} strokeWidth={2} />

@@ -1,20 +1,29 @@
 import React, { useCallback } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  RefreshControl,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Search, Users } from 'lucide-react-native';
 import { ScreenHeader } from '@components/ScreenHeader';
 import { Avatar } from '@components/Avatar';
 import { Badge } from '@components/Badge';
 import { SearchBar } from '@components/SearchBar';
 import { FilterChips, type IFilterChip } from '@components/FilterChips';
 import { FAB } from '@components/FAB';
-import { LoadingSpinner } from '@components/LoadingSpinner';
+import { EmptyState } from '@components/EmptyState';
+import { Skeleton, SkeletonList } from '@components/Skeleton';
 import { useGreeting } from '@hooks/useGreeting';
 import { useMemberSearch } from '../hooks/useMemberSearch';
 import { colors, typography, spacing } from '@theme/index';
 import type { MembersStackParamList } from '@navigation/types';
-import type { MemberListItem } from '@app-types/member';
 
 const FILTERS: IFilterChip[] = [
   { key: '', label: 'Todos' },
@@ -25,11 +34,34 @@ const FILTERS: IFilterChip[] = [
 
 type Nav = NativeStackNavigationProp<MembersStackParamList>;
 
+function MemberRowSkeleton() {
+  return (
+    <View style={styles.memberRow}>
+      <Skeleton width={42} height={42} borderRadius={21} />
+      <View style={styles.memberInfo}>
+        <Skeleton width="55%" height={14} borderRadius={7} />
+        <Skeleton width="35%" height={11} borderRadius={6} />
+      </View>
+      <Skeleton width={64} height={24} borderRadius={12} />
+    </View>
+  );
+}
+
 export default function MembersListScreen() {
   const nav = useNavigation<Nav>();
   const insets = useSafeAreaInsets();
   const { displayName } = useGreeting();
-  const { data, loading, search, filter, onSearch, onFilter, refetch } = useMemberSearch();
+  const {
+    items,
+    loading,
+    loadingMore,
+    loadMore,
+    refetch,
+    search,
+    filter,
+    onSearch,
+    onFilter,
+  } = useMemberSearch();
 
   useFocusEffect(
     useCallback(() => {
@@ -37,7 +69,10 @@ export default function MembersListScreen() {
     }, [refetch])
   );
 
-  const members = data?.data ?? [];
+  const members = items;
+  const hasFilter = search.trim().length > 0 || filter.length > 0;
+  const isInitial = loading && members.length === 0;
+  const isRefreshing = loading && members.length > 0;
 
   return (
     <View style={styles.container}>
@@ -51,18 +86,32 @@ export default function MembersListScreen() {
       />
 
       <View style={styles.content}>
-        <SearchBar value={search} onChangeText={onSearch} placeholder="Search members..." />
+        <SearchBar value={search} onChangeText={onSearch} placeholder="Buscar miembros..." />
         <FilterChips chips={FILTERS} activeKey={filter} onSelect={onFilter} />
 
-        {loading ? (
-          <LoadingSpinner />
+        {isInitial ? (
+          <SkeletonList count={8} gap={0} renderItem={() => <MemberRowSkeleton />} />
         ) : (
           <FlatList
             data={members}
             keyExtractor={(item) => item.id}
-            contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 100 }]}
+            contentContainerStyle={[
+              styles.list,
+              { paddingBottom: insets.bottom + 100 },
+              members.length === 0 && styles.listEmpty,
+            ]}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
+            onEndReached={loadMore}
+            onEndReachedThreshold={0.5}
+            refreshControl={
+              <RefreshControl
+                refreshing={isRefreshing}
+                onRefresh={refetch}
+                tintColor={colors.primaryRed}
+                colors={[colors.primaryRed]}
+              />
+            }
             renderItem={({ item }) => (
               <Pressable style={styles.memberRow} onPress={() => nav.navigate('MemberDetail', { id: item.id })}>
                 <Avatar size={42} name={item.name} />
@@ -77,7 +126,28 @@ export default function MembersListScreen() {
                 />
               </Pressable>
             )}
-            ListEmptyComponent={<Text style={styles.empty}>Sin miembros</Text>}
+            ListEmptyComponent={
+              hasFilter ? (
+                <EmptyState
+                  icon={Search}
+                  title="No se encontraron miembros"
+                  description="Prueba con otros filtros o terminos de busqueda"
+                />
+              ) : (
+                <EmptyState
+                  icon={Users}
+                  title="No hay miembros registrados"
+                  description="Crea tu primer miembro para empezar"
+                  actionLabel="Crear primer miembro"
+                  onAction={() => nav.navigate('CreateMember')}
+                />
+              )
+            }
+            ListFooterComponent={
+              loadingMore ? (
+                <ActivityIndicator color={colors.primaryRed} style={styles.footer} />
+              ) : null
+            }
           />
         )}
       </View>
@@ -91,12 +161,12 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.white },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   greeting: { fontFamily: typography.headingXS.fontFamily, fontSize: typography.headingXS.fontSize, color: colors.textPrimary },
-  bellIcon: { fontSize: 20 },
   content: { flex: 1, paddingHorizontal: spacing.xl, gap: 16 },
   list: {},
+  listEmpty: { flexGrow: 1, justifyContent: 'center' },
   memberRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 14 },
   memberInfo: { flex: 1, gap: 2 },
   memberName: { fontFamily: typography.bodyM.fontFamily, fontSize: typography.bodyM.fontSize, color: colors.textPrimary },
   memberCedula: { fontFamily: typography.bodyXS.fontFamily, fontSize: 11, color: colors.textPrimaryAlpha50 },
-  empty: { fontFamily: typography.bodySM.fontFamily, fontSize: typography.bodySM.fontSize, color: colors.textMuted, textAlign: 'center', paddingVertical: 40 },
+  footer: { paddingVertical: 20 },
 });

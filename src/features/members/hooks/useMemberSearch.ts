@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { usePaginatedQuery } from '@hooks/useQuery';
+import { useInfiniteQuery } from '@hooks/useQuery';
 import { membersService } from '@api/services';
-import type { GetMembersResponse } from '@app-types/member';
+import type { MemberListItem } from '@app-types/member';
 
 const DEBOUNCE_MS = 300;
 
@@ -16,7 +16,7 @@ export function useMemberSearch() {
     return () => clearTimeout(timerRef.current);
   }, [search]);
 
-  const query = usePaginatedQuery<GetMembersResponse>({
+  const query = useInfiniteQuery<MemberListItem>({
     queryFn: (page, limit) =>
       membersService.getAll({
         page,

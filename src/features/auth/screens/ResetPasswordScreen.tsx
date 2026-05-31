@@ -1,5 +1,5 @@
 import React from 'react';
-import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { z } from 'zod';
@@ -11,6 +11,7 @@ import { GradientButton } from '@components/GradientButton';
 import { AlertBanner } from '@components/AlertBanner';
 import { KeyboardScreen } from '@components/KeyboardScreen';
 import { useResetPassword } from '../hooks/useResetPassword';
+import { useToast } from '@hooks/useToast';
 import { passwordSchema } from '@utils/validators';
 import { colors, typography } from '@theme/index';
 import type { AuthStackParamList } from '@navigation/types';
@@ -32,6 +33,7 @@ type Nav = NativeStackNavigationProp<AuthStackParamList>;
 export default function ResetPasswordScreen() {
   const nav = useNavigation<Nav>();
   const { mutate, loading, error } = useResetPassword();
+  const { toast } = useToast();
 
   const { control, handleSubmit, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -40,13 +42,7 @@ export default function ResetPasswordScreen() {
 
   const onSubmit = async (values: FormValues) => {
     await mutate({ token: values.token, newPassword: values.newPassword });
-    const msg = 'Contrasena restablecida exitosamente. Ahora puedes iniciar sesion.';
-    if (Platform.OS === 'web') {
-      window.alert(msg);
-    } else {
-      const { Alert } = require('react-native');
-      Alert.alert('Listo', msg);
-    }
+    toast.success('Contrasena actualizada, ya puedes iniciar sesion');
     nav.navigate('Login');
   };
 

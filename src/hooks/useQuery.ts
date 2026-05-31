@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import type { IPaginatedResponse } from '@app-types/api';
 
 // ─── Interfaces ────────────────────────────────────────────────────────────
 
@@ -101,4 +102,113 @@ export function usePaginatedQuery<T>(
   });
 
   return { ...result, page, setPage };
+}
+
+// ─── useInfiniteQuery ──────────────────────────────────────────────────────
+// Acumula paginas en un solo array (modo "append") para infinite scroll.
+// A diferencia de usePaginatedQuery (que reemplaza la pagina), este hook
+// mantiene el listado acumulado y expone loadMore()/hasMore.
+
+export interface IInfiniteResult<TItem> {
+  /** Items acumulados de todas las paginas cargadas. */
+  items: TItem[];
+  /** Total de items disponibles segun el backend. */
+  total: number;
+  /** Carga inicial (pagina 1). */
+  loading: boolean;
+  /** Cargando una pagina adicional (append). */
+  loadingMore: boolean;
+  error: string | null;
+  /** Resetea a la pagina 1 (pull-to-refresh / focus). */
+  refetch: () => void;
+  /** Carga la siguiente pagina y la agrega al acumulado. */
+  loadMore: () => void;
+  /** True mientras queden items por cargar. */
+  hasMore: boolean;
+}
+
+export interface IUseInfiniteQueryOptions<TItem> {
+  queryFn: (page: number, limit: number) => Promise<IPaginatedResponse<TItem>>;
+  limit?: number;
+  deps?: unknown[];
+  errorMessage?: string;
+  enabled?: boolean;
+}
+
+export function useInfiniteQuery<TItem>(
+  options: IUseInfiniteQueryOptions<TItem>,
+): IInfiniteResult<TItem> {
+  const {
+    queryFn,
+    limit = 20,
+    deps = [],
+    errorMessage = 'Error al cargar datos',
+    enabled = true,
+  } = options;
+
+  const [items, setItems] = useState<TItem[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(enabled);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const queryFnRef = useRef(queryFn);
+  queryFnRef.current = queryFn;
+
+  // Token para descartar respuestas de peticiones obsoletas (cambio de deps / refetch).
+  const requestRef = useRef(0);
+
+  const fetchPage = useCallback(
+    (targetPage: number, mode: 'replace' | 'append') => {
+      const myRequest = ++requestRef.current;
+      if (mode === 'replace') setLoading(true);
+      else setLoadingMore(true);
+      setError(null);
+
+      (async () => {
+        try {
+          const result = await queryFnRef.current(targetPage, limit);
+          if (myRequest !== requestRef.current) return;
+          setTotal(result.total);
+          setPage(targetPage);
+          setItems((prev) =>
+            mode === 'append' ? [...prev, ...result.data] : result.data,
+          );
+        } catch {
+          if (myRequest === requestRef.current) setError(errorMessage);
+        } finally {
+          if (myRequest === requestRef.current) {
+            setLoading(false);
+            setLoadingMore(false);
+          }
+        }
+      })();
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [limit, errorMessage],
+  );
+
+  // Carga inicial / reset cuando cambian las dependencias (busqueda, filtros...).
+  useEffect(() => {
+    if (!enabled) {
+      setLoading(false);
+      return;
+    }
+    fetchPage(1, 'replace');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enabled, fetchPage, ...deps]);
+
+  const hasMore = items.length < total;
+
+  const loadMore = useCallback(() => {
+    if (loading || loadingMore || !hasMore) return;
+    fetchPage(page + 1, 'append');
+  }, [loading, loadingMore, hasMore, page, fetchPage]);
+
+  const refetch = useCallback(() => {
+    fetchPage(1, 'replace');
+  }, [fetchPage]);
+
+  return { items, total, loading, loadingMore, error, refetch, loadMore, hasMore };
 }
