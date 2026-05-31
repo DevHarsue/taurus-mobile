@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -14,16 +14,20 @@ import { EmptyState } from '@components/EmptyState';
 import { SkeletonCard, SkeletonList } from '@components/Skeleton';
 import { useGreeting } from '@hooks/useGreeting';
 import { useToast } from '@hooks/useToast';
+import { useTheme } from '@hooks/useTheme';
 import { confirmDialog } from '@utils/confirmDialog';
+import { haptics } from '@utils/haptics';
 import { usePlans } from '../hooks/usePlans';
 import { useDeletePlan } from '../hooks/useDeletePlan';
-import { colors, typography, spacing } from '@theme/index';
+import { typography, spacing, type Colors } from '@theme/index';
 import type { Plan, PlanBase } from '@app-types/plan';
 import type { PlansStackParamList } from '@navigation/types';
 
 type Nav = NativeStackNavigationProp<PlansStackParamList>;
 
-function PlanCard({ plan, highlighted, onEdit, onDelete }: { plan: Plan; highlighted: boolean; onEdit: () => void; onDelete: () => void }) {
+type Styles = ReturnType<typeof createStyles>;
+
+function PlanCard({ plan, highlighted, onEdit, onDelete, styles }: { plan: Plan; highlighted: boolean; onEdit: () => void; onDelete: () => void; styles: Styles }) {
   return (
     <Card style={[styles.planCard, highlighted && styles.planCardDark]}>
       <Text style={[styles.planName, highlighted && styles.textWhite]}>{plan.name}</Text>
@@ -53,6 +57,8 @@ export default function PlansScreen() {
   const query = usePlans();
   const { mutate: deletePlan } = useDeletePlan();
   const { toast } = useToast();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   useFocusEffect(
     useCallback(() => {
@@ -99,7 +105,10 @@ export default function PlansScreen() {
         refreshControl={
           <RefreshControl
             refreshing={query.loading}
-            onRefresh={query.refetch}
+            onRefresh={() => {
+              haptics.light();
+              query.refetch();
+            }}
             tintColor={colors.primaryRed}
             colors={[colors.primaryRed]}
           />
@@ -133,6 +142,7 @@ export default function PlansScreen() {
                   highlighted={plan.isHighlighted ?? i === 1}
                   onEdit={() => nav.navigate('EditPlan', { plan: toPlanBase(plan) })}
                   onDelete={() => handleDeletePlan(plan.id, plan.name)}
+                  styles={styles}
                 />
               ))}
             </View>
@@ -145,7 +155,7 @@ export default function PlansScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: Colors) => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.backgroundCard },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   greeting: { fontFamily: typography.headingXS.fontFamily, fontSize: typography.headingXS.fontSize, color: colors.textPrimary },

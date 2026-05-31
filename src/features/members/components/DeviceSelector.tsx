@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   FlatList,
   Modal,
@@ -12,7 +12,8 @@ import { ChevronDown } from 'lucide-react-native';
 import { Card } from '@components/Card';
 import { Badge } from '@components/Badge';
 import { useDevices } from '@features/dashboard/hooks/useDevices';
-import { colors, typography, spacing, radii } from '@theme/index';
+import { useTheme } from '@hooks/useTheme';
+import { typography, spacing, radii, type Colors } from '@theme/index';
 import type { IDevice } from '@app-types/device';
 
 interface Props {
@@ -22,6 +23,8 @@ interface Props {
 }
 
 export function DeviceSelector({ selectedDeviceCode, onSelect, disabled }: Props) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { data: devices, loading } = useDevices();
   const [visible, setVisible] = useState(false);
   const [manualInput, setManualInput] = useState('');
@@ -135,7 +138,8 @@ export function DeviceSelector({ selectedDeviceCode, onSelect, disabled }: Props
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: Colors) =>
+  StyleSheet.create({
   selectorCard: { padding: 16, gap: 8 },
   selectorDisabled: { opacity: 0.5 },
   cardLabel: {
@@ -171,7 +175,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.5)',
   },
   modalContent: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
     borderTopLeftRadius: radii.lg,
     borderTopRightRadius: radii.lg,
     padding: spacing.xxl,

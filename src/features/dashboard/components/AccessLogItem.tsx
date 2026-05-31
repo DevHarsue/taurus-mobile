@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Badge } from '@components/Badge';
-import { colors, typography, spacing } from '@theme/index';
+import { useTheme } from '@hooks/useTheme';
+import { typography, spacing, type Colors } from '@theme/index';
 import type { IAccessLogItem } from '@app-types/access';
 
 interface Props {
@@ -33,6 +34,8 @@ const REASON_LABELS: Record<string, string> = {
 };
 
 export function AccessLogItem({ item }: Props) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   return (
     <View style={styles.row}>
       <View style={styles.info}>
@@ -57,7 +60,8 @@ export function AccessLogItem({ item }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: Colors) =>
+  StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',

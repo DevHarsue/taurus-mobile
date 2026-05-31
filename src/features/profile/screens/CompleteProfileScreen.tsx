@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LogOut } from 'lucide-react-native';
@@ -9,13 +9,14 @@ import { GradientButton } from '@components/GradientButton';
 import { AlertBanner } from '@components/AlertBanner';
 import { KeyboardScreen } from '@components/KeyboardScreen';
 import { useAuth } from '@hooks/useAuth';
+import { useTheme } from '@hooks/useTheme';
 import { useCompleteProfile } from '@features/members/hooks/useCompleteProfile';
 import { confirmDialog } from '@utils/confirmDialog';
 import {
   completeProfileSchema,
   type CompleteProfileFormValues,
 } from '@features/members/schemas/completeProfile.schema';
-import { colors, typography, spacing } from '@theme/index';
+import { typography, spacing, type Colors } from '@theme/index';
 
 interface Props {
   onCompleted: () => void;
@@ -25,6 +26,8 @@ export default function CompleteProfileScreen({ onCompleted }: Props) {
   const insets = useSafeAreaInsets();
   const { logout, user } = useAuth();
   const { mutate, loading, error } = useCompleteProfile();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const { control, handleSubmit, formState: { errors } } = useForm<CompleteProfileFormValues>({
     resolver: zodResolver(completeProfileSchema),
@@ -105,7 +108,7 @@ export default function CompleteProfileScreen({ onCompleted }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: Colors) => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.backgroundForm },
   scrollContent: { padding: spacing.xxl, gap: 12 },
   title: {

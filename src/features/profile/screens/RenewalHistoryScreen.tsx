@@ -10,11 +10,13 @@ import { Avatar } from '@components/Avatar';
 import { EmptyState } from '@components/EmptyState';
 import { Skeleton, SkeletonList } from '@components/Skeleton';
 import { useGreeting } from '@hooks/useGreeting';
+import { useTheme } from '@hooks/useTheme';
 import { useMySubscriptions } from '@hooks/useMySubscriptions';
 import { useMyMemberDetail } from '@features/members/hooks/useMyMemberDetail';
 import { usePlans } from '@features/plans/hooks/usePlans';
 import { formatDateShort, calculateDurationDays, formatDuration } from '@utils/dates';
-import { colors, typography, spacing } from '@theme/index';
+import { haptics } from '@utils/haptics';
+import { typography, spacing, type Colors } from '@theme/index';
 
 interface RenewalItem {
   id: string;
@@ -36,7 +38,9 @@ const TYPE_LABELS: Record<string, string> = {
   initial: 'MEMBRESIA INICIAL',
 };
 
-function RenewalRowSkeleton() {
+type Styles = ReturnType<typeof createStyles>;
+
+function RenewalRowSkeleton({ styles }: { styles: Styles }) {
   return (
     <View style={styles.renewalRow}>
       <Skeleton width={48} height={48} borderRadius={12} />
@@ -56,6 +60,8 @@ export default function RenewalHistoryScreen() {
   const { data: myMember } = useMyMemberDetail();
   const subsQuery = useMySubscriptions();
   const plansQuery = usePlans();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const renewals = useMemo<RenewalItem[]>(() => {
     const subscriptions = subsQuery.data ?? [];
@@ -86,6 +92,7 @@ export default function RenewalHistoryScreen() {
   const isRefreshing = isLoading && renewals.length > 0;
 
   const handleRefresh = useCallback(() => {
+    haptics.light();
     subsQuery.refetch();
     plansQuery.refetch();
   }, [subsQuery, plansQuery]);
@@ -120,7 +127,7 @@ export default function RenewalHistoryScreen() {
         <Text style={styles.title}>HISTORIAL DE{'\n'}RENOVACIONES</Text>
 
         {isInitial ? (
-          <SkeletonList count={4} renderItem={() => <RenewalRowSkeleton />} />
+          <SkeletonList count={4} renderItem={() => <RenewalRowSkeleton styles={styles} />} />
         ) : renewals.length === 0 ? (
           <EmptyState
             icon={History}
@@ -149,8 +156,8 @@ export default function RenewalHistoryScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.white },
+const createStyles = (colors: Colors) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.background },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   headerTitle: { fontFamily: typography.headingXS.fontFamily, fontSize: typography.headingXS.fontSize, color: colors.textPrimary },
   scroll: { flex: 1 },

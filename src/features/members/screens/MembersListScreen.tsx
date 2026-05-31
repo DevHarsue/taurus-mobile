@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -21,8 +21,10 @@ import { FAB } from '@components/FAB';
 import { EmptyState } from '@components/EmptyState';
 import { Skeleton, SkeletonList } from '@components/Skeleton';
 import { useGreeting } from '@hooks/useGreeting';
+import { useTheme } from '@hooks/useTheme';
+import { haptics } from '@utils/haptics';
 import { useMemberSearch } from '../hooks/useMemberSearch';
-import { colors, typography, spacing } from '@theme/index';
+import { typography, spacing, type Colors } from '@theme/index';
 import type { MembersStackParamList } from '@navigation/types';
 
 const FILTERS: IFilterChip[] = [
@@ -35,6 +37,8 @@ const FILTERS: IFilterChip[] = [
 type Nav = NativeStackNavigationProp<MembersStackParamList>;
 
 function MemberRowSkeleton() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   return (
     <View style={styles.memberRow}>
       <Skeleton width={42} height={42} borderRadius={21} />
@@ -50,6 +54,8 @@ function MemberRowSkeleton() {
 export default function MembersListScreen() {
   const nav = useNavigation<Nav>();
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { displayName } = useGreeting();
   const {
     items,
@@ -70,6 +76,12 @@ export default function MembersListScreen() {
   );
 
   const members = items;
+
+  const handleRefresh = useCallback(() => {
+    haptics.light();
+    refetch();
+  }, [refetch]);
+
   const hasFilter = search.trim().length > 0 || filter.length > 0;
   const isInitial = loading && members.length === 0;
   const isRefreshing = loading && members.length > 0;
@@ -107,7 +119,7 @@ export default function MembersListScreen() {
             refreshControl={
               <RefreshControl
                 refreshing={isRefreshing}
-                onRefresh={refetch}
+                onRefresh={handleRefresh}
                 tintColor={colors.primaryRed}
                 colors={[colors.primaryRed]}
               />
@@ -157,8 +169,9 @@ export default function MembersListScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.white },
+const createStyles = (colors: Colors) =>
+  StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.background },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   greeting: { fontFamily: typography.headingXS.fontFamily, fontSize: typography.headingXS.fontSize, color: colors.textPrimary },
   content: { flex: 1, paddingHorizontal: spacing.xl, gap: 16 },

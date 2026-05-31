@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Plus } from 'lucide-react-native';
-import { gradients, sizes, radii, colors } from '@theme/index';
+import { gradients, sizes, radii, type Colors } from '@theme/index';
+import { useTheme } from '@hooks/useTheme';
 
 export interface IFABProps {
   onPress: () => void;
@@ -11,6 +12,8 @@ export interface IFABProps {
 }
 
 export function FAB({ onPress, icon }: IFABProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const insets = useSafeAreaInsets();
   return (
     <Pressable
@@ -32,23 +35,24 @@ export function FAB({ onPress, icon }: IFABProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  wrapper: {
-    position: 'absolute',
-    right: 20,
-    width: sizes.fabSize,
-    height: sizes.fabSize,
-    borderRadius: radii.fab,
-    elevation: 6,
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-  },
-  gradient: {
-    flex: 1,
-    borderRadius: radii.fab,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+const createStyles = (colors: Colors) =>
+  StyleSheet.create({
+    wrapper: {
+      position: 'absolute',
+      right: 20,
+      width: sizes.fabSize,
+      height: sizes.fabSize,
+      borderRadius: radii.fab,
+      elevation: 6,
+      shadowColor: colors.black,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.3,
+      shadowRadius: 6,
+    },
+    gradient: {
+      flex: 1,
+      borderRadius: radii.fab,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+  });

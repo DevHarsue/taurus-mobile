@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
-import { colors, typography } from '@theme/index';
+import { typography, type Colors } from '@theme/index';
+import { useTheme } from '@hooks/useTheme';
 
 export interface IAvatarProps {
   size: number;
@@ -13,8 +14,11 @@ export function Avatar({
   size,
   uri,
   name,
-  backgroundColor = colors.backgroundCard,
+  backgroundColor,
 }: IAvatarProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+  const bg = backgroundColor ?? colors.backgroundCard;
   const borderRadius = size / 2;
 
   if (uri) {
@@ -39,7 +43,7 @@ export function Avatar({
     <View
       style={[
         styles.fallback,
-        { width: size, height: size, borderRadius, backgroundColor },
+        { width: size, height: size, borderRadius, backgroundColor: bg },
       ]}
     >
       <Text
@@ -54,16 +58,17 @@ export function Avatar({
   );
 }
 
-const styles = StyleSheet.create({
-  image: {
-    resizeMode: 'cover',
-  },
-  fallback: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  initials: {
-    fontFamily: typography.bodyS.fontFamily,
-    color: colors.textPrimaryAlpha50,
-  },
-});
+const createStyles = (colors: Colors) =>
+  StyleSheet.create({
+    image: {
+      resizeMode: 'cover',
+    },
+    fallback: {
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    initials: {
+      fontFamily: typography.bodyS.fontFamily,
+      color: colors.textPrimaryAlpha50,
+    },
+  });

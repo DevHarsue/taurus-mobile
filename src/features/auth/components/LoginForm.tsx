@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -12,7 +12,8 @@ import { AlertBanner } from '@components/AlertBanner';
 import { KeyboardScreen } from '@components/KeyboardScreen';
 import { useLogin } from '@features/auth/hooks/useLogin';
 import { useGoogleLogin } from '@features/auth/hooks/useGoogleLogin';
-import { colors, typography } from '@theme/index';
+import { typography, type Colors } from '@theme/index';
+import { useTheme } from '@hooks/useTheme';
 import type { AuthStackParamList } from '@navigation/types';
 
 const schema = z.object({
@@ -28,6 +29,8 @@ export function LoginForm() {
   const nav = useNavigation<Nav>();
   const { submit, loading, error } = useLogin();
   const googleLogin = useGoogleLogin();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const {
     control,
@@ -127,7 +130,7 @@ export function LoginForm() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: Colors) => StyleSheet.create({
   container: {
     paddingHorizontal: 24,
     gap: 24,

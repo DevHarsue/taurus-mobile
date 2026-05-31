@@ -10,7 +10,8 @@ import { ScreenHeader } from '@components/ScreenHeader';
 import { Avatar } from '@components/Avatar';
 import { GradientButton } from '@components/GradientButton';
 import { Card } from '@components/Card';
-import { colors, typography, spacing } from '@theme/index';
+import { typography, spacing, type Colors } from '@theme/index';
+import { useTheme } from '@hooks/useTheme';
 import { useGreeting } from '@hooks/useGreeting';
 import { useMyMemberDetail } from '@features/members/hooks/useMyMemberDetail';
 import { useGenerateMemberCard } from '@features/members/hooks/useGenerateMemberCard';
@@ -34,6 +35,8 @@ export default function MyProfileScreen() {
   const { mutate: generateCard, loading: generatingCard } = useGenerateMemberCard();
   const { data: accessLog } = useMyAccessLog();
   const { toast } = useToast();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const membershipLabel =
     myMember?.subscriptionStatus === 'active'
@@ -220,7 +223,7 @@ export default function MyProfileScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: Colors) => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.backgroundCard },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   greeting: { fontFamily: typography.headingXS.fontFamily, fontSize: typography.headingXS.fontSize, color: colors.textPrimary },

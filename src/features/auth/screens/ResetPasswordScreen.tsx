@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -13,7 +13,8 @@ import { KeyboardScreen } from '@components/KeyboardScreen';
 import { useResetPassword } from '../hooks/useResetPassword';
 import { useToast } from '@hooks/useToast';
 import { passwordSchema } from '@utils/validators';
-import { colors, typography } from '@theme/index';
+import { typography, type Colors } from '@theme/index';
+import { useTheme } from '@hooks/useTheme';
 import type { AuthStackParamList } from '@navigation/types';
 
 const schema = z
@@ -34,6 +35,9 @@ export default function ResetPasswordScreen() {
   const nav = useNavigation<Nav>();
   const { mutate, loading, error } = useResetPassword();
   const { toast } = useToast();
+
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const { control, handleSubmit, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -117,8 +121,8 @@ export default function ResetPasswordScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.white },
+const createStyles = (colors: Colors) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.background },
   scrollContent: { paddingHorizontal: 24, gap: 16 },
   title: { fontFamily: typography.headingL.fontFamily, fontSize: typography.headingL.fontSize, color: colors.textPrimary, textAlign: 'center' },
   description: { fontFamily: typography.bodySM.fontFamily, fontSize: typography.bodySM.fontSize, color: colors.textMuted, textAlign: 'center', lineHeight: 20 },

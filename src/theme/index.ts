@@ -1,17 +1,34 @@
 // ─── Color Tokens (extraidos del diseno Pencil) ───────────────────────────
+//
+// Dark mode (Fase 6): los colores viven en dos paletas con LAS MISMAS claves
+// (`lightColors` / `darkColors`). Las pantallas NO deben importar `colors`
+// directamente para estilos dinamicos: usar `useTheme()` (de `@hooks/useTheme`)
+// que devuelve la paleta activa. El `export const colors = lightColors` se
+// mantiene solo como fallback / compatibilidad para codigo que aun no migra.
+//
+// Convencion semantica para que el dark mode funcione:
+//   - `background`  → fondo de pantalla (claro u oscuro segun tema)
+//   - `surface`     → fondo de cards/tarjetas
+//   - `white`/`black` → SIEMPRE literales (tinta/blancos puros: texto sobre
+//     botones rojos, fondo del QR, etc.). NO usar `white` como fondo de
+//     pantalla: usar `background`/`surface`.
 
-export const colors = {
+export const lightColors = {
   // Brand
   primaryRed: '#930303',
   primaryDark: '#690001',
 
-  // Backgrounds
+  // Literales (no cambian con el tema)
   black: '#000000',
   white: '#FFFFFF',
+
+  // Backgrounds (semanticos — cambian con el tema)
+  background: '#FFFFFF',
   bgLight: '#F5F5F5',
   backgroundDark: '#111111',
   backgroundForm: '#FAFAFA',
   backgroundCard: '#F3F3F4',
+  surface: '#F3F3F4',
 
   // Text
   textPrimary: '#1A1C1C',
@@ -44,6 +61,65 @@ export const colors = {
   inputBg: '#F3F3F4',
   inputBgAlt: '#EEEEEE',
 } as const;
+
+export type Colors = Record<keyof typeof lightColors, string>;
+
+export const darkColors: Colors = {
+  // Brand (rojo de marca intacto en ambos temas)
+  primaryRed: '#930303',
+  primaryDark: '#690001',
+
+  // Literales
+  black: '#000000',
+  white: '#FFFFFF',
+
+  // Backgrounds (invertidos)
+  background: '#121212',
+  bgLight: '#181818',
+  backgroundDark: '#0A0A0A',
+  backgroundForm: '#1C1C1E',
+  backgroundCard: '#1E1E20',
+  surface: '#1E1E20',
+
+  // Text (invertido)
+  textPrimary: '#F5F5F5',
+  textSecondary: '#A1A1AA',
+  textMuted: '#8A8A8E',
+  textPrimaryAlpha80: '#FFFFFFCC',
+  textPrimaryAlpha50: '#FFFFFF80',
+  textPrimaryAlpha40: '#FFFFFF66',
+  textPrimaryAlpha10: '#FFFFFF1A',
+
+  // Status (mismos acentos; los *Bg ya son alfa y funcionan sobre oscuro)
+  badgeActive: '#3DA152',
+  badgeActiveBg: '#2A7A3A26',
+  badgeExpired: '#F05252',
+  badgeExpiredBg: '#DC262626',
+  warning: '#F59E0B',
+  sensorActive: '#3DA152',
+
+  // QR
+  qrBorder: '#2A7A3A',
+
+  // Navigation (la barra ya era oscura en ambos temas)
+  navActive: '#DC2626',
+  navInactive: '#71717A',
+  navBarBg: '#000000',
+  navBarActiveBg: '#18181B',
+
+  // Misc
+  divider: '#2A2A2D',
+  inputBg: '#1E1E20',
+  inputBgAlt: '#262629',
+} as const;
+
+export const palettes = {
+  light: lightColors,
+  dark: darkColors,
+} as const;
+
+/** Fallback estatico (light). Para estilos dinamicos usar `useTheme()`. */
+export const colors = lightColors;
 
 // ─── Gradient Tokens ───────────────────────────────────────────────────────
 
@@ -128,4 +204,4 @@ export const theme = {
   sizes,
 } as const;
 
-export type Theme = typeof theme;
+export type Theme = Omit<typeof theme, 'colors'> & { colors: Colors };

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import {
   Animated,
   StyleSheet,
@@ -6,7 +6,8 @@ import {
   type DimensionValue,
   type ViewStyle,
 } from 'react-native';
-import { colors, radii, spacing } from '@theme/index';
+import { radii, spacing, type Colors } from '@theme/index';
+import { useTheme } from '@hooks/useTheme';
 
 export interface ISkeletonProps {
   width?: DimensionValue;
@@ -25,6 +26,7 @@ export function Skeleton({
   borderRadius = radii.sm,
   style,
 }: ISkeletonProps) {
+  const { colors } = useTheme();
   const opacity = useRef(new Animated.Value(0.3)).current;
 
   useEffect(() => {

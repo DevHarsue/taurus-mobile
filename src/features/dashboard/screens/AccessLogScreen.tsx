@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -9,7 +9,9 @@ import { EmptyState } from '@components/EmptyState';
 import { Skeleton, SkeletonList } from '@components/Skeleton';
 import { AccessLogItem } from '../components/AccessLogItem';
 import { useAccessLog, type AccessLogFilter } from '../hooks/useAccessLog';
-import { colors, typography, spacing } from '@theme/index';
+import { useTheme } from '@hooks/useTheme';
+import { haptics } from '@utils/haptics';
+import { typography, spacing, type Colors } from '@theme/index';
 import type { IAccessLogItem } from '@app-types/access';
 
 const FILTER_CHIPS = [
@@ -19,6 +21,8 @@ const FILTER_CHIPS = [
 ];
 
 function AccessRowSkeleton() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   return (
     <View style={styles.skelRow}>
       <Skeleton width={36} height={36} borderRadius={18} />
@@ -33,7 +37,14 @@ function AccessRowSkeleton() {
 export default function AccessLogScreen() {
   const nav = useNavigation();
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { data, loading, filter, setFilter, refetch } = useAccessLog();
+
+  const handleRefresh = useCallback(() => {
+    haptics.light();
+    refetch();
+  }, [refetch]);
 
   return (
     <View style={styles.container}>
@@ -54,7 +65,7 @@ export default function AccessLogScreen() {
         refreshControl={
           <RefreshControl
             refreshing={loading}
-            onRefresh={refetch}
+            onRefresh={handleRefresh}
             tintColor={colors.primaryRed}
             colors={[colors.primaryRed]}
           />
@@ -81,8 +92,9 @@ export default function AccessLogScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.white },
+const createStyles = (colors: Colors) =>
+  StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.background },
   filterRow: { paddingHorizontal: spacing.xl, paddingVertical: spacing.sm },
   list: { flexGrow: 1 },
   listEmpty: { justifyContent: 'center' },
