@@ -6,9 +6,11 @@ export const PASSWORD_REGEX =
   /^(?=(?:.*\d){2,})(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=\[\]{};:'",.<>?/\\|`~]).{8,}$/;
 export const PASSWORD_MIN_LENGTH = 8;
 
+// Normaliza el telefono eliminando el '+' inicial opcional antes de enviar/persistir.
+export const normalizePhone = (value: string): string => value.replace(/^\+/, '');
+
 export const phoneSchema = z
   .string()
-  // TODO: confirmar con usuario si se debe normalizar (strip '+') antes de persistir
   .regex(
     PHONE_REGEX,
     'Telefono invalido. Formato: 58 + prefijo (412/414/416/418/422/424/426) + 7 digitos. Ej: 584141771490',

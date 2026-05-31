@@ -49,7 +49,7 @@ function EditMemberForm({ id, defaultValues }: { id: string; defaultValues: Upda
         control={control}
         name="phone"
         render={({ field: { onChange, value } }) => (
-          <Input label="TELEFONO" placeholder="584141771490" value={value ?? ''} onChangeText={onChange} error={errors.phone?.message} variant="dark" keyboardType="phone-pad" maxLength={12} />
+          <Input label="TELEFONO" placeholder="584141771490" value={value ?? ''} onChangeText={onChange} error={errors.phone?.message} variant="dark" keyboardType="phone-pad" maxLength={13} />
         )}
       />
 
