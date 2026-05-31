@@ -1,4 +1,5 @@
 import type { IPaginatedResponse } from '@api/interfaces';
+import { normalizePhone } from '@utils/validators';
 import { BaseApiService } from './BaseApiService';
 import type {
   MemberListItem,
@@ -11,6 +12,11 @@ import type {
   RenewMemberRequest,
   SubscriptionResponse,
 } from '@app-types/member';
+
+/** Elimina el '+' inicial opcional del telefono antes de enviarlo al backend. */
+function withNormalizedPhone<T extends { phone?: string }>(body: T): T {
+  return body.phone ? { ...body, phone: normalizePhone(body.phone) } : body;
+}
 
 export class MembersService extends BaseApiService {
   async getAll(
@@ -32,15 +38,15 @@ export class MembersService extends BaseApiService {
   }
 
   async completeMyProfile(body: CompleteProfileRequest): Promise<MemberDetail> {
-    return this.post('/api/members/me/complete-profile', body);
+    return this.post('/api/members/me/complete-profile', withNormalizedPhone(body));
   }
 
   async create(body: CreateMemberRequest): Promise<MemberCreated> {
-    return this.post('/api/members', body);
+    return this.post('/api/members', withNormalizedPhone(body));
   }
 
   async update(id: string, body: UpdateMemberRequest): Promise<MemberDetail> {
-    return this.put(`/api/members/${id}`, body);
+    return this.put(`/api/members/${id}`, withNormalizedPhone(body));
   }
 
   async remove(id: string): Promise<void> {

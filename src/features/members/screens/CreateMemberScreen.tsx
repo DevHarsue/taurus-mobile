@@ -112,7 +112,7 @@ export default function CreateMemberScreen() {
               <Input label="CEDULA" placeholder="12345678" value={value} onChangeText={onChange} error={errors.cedula?.message} variant="dark" keyboardType="numeric" maxLength={8} />
             )} />
             <Controller control={control} name="phone" render={({ field: { onChange, value } }) => (
-              <Input label="TELEFONO" placeholder="584141771490" value={value} onChangeText={onChange} error={errors.phone?.message} variant="dark" keyboardType="phone-pad" maxLength={12} />
+              <Input label="TELEFONO" placeholder="584141771490" value={value} onChangeText={onChange} error={errors.phone?.message} variant="dark" keyboardType="phone-pad" maxLength={13} />
             )} />
             <Controller control={control} name="email" render={({ field: { onChange, value } }) => (
               <Input label="EMAIL" placeholder="usuario@taurus.com" value={value} onChangeText={onChange} error={errors.email?.message} variant="dark" keyboardType="email-address" autoCapitalize="none" />
