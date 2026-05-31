@@ -1,6 +1,5 @@
 import React, { useCallback } from 'react';
 import {
-  ActivityIndicator,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -28,6 +27,7 @@ import { Avatar } from '@components/Avatar';
 import { Card } from '@components/Card';
 import { BarChart } from '@components/BarChart';
 import { DonutChart, type IDonutSegment } from '@components/DonutChart';
+import { Skeleton } from '@components/Skeleton';
 import { useGreeting } from '@hooks/useGreeting';
 import {
   useDashboardStatistics,
@@ -69,6 +69,28 @@ function GrowthIndicator({ current, previous }: { current: number; previous: num
         {pct}% vs mes anterior
       </Text>
     </View>
+  );
+}
+
+function DashboardSkeleton() {
+  return (
+    <>
+      <View style={styles.statsGrid}>
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Card key={i} style={styles.statCardDefault}>
+            <Skeleton width={16} height={16} borderRadius={4} />
+            <Skeleton width="60%" height={28} borderRadius={6} style={styles.skelGap} />
+            <Skeleton width="80%" height={9} borderRadius={5} />
+          </Card>
+        ))}
+      </View>
+      {Array.from({ length: 3 }).map((_, i) => (
+        <Card key={i} style={styles.chartCard}>
+          <Skeleton width="50%" height={16} borderRadius={6} />
+          <Skeleton width="100%" height={120} borderRadius={8} style={styles.skelGap} />
+        </Card>
+      ))}
+    </>
   );
 }
 
@@ -124,12 +146,7 @@ export default function DashboardScreen() {
           />
         }
       >
-        {isInitial && (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={colors.primaryRed} />
-            <Text style={styles.loadingText}>Cargando estadisticas...</Text>
-          </View>
-        )}
+        {isInitial && <DashboardSkeleton />}
 
         {error && !isInitial && (
           <Card style={styles.errorCard}>
@@ -473,6 +490,7 @@ const styles = StyleSheet.create({
     fontSize: typography.bodySM.fontSize,
     color: colors.textMuted,
   },
+  skelGap: { marginTop: 6 },
   errorCard: {
     padding: spacing.lg,
     backgroundColor: colors.badgeExpiredBg,
