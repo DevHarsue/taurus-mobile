@@ -5,7 +5,6 @@ import { Settings } from 'lucide-react-native';
 import QRCode from 'react-native-qrcode-svg';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useAuth } from '@hooks/useAuth';
 import { useGreeting } from '@hooks/useGreeting';
 import type { MemberQRStackParamList } from '@navigation/types';
 import { ScreenHeader } from '@components/ScreenHeader';
@@ -15,7 +14,6 @@ import { useMyMemberDetail } from '@features/members/hooks/useMyMemberDetail';
 import { buildMemberQrPayload } from '@features/members/utils/memberQr';
 
 export default function MyQRScreen() {
-  const { user } = useAuth();
   const { displayName } = useGreeting();
   const nav = useNavigation<NativeStackNavigationProp<MemberQRStackParamList>>();
   const insets = useSafeAreaInsets();

@@ -12,7 +12,7 @@ import { AlertBanner } from '@components/AlertBanner';
 import { KeyboardScreen } from '@components/KeyboardScreen';
 import { useLogin } from '@features/auth/hooks/useLogin';
 import { useGoogleLogin } from '@features/auth/hooks/useGoogleLogin';
-import { colors, typography, spacing } from '@theme/index';
+import { colors, typography } from '@theme/index';
 import type { AuthStackParamList } from '@navigation/types';
 
 const schema = z.object({
