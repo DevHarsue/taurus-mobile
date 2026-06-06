@@ -11,7 +11,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Search, Users } from 'lucide-react-native';
+import { FileText, Search, Users } from 'lucide-react-native';
 import { ScreenHeader } from '@components/ScreenHeader';
 import { Avatar } from '@components/Avatar';
 import { Badge } from '@components/Badge';
@@ -22,8 +22,11 @@ import { EmptyState } from '@components/EmptyState';
 import { Skeleton, SkeletonList } from '@components/Skeleton';
 import { useGreeting } from '@hooks/useGreeting';
 import { useTheme } from '@hooks/useTheme';
+import { useToast } from '@hooks/useToast';
 import { haptics } from '@utils/haptics';
+import { ReportEmptyError } from '@utils/pdf';
 import { useMemberSearch } from '../hooks/useMemberSearch';
+import { useExportMembersPdf } from '../hooks/useExportMembersPdf';
 import { typography, spacing, type Colors } from '@theme/index';
 import type { MembersStackParamList } from '@navigation/types';
 
@@ -68,6 +71,8 @@ export default function MembersListScreen() {
     onSearch,
     onFilter,
   } = useMemberSearch();
+  const { mutate: exportPdf, loading: exporting } = useExportMembersPdf();
+  const { toast } = useToast();
 
   useFocusEffect(
     useCallback(() => {
@@ -82,6 +87,18 @@ export default function MembersListScreen() {
     refetch();
   }, [refetch]);
 
+  const handleExport = useCallback(() => {
+    if (exporting) return;
+    haptics.light();
+    void exportPdf({ search, filter }).catch((e: unknown) => {
+      if (e instanceof ReportEmptyError) {
+        toast.info('No hay miembros para exportar con los filtros actuales');
+      } else {
+        toast.error('No se pudo generar el listado de miembros');
+      }
+    });
+  }, [exportPdf, exporting, search, filter, toast]);
+
   const hasFilter = search.trim().length > 0 || filter.length > 0;
   const isInitial = loading && members.length === 0;
   const isRefreshing = loading && members.length > 0;
@@ -95,6 +112,14 @@ export default function MembersListScreen() {
             <Text style={styles.greeting}>Hola, {displayName}</Text>
           </View>
         }
+        rightIcon={
+          exporting ? (
+            <ActivityIndicator size="small" color={colors.primaryRed} />
+          ) : (
+            <FileText size={22} color={colors.textPrimary} strokeWidth={2} />
+          )
+        }
+        onRightPress={handleExport}
       />
 
       <View style={styles.content}>

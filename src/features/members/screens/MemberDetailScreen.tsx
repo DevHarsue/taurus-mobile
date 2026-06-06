@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Info, Pencil, Download, Fingerprint } from 'lucide-react-native';
+import { Info, Pencil, Download, FileText, Fingerprint } from 'lucide-react-native';
 import { ScreenHeader } from '@components/ScreenHeader';
 import { Badge } from '@components/Badge';
 import { Button } from '@components/Button';
@@ -17,6 +17,7 @@ import { useMemberSubscriptions } from '../hooks/useMemberSubscriptions';
 import { useMemberAccessLog } from '../hooks/useMemberAccessLog';
 import { useDeleteMember } from '../hooks/useDeleteMember';
 import { useGenerateMemberCard } from '../hooks/useGenerateMemberCard';
+import { useExportMemberDossierPdf } from '../hooks/useExportMemberDossierPdf';
 import { useToast } from '@hooks/useToast';
 import { useTheme } from '@hooks/useTheme';
 import { haptics } from '@utils/haptics';
@@ -38,6 +39,7 @@ export default function MemberDetailScreen({ route }: MemberDetailScreenProps) {
   const accessLogQuery = useMemberAccessLog(id);
   const { mutate: deleteMember } = useDeleteMember();
   const { mutate: generateCard, loading: generatingCard } = useGenerateMemberCard();
+  const { mutate: exportDossier, loading: exportingDossier } = useExportMemberDossierPdf();
   const { toast } = useToast();
 
   const handleDelete = async () => {
@@ -246,6 +248,18 @@ export default function MemberDetailScreen({ route }: MemberDetailScreenProps) {
                   style={styles.actionBtn}
                 />
               </View>
+
+              <Button
+                variant="outline"
+                title="Expediente PDF"
+                icon={<FileText size={18} color={colors.primaryRed} strokeWidth={2} />}
+                onPress={() => {
+                  void exportDossier({ id }).catch(() => {
+                    toast.error('No se pudo generar el expediente');
+                  });
+                }}
+                loading={exportingDossier}
+              />
 
               <Button
                 variant="danger"

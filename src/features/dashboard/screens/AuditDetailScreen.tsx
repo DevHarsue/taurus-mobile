@@ -1,17 +1,26 @@
-import React, { useMemo } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useCallback, useMemo } from 'react';
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { FileText } from 'lucide-react-native';
 import { ScreenHeader } from '@components/ScreenHeader';
 import { Badge } from '@components/Badge';
 import { Card } from '@components/Card';
 import { ErrorState } from '@components/ErrorState';
 import { Skeleton, SkeletonList } from '@components/Skeleton';
 import { useTheme } from '@hooks/useTheme';
+import { useToast } from '@hooks/useToast';
 import { spacing, typography, type Colors } from '@theme/index';
 import { formatFullTimestamp } from '@utils/dates';
 import { AuditDiff } from '../components/AuditDiff';
 import { useAuditDetail } from '../hooks/useAuditDetail';
+import { useExportAuditDetailPdf } from '../hooks/useExportAuditDetailPdf';
 import {
   operationDescriptor,
   shortRowId,
@@ -53,10 +62,32 @@ export default function AuditDetailScreen() {
   const styles = useMemo(() => createStyles(colors), [colors]);
   const { id } = route.params;
   const { data, loading, error, refetch } = useAuditDetail(id);
+  const { mutate: exportPdf, loading: exporting } = useExportAuditDetailPdf();
+  const { toast } = useToast();
+
+  const handleExport = useCallback(() => {
+    if (!data || exporting) return;
+    void exportPdf(data).catch(() => {
+      toast.error('No se pudo generar el PDF del detalle');
+    });
+  }, [data, exportPdf, exporting, toast]);
 
   return (
     <View style={styles.container}>
-      <ScreenHeader title="Detalle de auditoria" onBack={() => nav.goBack()} />
+      <ScreenHeader
+        title="Detalle de auditoria"
+        onBack={() => nav.goBack()}
+        rightIcon={
+          data ? (
+            exporting ? (
+              <ActivityIndicator size="small" color={colors.primaryRed} />
+            ) : (
+              <FileText size={22} color={colors.textPrimary} strokeWidth={2} />
+            )
+          ) : undefined
+        }
+        onRightPress={handleExport}
+      />
 
       {loading && !data ? (
         <ScrollView

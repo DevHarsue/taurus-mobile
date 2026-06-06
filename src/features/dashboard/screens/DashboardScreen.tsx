@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo } from 'react';
 import {
+  ActivityIndicator,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -17,6 +18,7 @@ import {
   TrendingUp,
   TrendingDown,
   AlertTriangle,
+  FileText,
   ShieldAlert,
   Clock,
   Trophy,
@@ -33,7 +35,9 @@ import {
   useDashboardStatistics,
   useAccessStatistics,
 } from '../hooks/useStatistics';
+import { useExportDashboardPdf } from '../hooks/useExportDashboardPdf';
 import { useTheme } from '@hooks/useTheme';
+import { useToast } from '@hooks/useToast';
 import { haptics } from '@utils/haptics';
 import { colors as staticColors, typography, spacing, type Colors } from '@theme/index';
 import type { DashboardStackParamList } from '@navigation/types';
@@ -128,6 +132,17 @@ export default function DashboardScreen() {
     access.refetch();
   }, [stats, access]);
 
+  const { mutate: exportPdf, loading: exporting } = useExportDashboardPdf();
+  const { toast } = useToast();
+
+  const handleExport = useCallback(() => {
+    if (exporting || !hasData) return;
+    haptics.light();
+    void exportPdf().catch(() => {
+      toast.error('No se pudo generar el reporte ejecutivo');
+    });
+  }, [exportPdf, exporting, hasData, toast]);
+
   return (
     <View style={styles.container}>
       <ScreenHeader
@@ -137,6 +152,16 @@ export default function DashboardScreen() {
             <Text style={styles.greeting}>Hola, {displayName}</Text>
           </View>
         }
+        rightIcon={
+          hasData ? (
+            exporting ? (
+              <ActivityIndicator size="small" color={colors.primaryRed} />
+            ) : (
+              <FileText size={22} color={colors.textPrimary} strokeWidth={2} />
+            )
+          ) : undefined
+        }
+        onRightPress={handleExport}
       />
 
       <ScrollView
