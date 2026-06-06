@@ -9,7 +9,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { History, SearchX } from 'lucide-react-native';
+import { FileText, History, SearchX } from 'lucide-react-native';
 import { ScreenHeader } from '@components/ScreenHeader';
 import { FilterChips } from '@components/FilterChips';
 import { EmptyState } from '@components/EmptyState';
@@ -21,8 +21,11 @@ import {
   type AuditOperationFilter,
   type AuditTableFilter,
 } from '../hooks/useAuditLog';
+import { useExportAuditPdf } from '../hooks/useExportAuditPdf';
 import { useTheme } from '@hooks/useTheme';
+import { useToast } from '@hooks/useToast';
 import { haptics } from '@utils/haptics';
+import { ReportEmptyError } from '@utils/pdf';
 import { spacing, type Colors } from '@theme/index';
 import type { DashboardStackParamList } from '@navigation/types';
 import type { IAuditLogItem } from '@app-types/audit';
@@ -79,11 +82,25 @@ export default function AuditTrailScreen() {
     table,
     setTable,
   } = useAuditLog();
+  const { mutate: exportPdf, loading: exporting } = useExportAuditPdf();
+  const { toast } = useToast();
 
   const handleRefresh = useCallback(() => {
     haptics.light();
     refetch();
   }, [refetch]);
+
+  const handleExport = useCallback(() => {
+    if (exporting) return;
+    haptics.light();
+    void exportPdf({ operation, table }).catch((e: unknown) => {
+      if (e instanceof ReportEmptyError) {
+        toast.info('No hay registros para exportar con los filtros actuales');
+      } else {
+        toast.error('No se pudo generar el reporte de auditoría');
+      }
+    });
+  }, [exportPdf, exporting, operation, table, toast]);
 
   const handleItemPress = useCallback(
     (item: IAuditLogItem) => {
@@ -98,7 +115,18 @@ export default function AuditTrailScreen() {
 
   return (
     <View style={styles.container}>
-      <ScreenHeader title="Auditoria del sistema" onBack={() => nav.goBack()} />
+      <ScreenHeader
+        title="Auditoria del sistema"
+        onBack={() => nav.goBack()}
+        rightIcon={
+          exporting ? (
+            <ActivityIndicator size="small" color={colors.primaryRed} />
+          ) : (
+            <FileText size={22} color={colors.textPrimary} strokeWidth={2} />
+          )
+        }
+        onRightPress={handleExport}
+      />
 
       <View style={styles.filterRow}>
         <FilterChips

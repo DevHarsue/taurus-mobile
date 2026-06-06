@@ -1,16 +1,25 @@
 import React, { useCallback, useMemo } from 'react';
-import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
+import {
+  ActivityIndicator,
+  FlatList,
+  RefreshControl,
+  StyleSheet,
+  View,
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Activity } from 'lucide-react-native';
+import { Activity, FileText } from 'lucide-react-native';
 import { ScreenHeader } from '@components/ScreenHeader';
 import { FilterChips } from '@components/FilterChips';
 import { EmptyState } from '@components/EmptyState';
 import { Skeleton, SkeletonList } from '@components/Skeleton';
 import { AccessLogItem } from '../components/AccessLogItem';
 import { useAccessLog, type AccessLogFilter } from '../hooks/useAccessLog';
+import { useExportAccessPdf } from '../hooks/useExportAccessPdf';
 import { useTheme } from '@hooks/useTheme';
+import { useToast } from '@hooks/useToast';
 import { haptics } from '@utils/haptics';
+import { ReportEmptyError } from '@utils/pdf';
 import { typography, spacing, type Colors } from '@theme/index';
 import type { IAccessLogItem } from '@app-types/access';
 
@@ -40,15 +49,40 @@ export default function AccessLogScreen() {
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const { data, loading, filter, setFilter, refetch } = useAccessLog();
+  const { mutate: exportPdf, loading: exporting } = useExportAccessPdf();
+  const { toast } = useToast();
 
   const handleRefresh = useCallback(() => {
     haptics.light();
     refetch();
   }, [refetch]);
 
+  const handleExport = useCallback(() => {
+    if (exporting) return;
+    haptics.light();
+    void exportPdf(filter).catch((e: unknown) => {
+      if (e instanceof ReportEmptyError) {
+        toast.info('No hay accesos para exportar con el filtro actual');
+      } else {
+        toast.error('No se pudo generar el reporte de accesos');
+      }
+    });
+  }, [exportPdf, exporting, filter, toast]);
+
   return (
     <View style={styles.container}>
-      <ScreenHeader title="Registro de Accesos" onBack={() => nav.goBack()} />
+      <ScreenHeader
+        title="Registro de Accesos"
+        onBack={() => nav.goBack()}
+        rightIcon={
+          exporting ? (
+            <ActivityIndicator size="small" color={colors.primaryRed} />
+          ) : (
+            <FileText size={22} color={colors.textPrimary} strokeWidth={2} />
+          )
+        }
+        onRightPress={handleExport}
+      />
 
       <View style={styles.filterRow}>
         <FilterChips
