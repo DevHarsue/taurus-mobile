@@ -30,8 +30,12 @@ function EditMemberForm({ id, defaultValues }: { id: string; defaultValues: Upda
   });
 
   const onSubmit = async (values: UpdateMemberFormValues) => {
-    await mutate({ id, body: values });
-    toast.success('Cambios guardados');
+    const { queued } = await mutate({ id, body: values });
+    if (queued) {
+      toast.info('Sin conexión: los cambios se sincronizarán automáticamente');
+    } else {
+      toast.success('Cambios guardados');
+    }
     nav.goBack();
   };
 

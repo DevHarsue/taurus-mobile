@@ -7,5 +7,6 @@ export function useMemberDetail(id: string) {
     queryFn: () => membersService.getById(id),
     deps: [id],
     errorMessage: 'No se pudo cargar el miembro',
+    cacheKey: `member:${id}`,
   });
 }

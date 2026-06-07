@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { LogOut } from 'lucide-react-native';
+import { ChevronRight, CloudOff, LogOut } from 'lucide-react-native';
 import { z } from 'zod';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -14,6 +14,7 @@ import { AlertBanner } from '@components/AlertBanner';
 import { Badge } from '@components/Badge';
 import { KeyboardScreen } from '@components/KeyboardScreen';
 import { useAuth } from '@hooks/useAuth';
+import { useOutbox } from '@offline';
 import { useChangePassword } from '../hooks/useChangePassword';
 import { useToast } from '@hooks/useToast';
 import { useTheme } from '@hooks/useTheme';
@@ -46,6 +47,7 @@ export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const { user, logout } = useAuth();
   const { mutate, loading, error } = useChangePassword();
+  const { pendingCount } = useOutbox();
   const { toast } = useToast();
   const { colors, mode, setMode } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
@@ -95,6 +97,26 @@ export default function SettingsScreen() {
             />
           </View>
         </Card>
+
+        {/* Sincronizacion offline (solo admin: las operaciones encolables son de gestion) */}
+        {user?.role === 'admin' && (
+          <Card style={styles.section}>
+            <Text style={styles.sectionTitle}>Sincronización</Text>
+            <Pressable
+              style={styles.syncRow}
+              onPress={() => nav.navigate('PendingSync' as never)}
+            >
+              <CloudOff size={18} color={colors.textSecondary} strokeWidth={2} />
+              <Text style={styles.syncLabel}>Pendientes de sincronizar</Text>
+              <Badge
+                label={String(pendingCount)}
+                variant={pendingCount > 0 ? 'warning' : 'neutral'}
+                badgeStyle="pill"
+              />
+              <ChevronRight size={18} color={colors.textMuted} strokeWidth={2} />
+            </Pressable>
+          </Card>
+        )}
 
         {/* Tema (dark mode) */}
         <Card style={styles.section}>
@@ -204,6 +226,8 @@ const createStyles = (colors: Colors) =>
     infoRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
     infoLabel: { fontFamily: typography.bodySM.fontFamily, fontSize: typography.bodySM.fontSize, color: colors.textMuted },
     infoValue: { fontFamily: typography.bodyS.fontFamily, fontSize: typography.bodyS.fontSize, color: colors.textPrimary },
+    syncRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+    syncLabel: { flex: 1, fontFamily: typography.bodyS.fontFamily, fontSize: typography.bodyS.fontSize, color: colors.textPrimary },
     segment: { flexDirection: 'row', backgroundColor: colors.inputBg, borderRadius: 12, padding: 4, gap: 4 },
     segmentItem: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 10, borderRadius: 8 },
     segmentItemActive: { backgroundColor: colors.primaryRed },

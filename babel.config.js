@@ -15,6 +15,7 @@ module.exports = function (api) {
             '@types': './src/types',
             '@app-types': './src/types',
             '@utils': './src/utils',
+            '@offline': './src/offline',
             '@theme': './src/theme',
             '@context': './src/context',
             '@navigation': './src/navigation'

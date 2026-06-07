@@ -7,6 +7,7 @@ import { AuthProvider } from '@context/AuthContext';
 import { ThemeProvider } from '@context/ThemeContext';
 import { ToastProvider } from '@context/ToastContext';
 import { ConfirmModalProvider } from '@context/ConfirmModalContext';
+import { ConnectivityProvider, OutboxProvider, OfflineBanner } from '@offline';
 import { RootNavigator } from '@navigation/RootNavigator';
 import { navigationRef } from '@navigation/navigationRef';
 import { useAppFonts } from '@theme/fonts';
@@ -46,17 +47,22 @@ export default function App() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <ThemeProvider>
-          <AuthProvider>
-            <ToastProvider>
-              <ConfirmModalProvider>
-                <ThemedStatusBar />
-                <NavigationContainer ref={navigationRef}>
-                  <RootNavigator />
-                </NavigationContainer>
-                <DeepLinkHandler />
-              </ConfirmModalProvider>
-            </ToastProvider>
-          </AuthProvider>
+          <ConnectivityProvider>
+            <OutboxProvider>
+              <AuthProvider>
+                <ToastProvider>
+                  <ConfirmModalProvider>
+                    <ThemedStatusBar />
+                    <OfflineBanner />
+                    <NavigationContainer ref={navigationRef}>
+                      <RootNavigator />
+                    </NavigationContainer>
+                    <DeepLinkHandler />
+                  </ConfirmModalProvider>
+                </ToastProvider>
+              </AuthProvider>
+            </OutboxProvider>
+          </ConnectivityProvider>
         </ThemeProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

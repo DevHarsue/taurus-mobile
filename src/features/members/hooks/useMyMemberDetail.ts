@@ -7,5 +7,6 @@ export function useMyMemberDetail() {
         queryFn: () => membersService.getMine(),
         deps: [],
         errorMessage: 'No se pudo cargar tu perfil',
+        cacheKey: 'member:me',
     });
 }

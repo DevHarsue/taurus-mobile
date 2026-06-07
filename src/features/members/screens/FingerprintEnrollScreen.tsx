@@ -15,6 +15,8 @@ import { Badge } from '@components/Badge';
 import { DeviceSelector } from '../components/DeviceSelector';
 import { useEnrollFingerprint } from '../hooks/useEnrollFingerprint';
 import { useTheme } from '@hooks/useTheme';
+import { useToast } from '@hooks/useToast';
+import { useConnectivity } from '@offline';
 import { haptics } from '@utils/haptics';
 import { typography, spacing, type Colors } from '@theme/index';
 import type { FingerprintEnrollScreenProps } from '@navigation/types';
@@ -42,6 +44,19 @@ export default function FingerprintEnrollScreen({
     memberId,
     deviceId,
   );
+  const { isOnline } = useConnectivity();
+  const { toast } = useToast();
+
+  // El enrolamiento requiere conexion: dialoga en vivo con el sensor IoT.
+  const handleStart = () => {
+    if (!isOnline) {
+      toast.warning(
+        'El enrolamiento de huella requiere conexión a internet y el dispositivo en línea.',
+      );
+      return;
+    }
+    start();
+  };
 
   useEffect(() => {
     return () => {
@@ -124,7 +139,7 @@ export default function FingerprintEnrollScreen({
         </Card>
 
         {!isInProgress && !isDone ? (
-          <GradientButton title="Iniciar enrolamiento" onPress={start} />
+          <GradientButton title="Iniciar enrolamiento" onPress={handleStart} />
         ) : null}
 
         {isInProgress ? (

@@ -49,9 +49,13 @@ export default function MemberDetailScreen({ route }: MemberDetailScreenProps) {
       { destructive: true, confirmLabel: 'Eliminar' },
     );
     if (!ok) return;
-    await deleteMember(id);
+    const { queued } = await deleteMember({ id, name: query.data?.name });
     haptics.warning();
-    toast.success('Miembro eliminado');
+    if (queued) {
+      toast.info('Sin conexión: la eliminación se sincronizará automáticamente');
+    } else {
+      toast.success('Miembro eliminado');
+    }
     nav.goBack();
   };
 

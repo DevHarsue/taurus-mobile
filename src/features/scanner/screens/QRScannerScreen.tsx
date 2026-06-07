@@ -21,11 +21,18 @@ import { typography, spacing, type Colors } from '@theme/index';
 import { haptics } from '@utils/haptics';
 import { useScannerBeep } from '@hooks/useScannerBeep';
 import { membersService } from '@api/services';
+import { getIsOnline, isNetworkError } from '@offline';
 import { parseMemberIdFromQr } from '@features/members/utils/memberQr';
+import {
+  lookupSnapshotMember,
+  useMembersSnapshot,
+  type SnapshotMember,
+} from '../hooks/useMembersSnapshot';
 
 type ScanState =
   | { type: 'idle' }
   | { type: 'looking-up'; memberId: string }
+  | { type: 'offline-result'; member: SnapshotMember }
   | { type: 'error'; message: string };
 
 export default function QRScannerScreen() {
@@ -40,6 +47,26 @@ export default function QRScannerScreen() {
   const [manualInput, setManualInput] = useState('');
   const lockRef = useRef(false);
 
+  // Mantiene el snapshot local de miembros para validar sin internet.
+  useMembersSnapshot();
+
+  /** Validacion offline contra el snapshot local de miembros. */
+  const lookupOffline = useCallback(async (memberId: string) => {
+    const member = await lookupSnapshotMember(memberId);
+    if (member) {
+      setScanState({ type: 'offline-result', member });
+      // lockRef queda activo: se libera al continuar o escanear de nuevo.
+      return;
+    }
+    lockRef.current = false;
+    haptics.error();
+    setScanState({
+      type: 'error',
+      message:
+        'Sin conexión y el miembro no está guardado en este dispositivo.',
+    });
+  }, []);
+
   const goToRenew = useCallback(
     async (memberId: string) => {
       if (lockRef.current) return;
@@ -48,6 +75,12 @@ export default function QRScannerScreen() {
       playBeep();
       haptics.success();
       setScanState({ type: 'looking-up', memberId });
+
+      if (!getIsOnline()) {
+        await lookupOffline(memberId);
+        return;
+      }
+
       try {
         const member = await membersService.getById(memberId);
         navigation.getParent()?.navigate('Members', {
@@ -60,7 +93,12 @@ export default function QRScannerScreen() {
           lockRef.current = false;
           setScanState({ type: 'idle' });
         }, 800);
-      } catch {
+      } catch (e) {
+        if (isNetworkError(e)) {
+          // La red se cayo durante la consulta: intentar el snapshot local.
+          await lookupOffline(memberId);
+          return;
+        }
         lockRef.current = false;
         haptics.error();
         setScanState({
@@ -69,8 +107,29 @@ export default function QRScannerScreen() {
         });
       }
     },
-    [navigation, playBeep],
+    [navigation, playBeep, lookupOffline],
   );
+
+  /** Continua a renovacion desde una validacion offline. */
+  const continueOfflineRenew = useCallback(
+    (member: SnapshotMember) => {
+      navigation.getParent()?.navigate('Members', {
+        screen: 'RenewMembership',
+        initial: false,
+        params: { memberId: member.id, memberName: member.name },
+      });
+      setTimeout(() => {
+        lockRef.current = false;
+        setScanState({ type: 'idle' });
+      }, 800);
+    },
+    [navigation],
+  );
+
+  const resetScan = useCallback(() => {
+    lockRef.current = false;
+    setScanState({ type: 'idle' });
+  }, []);
 
   const handleBarcode = useCallback(
     ({ data }: { data: string }) => {
@@ -153,7 +212,10 @@ export default function QRScannerScreen() {
               facing="back"
               barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
               onBarcodeScanned={
-                scanState.type === 'looking-up' ? undefined : handleBarcode
+                scanState.type === 'looking-up' ||
+                scanState.type === 'offline-result'
+                  ? undefined
+                  : handleBarcode
               }
             />
           )}
@@ -169,6 +231,47 @@ export default function QRScannerScreen() {
         {scanState.type === 'error' && (
           <View style={styles.errorBox}>
             <Text style={styles.errorText}>{scanState.message}</Text>
+          </View>
+        )}
+
+        {scanState.type === 'offline-result' && (
+          <View style={styles.offlineResultBox}>
+            <Text style={styles.offlineResultLabel}>
+              VALIDACIÓN SIN CONEXIÓN
+            </Text>
+            <Text style={styles.offlineResultName}>
+              {scanState.member.name}
+            </Text>
+            <Text
+              style={[
+                styles.offlineResultStatus,
+                {
+                  color:
+                    scanState.member.subscriptionStatus === 'active'
+                      ? '#4ade80'
+                      : '#fca5a5',
+                },
+              ]}
+            >
+              {scanState.member.subscriptionStatus === 'active'
+                ? `MEMBRESÍA ACTIVA · ${scanState.member.daysLeft} día(s) restantes`
+                : scanState.member.subscriptionStatus === 'expired'
+                  ? 'MEMBRESÍA VENCIDA'
+                  : 'SIN MEMBRESÍA'}
+            </Text>
+            <View style={styles.offlineResultActions}>
+              <Pressable style={styles.offlineResultSecondary} onPress={resetScan}>
+                <Text style={styles.offlineResultSecondaryText}>
+                  Escanear otro
+                </Text>
+              </Pressable>
+              <View style={{ flex: 1 }}>
+                <GradientButton
+                  title="Renovar membresía"
+                  onPress={() => continueOfflineRenew(scanState.member)}
+                />
+              </View>
+            </View>
           </View>
         )}
 
@@ -302,6 +405,48 @@ const createStyles = (colors: Colors) =>
       paddingHorizontal: 16,
       paddingVertical: 10,
       borderRadius: 12,
+    },
+    offlineResultBox: {
+      width: '100%',
+      backgroundColor: '#FFFFFF10',
+      borderWidth: 1,
+      borderColor: '#FFFFFF25',
+      borderRadius: 16,
+      padding: 18,
+      gap: 6,
+    },
+    offlineResultLabel: {
+      fontFamily: typography.labelL.fontFamily,
+      fontSize: 10,
+      letterSpacing: 2,
+      color: '#FFFFFF60',
+    },
+    offlineResultName: {
+      fontFamily: typography.headingS.fontFamily,
+      fontSize: typography.headingS.fontSize,
+      color: colors.white,
+    },
+    offlineResultStatus: {
+      fontFamily: typography.bodyS.fontFamily,
+      fontSize: typography.bodyS.fontSize,
+      fontWeight: '700',
+      letterSpacing: 0.5,
+    },
+    offlineResultActions: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      marginTop: 10,
+    },
+    offlineResultSecondary: {
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+    },
+    offlineResultSecondaryText: {
+      fontFamily: typography.bodyS.fontFamily,
+      fontSize: typography.bodyS.fontSize,
+      color: '#FFFFFF90',
+      fontWeight: '600',
     },
     errorText: {
       fontFamily: typography.bodyS.fontFamily,

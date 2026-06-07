@@ -26,6 +26,8 @@ export function useMemberSearch() {
       }),
     deps: [debouncedSearch, filter],
     errorMessage: 'No se pudo cargar miembros',
+    // Solo se cachea la lista base (sin busqueda ni filtros activos).
+    cacheKey: !debouncedSearch && !filter ? 'members:list' : undefined,
   });
 
   const onSearch = useCallback((text: string) => setSearch(text), []);

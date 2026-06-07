@@ -13,5 +13,6 @@ export function useMySubscriptions() {
     },
     deps: [],
     errorMessage: 'No se pudo cargar tu historial de suscripciones',
+    cacheKey: 'subscriptions:me',
   });
 }

@@ -15,6 +15,7 @@ import { useToast } from '@hooks/useToast';
 import { useConfirm } from '@hooks/useConfirm';
 import { useTheme } from '@hooks/useTheme';
 import { haptics } from '@utils/haptics';
+import { isTempId } from '@offline';
 import { usePlans } from '@features/plans/hooks/usePlans';
 import { addDays, formatDateSpanish, formatDateShort } from '@utils/dates';
 import { typography, spacing, type Colors } from '@theme/index';
@@ -61,6 +62,12 @@ export default function RenewMembershipScreen({ route }: RenewMembershipScreenPr
 
   const handleConfirm = async () => {
     if (!selectedPlan) return;
+    if (isTempId(memberId)) {
+      toast.warning(
+        'Este miembro aún no se ha sincronizado. Conéctate a internet para renovar su membresía.',
+      );
+      return;
+    }
     const ok = await confirm({
       title: 'Confirmar renovación',
       rows: [
@@ -74,13 +81,23 @@ export default function RenewMembershipScreen({ route }: RenewMembershipScreenPr
       cancelLabel: 'Cancelar',
     });
     if (!ok) return;
-    await mutate({ memberId, planId: selectedPlan.id });
+    const { queued } = await mutate({
+      memberId,
+      planId: selectedPlan.id,
+      memberName: member?.name,
+    });
     haptics.success();
-    toast.success(
-      newExpiryDate
-        ? `Membresia renovada hasta ${newExpiryDate}`
-        : 'Membresia renovada',
-    );
+    if (queued) {
+      toast.info(
+        'Sin conexión: la renovación se guardó y se sincronizará automáticamente',
+      );
+    } else {
+      toast.success(
+        newExpiryDate
+          ? `Membresia renovada hasta ${newExpiryDate}`
+          : 'Membresia renovada',
+      );
+    }
     nav.goBack();
   };
 

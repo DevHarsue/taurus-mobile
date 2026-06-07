@@ -5,6 +5,8 @@ import axios, {
 } from 'axios';
 import { AUTH_BASE_URL, SECURE_STORE_KEYS } from '@utils/constants';
 import { storage } from '@utils/storage';
+// Import profundo (no el barrel @offline) para evitar dependencia circular.
+import { isNetworkError } from '@offline/errors';
 import { triggerLogout } from './authEvents';
 import type { RefreshResponse } from '@app-types/auth';
 
@@ -86,7 +88,12 @@ export function createApiClient(baseURL: string): AxiosInstance {
 
         return api(original);
       } catch (e) {
-        await triggerLogout();
+        // Refresh fallido por falta de red: NO desloguear (la sesion sigue
+        // siendo valida; se reintentara al volver la conexion). Solo un
+        // rechazo real del backend (refresh token invalido) cierra sesion.
+        if (!isNetworkError(e)) {
+          await triggerLogout();
+        }
         return Promise.reject(e);
       }
     }

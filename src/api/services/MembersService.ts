@@ -1,6 +1,6 @@
 import type { IPaginatedResponse } from '@api/interfaces';
 import { normalizePhone } from '@utils/validators';
-import { BaseApiService } from './BaseApiService';
+import { BaseApiService, type IWriteOptions } from './BaseApiService';
 import type {
   MemberListItem,
   MemberDetail,
@@ -37,27 +37,42 @@ export class MembersService extends BaseApiService {
     return this.get('/api/members/me/subscriptions');
   }
 
-  async completeMyProfile(body: CompleteProfileRequest): Promise<MemberDetail> {
-    return this.post('/api/members/me/complete-profile', withNormalizedPhone(body));
+  async completeMyProfile(
+    body: CompleteProfileRequest,
+    options?: IWriteOptions,
+  ): Promise<MemberDetail> {
+    return this.post(
+      '/api/members/me/complete-profile',
+      withNormalizedPhone(body),
+      options,
+    );
   }
 
-  async create(body: CreateMemberRequest): Promise<MemberCreated> {
-    return this.post('/api/members', withNormalizedPhone(body));
+  async create(
+    body: CreateMemberRequest,
+    options?: IWriteOptions,
+  ): Promise<MemberCreated> {
+    return this.post('/api/members', withNormalizedPhone(body), options);
   }
 
-  async update(id: string, body: UpdateMemberRequest): Promise<MemberDetail> {
-    return this.put(`/api/members/${id}`, withNormalizedPhone(body));
+  async update(
+    id: string,
+    body: UpdateMemberRequest,
+    options?: IWriteOptions,
+  ): Promise<MemberDetail> {
+    return this.put(`/api/members/${id}`, withNormalizedPhone(body), options);
   }
 
-  async remove(id: string): Promise<void> {
-    return this.delete(`/api/members/${id}`);
+  async remove(id: string, options?: IWriteOptions): Promise<void> {
+    return this.delete(`/api/members/${id}`, undefined, options);
   }
 
   async renew(
     id: string,
     body: RenewMemberRequest,
+    options?: IWriteOptions,
   ): Promise<SubscriptionResponse> {
-    return this.post(`/api/members/${id}/renew`, body);
+    return this.post(`/api/members/${id}/renew`, body, options);
   }
 
   async startEnrollment(

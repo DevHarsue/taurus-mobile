@@ -45,6 +45,7 @@ export type DashboardStackParamList = {
 export type ProfileStackParamList = {
   ProfileHome: undefined;
   Settings: undefined;
+  PendingSync: undefined;
 };
 
 export type QRScannerStackParamList = {

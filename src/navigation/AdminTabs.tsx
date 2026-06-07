@@ -17,6 +17,7 @@ import EditPlanScreen from '@features/plans/screens/EditPlanScreen';
 import QRScannerScreen from '@features/scanner/screens/QRScannerScreen';
 import MyProfileScreen from '@features/profile/screens/MyProfileScreen';
 import SettingsScreen from '@features/settings/screens/SettingsScreen';
+import PendingSyncScreen from '@offline/screens/PendingSyncScreen';
 import AccessLogScreen from '@features/dashboard/screens/AccessLogScreen';
 import DevicesScreen from '@features/dashboard/screens/DevicesScreen';
 import AuditTrailScreen from '@features/dashboard/screens/AuditTrailScreen';
@@ -88,6 +89,7 @@ function ProfileStackNavigator() {
     <ProfileStack.Navigator screenOptions={{ headerShown: false }}>
       <ProfileStack.Screen name="ProfileHome" component={MyProfileScreen} />
       <ProfileStack.Screen name="Settings" component={SettingsScreen} />
+      <ProfileStack.Screen name="PendingSync" component={PendingSyncScreen} />
     </ProfileStack.Navigator>
   );
 }

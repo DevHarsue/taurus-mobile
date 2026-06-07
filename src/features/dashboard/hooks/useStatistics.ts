@@ -6,6 +6,7 @@ export function useDashboardStatistics() {
   return useQuery<IDashboardStatistics>({
     queryFn: () => statisticsService.getDashboard(),
     errorMessage: 'No se pudieron cargar las estadisticas',
+    cacheKey: 'statistics:dashboard',
   });
 }
 
@@ -13,5 +14,6 @@ export function useAccessStatistics() {
   return useQuery<IAccessDashboard>({
     queryFn: () => accessService.getStatisticsDashboard(),
     errorMessage: 'No se pudieron cargar las estadisticas de acceso',
+    cacheKey: 'statistics:access',
   });
 }

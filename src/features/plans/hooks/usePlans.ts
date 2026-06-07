@@ -6,5 +6,6 @@ export function usePlans() {
   return useQuery<Plan[]>({
     queryFn: () => plansService.getAll(),
     errorMessage: 'No se pudo cargar planes',
+    cacheKey: 'plans:list',
   });
 }

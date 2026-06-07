@@ -5,6 +5,7 @@ import { decodeJwtPayload } from '@utils/jwt';
 import type { AuthUser, JwtPayload, LoginRequest, GoogleLoginRequest } from '@app-types/auth';
 import * as authApi from '@api/auth.api';
 import { setLogoutHandler } from '@api/authEvents';
+import { isNetworkError, kvStore } from '@offline';
 
 type AuthContextValue = {
   user: AuthUser | null;
@@ -40,6 +41,13 @@ async function clearTokens() {
   ]);
 }
 
+/**
+ * Cache del usuario para sesion offline: si la app arranca sin internet
+ * pero con tokens guardados, se restaura este usuario en vez de desloguear.
+ * (kvStore, no SecureStore: no es secreto y SecureStore limita ~2KB.)
+ */
+const CACHED_USER_KEY = 'taurus.cached_user';
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
@@ -56,6 +64,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Si falla la llamada al backend, seguimos limpiando localmente
     }
     await clearTokens();
+    await kvStore.remove(CACHED_USER_KEY);
     setUser(null);
     setAccessToken(null);
   }, []);
@@ -68,7 +77,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Role del JWT payload (sin llamada extra al backend)
     const payload = decodeJwtPayload<JwtPayload>(resp.accessToken);
     const role = payload?.role ?? resp.user.role;
-    setUser({ ...resp.user, role });
+    const authUser = { ...resp.user, role };
+    setUser(authUser);
+    void kvStore.setJson(CACHED_USER_KEY, authUser);
   }, []);
 
   const loginWithGoogle = useCallback(async (body: GoogleLoginRequest) => {
@@ -78,7 +89,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const payload = decodeJwtPayload<JwtPayload>(resp.accessToken);
     const role = payload?.role ?? resp.user.role;
-    setUser({ ...resp.user, role });
+    const authUser = { ...resp.user, role };
+    setUser(authUser);
+    void kvStore.setJson(CACHED_USER_KEY, authUser);
   }, []);
 
   useEffect(() => {
@@ -102,9 +115,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (!cancelled) setAccessToken(storedAccess);
 
-        // Validar token con backend (auto-refresh en 401 via interceptor)
-        const me = await authApi.me();
-        if (!cancelled) setUser(me);
+        // Hidratar la sesion cacheada de inmediato (UI utilizable offline).
+        const cachedUser = await kvStore.getJson<AuthUser>(CACHED_USER_KEY);
+        if (!cancelled && cachedUser) setUser(cachedUser);
+
+        try {
+          // Validar token con backend (auto-refresh en 401 via interceptor)
+          const me = await authApi.me();
+          if (!cancelled) {
+            setUser(me);
+            void kvStore.setJson(CACHED_USER_KEY, me);
+          }
+        } catch (error) {
+          if (isNetworkError(error)) {
+            // Sin internet: mantener la sesion cacheada en vez de desloguear.
+            // El token se validara en la proxima peticion online.
+            if (!cancelled && !cachedUser) {
+              // Sin usuario cacheado no hay sesion utilizable: limpiar.
+              await logout();
+            }
+          } else {
+            // 401 real / refresh fallido: cerrar sesion.
+            if (!cancelled) await logout();
+          }
+        }
       } catch {
         if (!cancelled) await logout();
       } finally {

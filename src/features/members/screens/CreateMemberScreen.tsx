@@ -60,14 +60,30 @@ export default function CreateMemberScreen() {
 
   const handleConfirm = async () => {
     if (!formData) return;
-    const result = await createMutation.mutate(formData);
+    const { result, queued } = await createMutation.mutate(formData);
     setCreatedResult(result);
-    toast.success('Miembro creado correctamente');
+    if (queued) {
+      toast.info('Sin conexión: el miembro se guardó y se sincronizará automáticamente');
+    } else {
+      toast.success('Miembro creado correctamente');
+    }
     haptics.success();
 
     if (selectedPlanId && result.id) {
+      if (queued) {
+        // Regla v1: no encadenar operaciones sobre un miembro aun no sincronizado.
+        setPlanError('El plan no se pudo asignar sin conexión. Asignelo desde el detalle cuando el miembro se sincronice.');
+        return;
+      }
       try {
-        await renewMutation.mutate({ memberId: result.id, planId: selectedPlanId });
+        const renewOutcome = await renewMutation.mutate({
+          memberId: result.id,
+          planId: selectedPlanId,
+          memberName: result.name,
+        });
+        if (renewOutcome.queued) {
+          toast.info('Sin conexión: la asignación del plan se sincronizará automáticamente');
+        }
       } catch {
         setPlanError('Miembro creado, pero no se pudo asignar el plan. Asignelo manualmente desde el detalle.');
       }
