@@ -191,7 +191,7 @@ export default function AuditTrailScreen() {
                 description={
                   hasFilters
                     ? 'Ajusta los filtros para ver mas resultados'
-                    : 'Las acciones realizadas en el sistema apareceran aqui'
+                    : 'Las acciones realizadas en el sistema aparecerán aquí'
                 }
               />
             )

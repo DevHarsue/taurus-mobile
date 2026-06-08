@@ -117,7 +117,7 @@ export default function AccessLogScreen() {
             <EmptyState
               icon={Activity}
               title="No hay accesos registrados"
-              description="Los accesos al gimnasio apareceran aqui"
+              description="Los accesos al gimnasio aparecerán aquí"
             />
           )
         }

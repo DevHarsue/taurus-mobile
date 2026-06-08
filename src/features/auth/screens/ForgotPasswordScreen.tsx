@@ -37,12 +37,12 @@ export default function ForgotPasswordScreen() {
   const onSubmit = async (values: FormValues) => {
     const result = await mutate(values);
     setSuccessMessage(result.message);
-    toast.success('Si el email existe, recibiras instrucciones');
+    toast.success('Si el email existe, recibirás instrucciones');
   };
 
   return (
     <View style={styles.container}>
-      <ScreenHeader title="Recuperar contrasena" onBack={() => nav.goBack()} />
+      <ScreenHeader title="Recuperar contraseña" onBack={() => nav.goBack()} />
 
       <KeyboardScreen contentContainerStyle={styles.scrollContent} extraBottomPadding={32}>
         <View style={styles.logoSection}>
@@ -51,9 +51,9 @@ export default function ForgotPasswordScreen() {
           </View>
         </View>
 
-        <Text style={styles.title}>Recuperar contrasena</Text>
+        <Text style={styles.title}>Recuperar contraseña</Text>
         <Text style={styles.description}>
-          Ingresa tu email y te enviaremos instrucciones para restablecer tu contrasena.
+          Ingresa tu email y te enviaremos instrucciones para restablecer tu contraseña.
         </Text>
 
         {!!error && <AlertBanner message={error} variant="error" />}

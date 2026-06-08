@@ -75,7 +75,7 @@ export default function AuditDetailScreen() {
   return (
     <View style={styles.container}>
       <ScreenHeader
-        title="Detalle de auditoria"
+        title="Detalle de auditoría"
         onBack={() => nav.goBack()}
         rightIcon={
           data ? (

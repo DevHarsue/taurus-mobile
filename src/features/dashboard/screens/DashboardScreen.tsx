@@ -267,7 +267,7 @@ export default function DashboardScreen() {
             {/* ── Hourly Distribution ──────────────────────────── */}
             {accessData?.hourly && accessData.hourly.length > 0 && (
               <Card style={styles.chartCard}>
-                <Text style={styles.sectionTitle}>Distribucion por hora</Text>
+                <Text style={styles.sectionTitle}>Distribución por hora</Text>
                 <BarChart
                   data={accessData.hourly.map((h) => ({
                     label: `${h.hour}h`,
@@ -284,7 +284,7 @@ export default function DashboardScreen() {
                 subsData.planDistribution.length > 0 && (
                   <Card style={styles.chartCardFull}>
                     <Text style={styles.sectionTitle}>
-                      Distribucion por plan
+                      Distribución por plan
                     </Text>
                     <DonutChart
                       data={subsData.planDistribution.map(
@@ -475,7 +475,7 @@ export default function DashboardScreen() {
             {/* ── Denials Breakdown ────────────────────────────── */}
             {accessData?.denials && accessData.denials.length > 0 && (
               <Card style={styles.chartCard}>
-                <Text style={styles.sectionTitle}>Razones de denegacion</Text>
+                <Text style={styles.sectionTitle}>Razones de denegación</Text>
                 {accessData.denials.map((d) => (
                   <View key={d.reason} style={styles.denialRow}>
                     <View
@@ -491,7 +491,7 @@ export default function DashboardScreen() {
                     />
                     <Text style={styles.denialReason}>
                       {d.reason === 'expired'
-                        ? 'Suscripcion vencida'
+                        ? 'Suscripción vencida'
                         : d.reason === 'not_found'
                           ? 'Miembro no encontrado'
                           : d.reason}

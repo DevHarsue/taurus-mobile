@@ -73,7 +73,7 @@ export default function RegisterScreen() {
           name="password"
           render={({ field: { onChange, value } }) => (
             <Input
-              label="CONTRASENA"
+              label="CONTRASEÑA"
               showToggle
               placeholder="••••••••"
               value={value}
@@ -88,7 +88,7 @@ export default function RegisterScreen() {
           name="confirmPassword"
           render={({ field: { onChange, value } }) => (
             <Input
-              label="CONFIRMAR CONTRASENA"
+              label="CONFIRMAR CONTRASEÑA"
               showToggle
               placeholder="••••••••"
               value={value}

@@ -28,8 +28,8 @@ export const emailSchema = z
 
 export const passwordSchema = z
   .string()
-  .min(PASSWORD_MIN_LENGTH, `La contrasena debe tener al menos ${PASSWORD_MIN_LENGTH} caracteres`)
+  .min(PASSWORD_MIN_LENGTH, `La contraseña debe tener al menos ${PASSWORD_MIN_LENGTH} caracteres`)
   .regex(
     PASSWORD_REGEX,
-    'La contrasena debe incluir al menos 2 numeros, 1 mayuscula, 1 minuscula y 1 caracter especial',
+    'La contraseña debe incluir al menos 2 numeros, 1 mayuscula, 1 minuscula y 1 caracter especial',
   );

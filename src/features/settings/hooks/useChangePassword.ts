@@ -5,6 +5,6 @@ import type { ChangePasswordRequest, ChangePasswordResponse } from '@app-types/a
 export function useChangePassword() {
   return useMutation<ChangePasswordRequest, ChangePasswordResponse>({
     mutationFn: (input) => authApi.changePassword(input),
-    errorMessage: 'No se pudo cambiar la contrasena',
+    errorMessage: 'No se pudo cambiar la contraseña',
   });
 }

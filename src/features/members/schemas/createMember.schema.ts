@@ -22,7 +22,7 @@ export const createMemberSchema = z.object({
     .optional()
     .refine((v) => !v || passwordSchema.safeParse(v).success, {
       message:
-        'La contrasena debe tener al menos 8 caracteres, 2 numeros, 1 mayuscula, 1 minuscula y 1 caracter especial',
+        'La contraseña debe tener al menos 8 caracteres, 2 numeros, 1 mayuscula, 1 minuscula y 1 caracter especial',
     }),
   fingerprintId: z.string().optional(),
 });

@@ -24,12 +24,12 @@ import type { ThemeMode } from '@context/ThemeContext';
 
 const changePasswordSchema = z
   .object({
-    currentPassword: z.string().min(1, 'Contrasena actual requerida'),
+    currentPassword: z.string().min(1, 'contraseña actual requerida'),
     newPassword: passwordSchema,
-    confirmPassword: z.string().min(1, 'Confirma tu contrasena'),
+    confirmPassword: z.string().min(1, 'Confirma tu contraseña'),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
-    message: 'Las contrasenas no coinciden',
+    message: 'Las contraseñas no coinciden',
     path: ['confirmPassword'],
   });
 
@@ -60,7 +60,7 @@ export default function SettingsScreen() {
       currentPassword: values.currentPassword,
       newPassword: values.newPassword,
     });
-    toast.success('Contrasena actualizada');
+    toast.success('contraseña actualizada');
     resetForm();
   };
 
@@ -119,7 +119,7 @@ export default function SettingsScreen() {
 
         {/* Change Password */}
         <Card style={styles.section}>
-          <Text style={styles.sectionTitle}>Cambiar contrasena</Text>
+          <Text style={styles.sectionTitle}>Cambiar contraseña</Text>
 
           {!!error && <AlertBanner message={error} variant="error" />}
 
@@ -128,7 +128,7 @@ export default function SettingsScreen() {
             name="currentPassword"
             render={({ field: { onChange, value } }) => (
               <Input
-                label="CONTRASENA ACTUAL"
+                label="CONTRASEÑA ACTUAL"
                 showToggle
                 placeholder="••••••••"
                 value={value}
@@ -143,7 +143,7 @@ export default function SettingsScreen() {
             name="newPassword"
             render={({ field: { onChange, value } }) => (
               <Input
-                label="NUEVA CONTRASENA"
+                label="NUEVA CONTRASEÑA"
                 showToggle
                 placeholder="••••••••"
                 value={value}
@@ -158,7 +158,7 @@ export default function SettingsScreen() {
             name="confirmPassword"
             render={({ field: { onChange, value } }) => (
               <Input
-                label="CONFIRMAR NUEVA CONTRASENA"
+                label="CONFIRMAR NUEVA CONTRASEÑA"
                 showToggle
                 placeholder="••••••••"
                 value={value}
@@ -170,7 +170,7 @@ export default function SettingsScreen() {
           />
 
           <GradientButton
-            title="Actualizar contrasena"
+            title="Actualizar contraseña"
             onPress={handleSubmit(onChangePassword)}
             loading={loading}
           />

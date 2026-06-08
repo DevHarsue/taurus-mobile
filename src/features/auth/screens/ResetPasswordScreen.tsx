@@ -21,10 +21,10 @@ const schema = z
   .object({
     token: z.string().min(1, 'Token requerido'),
     newPassword: passwordSchema,
-    confirmPassword: z.string().min(1, 'Confirma tu contrasena'),
+    confirmPassword: z.string().min(1, 'Confirma tu contraseña'),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
-    message: 'Las contrasenas no coinciden',
+    message: 'Las contraseñas no coinciden',
     path: ['confirmPassword'],
   });
 
@@ -46,18 +46,18 @@ export default function ResetPasswordScreen() {
 
   const onSubmit = async (values: FormValues) => {
     await mutate({ token: values.token, newPassword: values.newPassword });
-    toast.success('Contrasena actualizada, ya puedes iniciar sesion');
+    toast.success('contraseña actualizada, ya puedes iniciar sesion');
     nav.navigate('Login');
   };
 
   return (
     <View style={styles.container}>
-      <ScreenHeader title="Nueva contrasena" onBack={() => nav.goBack()} />
+      <ScreenHeader title="Nueva contraseña" onBack={() => nav.goBack()} />
 
       <KeyboardScreen contentContainerStyle={styles.scrollContent} extraBottomPadding={32}>
-        <Text style={styles.title}>Restablecer contrasena</Text>
+        <Text style={styles.title}>Restablecer contraseña</Text>
         <Text style={styles.description}>
-          Ingresa el token que recibiste y tu nueva contrasena.
+          Ingresa el token que recibiste y tu nueva contraseña.
         </Text>
 
         {!!error && <AlertBanner message={error} variant="error" />}
@@ -82,7 +82,7 @@ export default function ResetPasswordScreen() {
           name="newPassword"
           render={({ field: { onChange, value } }) => (
             <Input
-              label="NUEVA CONTRASENA"
+              label="NUEVA CONTRASEÑA"
               showToggle
               placeholder="••••••••"
               value={value}
@@ -97,7 +97,7 @@ export default function ResetPasswordScreen() {
           name="confirmPassword"
           render={({ field: { onChange, value } }) => (
             <Input
-              label="CONFIRMAR CONTRASENA"
+              label="CONFIRMAR CONTRASEÑA"
               showToggle
               placeholder="••••••••"
               value={value}
@@ -108,7 +108,7 @@ export default function ResetPasswordScreen() {
         />
 
         <GradientButton
-          title="Cambiar contrasena"
+          title="Cambiar contraseña"
           onPress={handleSubmit(onSubmit)}
           loading={loading}
         />

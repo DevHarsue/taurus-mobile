@@ -11,7 +11,7 @@ interface Props {
 }
 
 const REASON_LABELS: Record<string, string> = {
-  expired: 'Suscripcion vencida',
+  expired: 'Suscripción vencida',
   not_found: 'No encontrado',
   active: '',
 };

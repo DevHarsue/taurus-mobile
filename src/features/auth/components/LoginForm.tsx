@@ -102,7 +102,7 @@ export function LoginForm() {
 
       {/* Forgot Password */}
       <Pressable onPress={() => nav.navigate('ForgotPassword')}>
-        <Text style={styles.forgotLink}>¿Olvidaste tu contrasena?</Text>
+        <Text style={styles.forgotLink}>¿Olvidaste tu contraseña?</Text>
       </Pressable>
 
       {/* Divider */}

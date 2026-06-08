@@ -139,7 +139,7 @@ export default function PlansScreen() {
                 <PlanCard
                   key={plan.id}
                   plan={plan}
-                  highlighted={plan.isHighlighted ?? i === 1}
+                  highlighted={false} //plan.isHighlighted ?? i === 1}
                   onEdit={() => nav.navigate('EditPlan', { plan: toPlanBase(plan) })}
                   onDelete={() => handleDeletePlan(plan.id, plan.name)}
                   styles={styles}
