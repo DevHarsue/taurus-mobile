@@ -46,3 +46,5 @@ taurus_kinetic
 .claude/
 .mcp.json
 TESTING.md
+
+.env
