@@ -11,7 +11,7 @@ import { KeyboardScreen } from '@components/KeyboardScreen';
 import { useAuth } from '@hooks/useAuth';
 import { useTheme } from '@hooks/useTheme';
 import { useCompleteProfile } from '@features/members/hooks/useCompleteProfile';
-import { confirmDialog } from '@utils/confirmDialog';
+import { useConfirm } from '@hooks/useConfirm';
 import {
   completeProfileSchema,
   type CompleteProfileFormValues,
@@ -25,6 +25,7 @@ interface Props {
 export default function CompleteProfileScreen({ onCompleted }: Props) {
   const insets = useSafeAreaInsets();
   const { logout, user } = useAuth();
+  const { confirm } = useConfirm();
   const { mutate, loading, error } = useCompleteProfile();
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
@@ -93,9 +94,12 @@ export default function CompleteProfileScreen({ onCompleted }: Props) {
         <Pressable
           style={styles.logoutBtn}
           onPress={async () => {
-            const ok = await confirmDialog('Cerrar sesion', '¿Seguro que quieres salir?', {
-              destructive: true,
+            const ok = await confirm({
+              title: 'Cerrar sesion',
+              message: '¿Seguro que quieres salir?',
               confirmLabel: 'Salir',
+              cancelLabel: 'Cancelar',
+              destructive: true,
             });
             if (ok) void logout();
           }}

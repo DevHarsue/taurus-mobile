@@ -17,7 +17,7 @@ import { useMyMemberDetail } from '@features/members/hooks/useMyMemberDetail';
 import { useGenerateMemberCard } from '@features/members/hooks/useGenerateMemberCard';
 import { useMyAccessLog } from '@hooks/useMyAccessLog';
 import { useToast } from '@hooks/useToast';
-import { confirmDialog } from '@utils/confirmDialog';
+import { useConfirm } from '@hooks/useConfirm';
 import {
   formatDateSpanish,
   formatDateShort,
@@ -28,6 +28,7 @@ import {
 
 export default function MyProfileScreen() {
   const { user, logout } = useAuth();
+  const { confirm } = useConfirm();
   const { displayName } = useGreeting();
   const nav = useNavigation<NativeStackNavigationProp<MemberProfileStackParamList | ProfileStackParamList>>();
   const insets = useSafeAreaInsets();
@@ -204,9 +205,12 @@ export default function MyProfileScreen() {
         <Pressable
           style={styles.logoutBtn}
           onPress={async () => {
-            const ok = await confirmDialog('Cerrar sesion', '¿Seguro que quieres salir?', {
-              destructive: true,
+            const ok = await confirm({
+              title: 'Cerrar sesion',
+              message: '¿Seguro que quieres salir?',
               confirmLabel: 'Salir',
+              cancelLabel: 'Cancelar',
+              destructive: true,
             });
             if (ok) void logout();
           }}

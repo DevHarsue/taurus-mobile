@@ -18,7 +18,7 @@ import { useOutbox } from '@offline';
 import { useChangePassword } from '../hooks/useChangePassword';
 import { useToast } from '@hooks/useToast';
 import { useTheme } from '@hooks/useTheme';
-import { confirmDialog } from '@utils/confirmDialog';
+import { useConfirm } from '@hooks/useConfirm';
 import { passwordSchema } from '@utils/validators';
 import { typography, spacing, type Colors } from '@theme/index';
 import type { ThemeMode } from '@context/ThemeContext';
@@ -49,6 +49,7 @@ export default function SettingsScreen() {
   const { mutate, loading, error } = useChangePassword();
   const { pendingCount } = useOutbox();
   const { toast } = useToast();
+  const { confirm } = useConfirm();
   const { colors, mode, setMode } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
@@ -67,9 +68,12 @@ export default function SettingsScreen() {
   };
 
   const handleLogout = async () => {
-    const ok = await confirmDialog('Cerrar sesion', '¿Seguro que quieres salir?', {
-      destructive: true,
+    const ok = await confirm({
+      title: 'Cerrar sesion',
+      message: '¿Seguro que quieres salir?',
       confirmLabel: 'Salir',
+      cancelLabel: 'Cancelar',
+      destructive: true,
     });
     if (ok) void logout();
   };

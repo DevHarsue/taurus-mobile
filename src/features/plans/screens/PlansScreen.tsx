@@ -15,7 +15,7 @@ import { SkeletonCard, SkeletonList } from '@components/Skeleton';
 import { useGreeting } from '@hooks/useGreeting';
 import { useToast } from '@hooks/useToast';
 import { useTheme } from '@hooks/useTheme';
-import { confirmDialog } from '@utils/confirmDialog';
+import { useConfirm } from '@hooks/useConfirm';
 import { haptics } from '@utils/haptics';
 import { usePlans } from '../hooks/usePlans';
 import { useDeletePlan } from '../hooks/useDeletePlan';
@@ -57,6 +57,7 @@ export default function PlansScreen() {
   const query = usePlans();
   const { mutate: deletePlan } = useDeletePlan();
   const { toast } = useToast();
+  const { confirm } = useConfirm();
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
@@ -67,11 +68,13 @@ export default function PlansScreen() {
   );
 
   const handleDeletePlan = async (planId: string, planName: string) => {
-    const ok = await confirmDialog(
-      'Eliminar plan',
-      `¿Seguro que deseas eliminar "${planName}"?`,
-      { destructive: true, confirmLabel: 'Eliminar' },
-    );
+    const ok = await confirm({
+      title: 'Eliminar plan',
+      message: `¿Seguro que deseas eliminar "${planName}"?`,
+      confirmLabel: 'Eliminar',
+      cancelLabel: 'Cancelar',
+      destructive: true,
+    });
     if (!ok) return;
     await deletePlan(planId);
     query.refetch();

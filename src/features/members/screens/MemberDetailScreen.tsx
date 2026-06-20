@@ -21,7 +21,7 @@ import { useExportMemberDossierPdf } from '../hooks/useExportMemberDossierPdf';
 import { useToast } from '@hooks/useToast';
 import { useTheme } from '@hooks/useTheme';
 import { haptics } from '@utils/haptics';
-import { confirmDialog } from '@utils/confirmDialog';
+import { useConfirm } from '@hooks/useConfirm';
 import { calculateDurationDays, formatDateSpanish } from '@utils/dates';
 import { typography, spacing, type Colors } from '@theme/index';
 import type { MemberDetailScreenProps, MembersStackParamList } from '@navigation/types';
@@ -41,13 +41,16 @@ export default function MemberDetailScreen({ route }: MemberDetailScreenProps) {
   const { mutate: generateCard, loading: generatingCard } = useGenerateMemberCard();
   const { mutate: exportDossier, loading: exportingDossier } = useExportMemberDossierPdf();
   const { toast } = useToast();
+  const { confirm } = useConfirm();
 
   const handleDelete = async () => {
-    const ok = await confirmDialog(
-      'Eliminar miembro',
-      'Esta seguro que desea eliminar este miembro? Esta accion no se puede deshacer.',
-      { destructive: true, confirmLabel: 'Eliminar' },
-    );
+    const ok = await confirm({
+      title: 'Eliminar miembro',
+      message: 'Esta seguro que desea eliminar este miembro? Esta accion no se puede deshacer.',
+      confirmLabel: 'Eliminar',
+      cancelLabel: 'Cancelar',
+      destructive: true,
+    });
     if (!ok) return;
     const { queued } = await deleteMember({ id, name: query.data?.name });
     haptics.warning();

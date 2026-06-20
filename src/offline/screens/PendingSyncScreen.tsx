@@ -10,7 +10,7 @@ import { Card } from '@components/Card';
 import { EmptyState } from '@components/EmptyState';
 import { useTheme } from '@hooks/useTheme';
 import { useToast } from '@hooks/useToast';
-import { confirmDialog } from '@utils/confirmDialog';
+import { useConfirm } from '@hooks/useConfirm';
 import { typography, spacing, type Colors } from '@theme/index';
 import { useConnectivity } from '../ConnectivityContext';
 import { useOutbox } from '../OutboxContext';
@@ -46,6 +46,7 @@ export default function PendingSyncScreen() {
   const { ops, retry, discard, flush } = useOutbox();
   const { isOnline } = useConnectivity();
   const { toast } = useToast();
+  const { confirm } = useConfirm();
 
   const handleRetry = async (op: OutboxOp) => {
     if (!isOnline) {
@@ -55,11 +56,13 @@ export default function PendingSyncScreen() {
   };
 
   const handleDiscard = async (op: OutboxOp) => {
-    const ok = await confirmDialog(
-      'Descartar operación',
-      `¿Descartar "${op.label}"? Esta operación no se enviará al servidor.`,
-      { destructive: true, confirmLabel: 'Descartar' },
-    );
+    const ok = await confirm({
+      title: 'Descartar operación',
+      message: `¿Descartar "${op.label}"? Esta operación no se enviará al servidor.`,
+      confirmLabel: 'Descartar',
+      cancelLabel: 'Cancelar',
+      destructive: true,
+    });
     if (!ok) return;
     await discard(op.id);
     toast.success('Operación descartada');

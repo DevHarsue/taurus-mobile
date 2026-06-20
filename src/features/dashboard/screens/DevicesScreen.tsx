@@ -21,7 +21,7 @@ import { GradientButton } from '@components/GradientButton';
 import { EmptyState } from '@components/EmptyState';
 import { Skeleton, SkeletonList } from '@components/Skeleton';
 import { useToast } from '@hooks/useToast';
-import { confirmDialog } from '@utils/confirmDialog';
+import { useConfirm } from '@hooks/useConfirm';
 import { useDevices, useCreateDevice, useDeleteDevice } from '../hooks/useDevices';
 import { useTheme } from '@hooks/useTheme';
 import { typography, spacing, radii, type Colors } from '@theme/index';
@@ -45,6 +45,7 @@ export default function DevicesScreen() {
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const { toast } = useToast();
+  const { confirm } = useConfirm();
   const devicesQuery = useDevices();
   const { mutate: createDevice, loading: creating } = useCreateDevice(() => {
     devicesQuery.refetch();
@@ -78,11 +79,13 @@ export default function DevicesScreen() {
   };
 
   const handleDelete = async (device: IDevice) => {
-    const ok = await confirmDialog(
-      'Eliminar dispositivo',
-      `¿Eliminar el dispositivo "${device.name}"?`,
-      { destructive: true, confirmLabel: 'Eliminar' },
-    );
+    const ok = await confirm({
+      title: 'Eliminar dispositivo',
+      message: `¿Eliminar el dispositivo "${device.name}"?`,
+      confirmLabel: 'Eliminar',
+      cancelLabel: 'Cancelar',
+      destructive: true,
+    });
     if (ok) void deleteDevice(device.id);
   };
 
