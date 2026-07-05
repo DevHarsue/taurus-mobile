@@ -1,6 +1,7 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import type { PlanBase } from '@app-types/plan';
+import type { RoutineExercise } from '@app-types/routine';
 
 // ─── Param Lists ───────────────────────────────────────────────────────────
 
@@ -15,8 +16,16 @@ export type AdminTabsParamList = {
   Dashboard: undefined;
   Members: undefined;
   Plans: undefined;
+  Routines: undefined;
   QRScanner: undefined;
   Profile: undefined;
+};
+
+export type RoutinesStackParamList = {
+  RoutinesHome: undefined;
+  ExerciseCatalog: undefined;
+  RoutineBuilder: { routineId?: string } | undefined;
+  AssignRoutine: { routineId: string; routineName?: string };
 };
 
 export type MembersStackParamList = {
@@ -55,7 +64,16 @@ export type QRScannerStackParamList = {
 export type MemberTabsParamList = {
   MyProfile: undefined;
   MyQR: undefined;
+  MyRoutine: undefined;
   RenewalHistory: undefined;
+};
+
+export type MemberRoutineStackParamList = {
+  TodayWorkout: undefined;
+  WeekRoutine: undefined;
+  ExerciseDetail: { exercise: RoutineExercise; dayLabel?: string };
+  WorkoutHistory: undefined;
+  Settings: undefined;
 };
 
 export type MemberProfileStackParamList = {
@@ -96,6 +114,16 @@ export type ProfileScreenProps = NativeStackScreenProps<ProfileStackParamList, '
 export type MyProfileScreenProps = BottomTabScreenProps<MemberTabsParamList, 'MyProfile'>;
 export type MyQRScreenProps = BottomTabScreenProps<MemberTabsParamList, 'MyQR'>;
 export type RenewalHistoryScreenProps = BottomTabScreenProps<MemberTabsParamList, 'RenewalHistory'>;
+
+export type RoutinesHomeScreenProps = NativeStackScreenProps<RoutinesStackParamList, 'RoutinesHome'>;
+export type ExerciseCatalogScreenProps = NativeStackScreenProps<RoutinesStackParamList, 'ExerciseCatalog'>;
+export type RoutineBuilderScreenProps = NativeStackScreenProps<RoutinesStackParamList, 'RoutineBuilder'>;
+export type AssignRoutineScreenProps = NativeStackScreenProps<RoutinesStackParamList, 'AssignRoutine'>;
+
+export type TodayWorkoutScreenProps = NativeStackScreenProps<MemberRoutineStackParamList, 'TodayWorkout'>;
+export type WeekRoutineScreenProps = NativeStackScreenProps<MemberRoutineStackParamList, 'WeekRoutine'>;
+export type ExerciseDetailScreenProps = NativeStackScreenProps<MemberRoutineStackParamList, 'ExerciseDetail'>;
+export type WorkoutHistoryScreenProps = NativeStackScreenProps<MemberRoutineStackParamList, 'WorkoutHistory'>;
 
 export type ForgotPasswordScreenProps = NativeStackScreenProps<AuthStackParamList, 'ForgotPassword'>;
 export type ResetPasswordScreenProps = NativeStackScreenProps<AuthStackParamList, 'ResetPassword'>;

@@ -3,17 +3,22 @@ import { View, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { User, QrCode, History, type LucideIcon } from 'lucide-react-native';
+import { User, QrCode, History, Dumbbell, type LucideIcon } from 'lucide-react-native';
 import MyProfileScreen from '@features/profile/screens/MyProfileScreen';
 import MyQRScreen from '@features/profile/screens/MyQRScreen';
 import RenewalHistoryScreen from '@features/profile/screens/RenewalHistoryScreen';
 import SettingsScreen from '@features/settings/screens/SettingsScreen';
+import TodayWorkoutScreen from '@features/routines/screens/TodayWorkoutScreen';
+import WeekRoutineScreen from '@features/routines/screens/WeekRoutineScreen';
+import ExerciseDetailScreen from '@features/routines/screens/ExerciseDetailScreen';
+import WorkoutHistoryScreen from '@features/routines/screens/WorkoutHistoryScreen';
 import { colors } from '@theme/index';
 import type {
   MemberTabsParamList,
   MemberProfileStackParamList,
   MemberQRStackParamList,
   MemberHistoryStackParamList,
+  MemberRoutineStackParamList,
 } from './types';
 
 const Tabs = createBottomTabNavigator<MemberTabsParamList>();
@@ -43,6 +48,19 @@ function MemberQRStackNavigator() {
       <QRStack.Screen name="QRHome" component={MyQRScreen} />
       <QRStack.Screen name="Settings" component={SettingsScreen} />
     </QRStack.Navigator>
+  );
+}
+
+const RoutineStack = createNativeStackNavigator<MemberRoutineStackParamList>();
+function MemberRoutineStackNavigator() {
+  return (
+    <RoutineStack.Navigator screenOptions={{ headerShown: false }}>
+      <RoutineStack.Screen name="TodayWorkout" component={TodayWorkoutScreen} />
+      <RoutineStack.Screen name="WeekRoutine" component={WeekRoutineScreen} />
+      <RoutineStack.Screen name="ExerciseDetail" component={ExerciseDetailScreen} />
+      <RoutineStack.Screen name="WorkoutHistory" component={WorkoutHistoryScreen} />
+      <RoutineStack.Screen name="Settings" component={SettingsScreen} />
+    </RoutineStack.Navigator>
   );
 }
 
@@ -77,6 +95,11 @@ export default function MemberTabs() {
         name="MyProfile"
         component={MemberProfileStackNavigator}
         options={{ tabBarIcon: ({ focused }) => <TabIcon Icon={User} focused={focused} /> }}
+      />
+      <Tabs.Screen
+        name="MyRoutine"
+        component={MemberRoutineStackNavigator}
+        options={{ tabBarIcon: ({ focused }) => <TabIcon Icon={Dumbbell} focused={focused} /> }}
       />
       <Tabs.Screen
         name="MyQR"

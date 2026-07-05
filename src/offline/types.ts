@@ -3,7 +3,15 @@ export type OperationType =
   | 'members.create'
   | 'members.update'
   | 'members.delete'
-  | 'members.renew';
+  | 'members.renew'
+  | 'exercises.create'
+  | 'exercises.update'
+  | 'exercises.delete'
+  | 'routines.create'
+  | 'routines.update'
+  | 'routines.delete'
+  | 'routines.assign'
+  | 'workouts.log';
 
 export type OpStatus = 'pending' | 'in-flight' | 'failed';
 

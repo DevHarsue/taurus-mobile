@@ -3,7 +3,7 @@ import { View, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { LayoutGrid, Users, Tag, ScanLine, User, type LucideIcon } from 'lucide-react-native';
+import { LayoutGrid, Users, Tag, ScanLine, User, Dumbbell, type LucideIcon } from 'lucide-react-native';
 import DashboardScreen from '@features/dashboard/screens/DashboardScreen';
 import MembersListScreen from '@features/members/screens/MembersListScreen';
 import MemberDetailScreen from '@features/members/screens/MemberDetailScreen';
@@ -14,6 +14,10 @@ import FingerprintEnrollScreen from '@features/members/screens/FingerprintEnroll
 import PlansScreen from '@features/plans/screens/PlansScreen';
 import CreatePlanScreen from '@features/plans/screens/CreatePlanScreen';
 import EditPlanScreen from '@features/plans/screens/EditPlanScreen';
+import RoutinesListScreen from '@features/routines/screens/RoutinesListScreen';
+import ExerciseCatalogScreen from '@features/routines/screens/ExerciseCatalogScreen';
+import RoutineBuilderScreen from '@features/routines/screens/RoutineBuilderScreen';
+import AssignRoutineScreen from '@features/routines/screens/AssignRoutineScreen';
 import QRScannerScreen from '@features/scanner/screens/QRScannerScreen';
 import MyProfileScreen from '@features/profile/screens/MyProfileScreen';
 import SettingsScreen from '@features/settings/screens/SettingsScreen';
@@ -28,6 +32,7 @@ import type {
   AdminTabsParamList,
   MembersStackParamList,
   PlansStackParamList,
+  RoutinesStackParamList,
   DashboardStackParamList,
   ProfileStackParamList,
   QRScannerStackParamList,
@@ -67,6 +72,18 @@ function PlansStackNavigator() {
       <PlansStack.Screen name="CreatePlan" component={CreatePlanScreen} />
       <PlansStack.Screen name="EditPlan" component={EditPlanScreen} />
     </PlansStack.Navigator>
+  );
+}
+
+const RoutinesStack = createNativeStackNavigator<RoutinesStackParamList>();
+function RoutinesStackNavigator() {
+  return (
+    <RoutinesStack.Navigator screenOptions={{ headerShown: false }}>
+      <RoutinesStack.Screen name="RoutinesHome" component={RoutinesListScreen} />
+      <RoutinesStack.Screen name="ExerciseCatalog" component={ExerciseCatalogScreen} />
+      <RoutinesStack.Screen name="RoutineBuilder" component={RoutineBuilderScreen} />
+      <RoutinesStack.Screen name="AssignRoutine" component={AssignRoutineScreen} />
+    </RoutinesStack.Navigator>
   );
 }
 
@@ -125,6 +142,7 @@ export default function AdminTabs() {
       <Tabs.Screen name="Dashboard" component={DashboardStackNavigator} options={{ tabBarIcon: ({ focused }) => <TabIcon Icon={LayoutGrid} focused={focused} /> }} />
       <Tabs.Screen name="Members" component={MembersStackNavigator} options={{ tabBarIcon: ({ focused }) => <TabIcon Icon={Users} focused={focused} /> }} />
       <Tabs.Screen name="Plans" component={PlansStackNavigator} options={{ tabBarIcon: ({ focused }) => <TabIcon Icon={Tag} focused={focused} /> }} />
+      <Tabs.Screen name="Routines" component={RoutinesStackNavigator} options={{ tabBarIcon: ({ focused }) => <TabIcon Icon={Dumbbell} focused={focused} /> }} />
       <Tabs.Screen name="QRScanner" component={QRStackNavigator} options={{ tabBarIcon: ({ focused }) => <TabIcon Icon={ScanLine} focused={focused} /> }} />
       <Tabs.Screen name="Profile" component={ProfileStackNavigator} options={{ tabBarIcon: ({ focused }) => <TabIcon Icon={User} focused={focused} /> }} />
     </Tabs.Navigator>
