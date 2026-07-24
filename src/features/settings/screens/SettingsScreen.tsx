@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -25,7 +25,9 @@ import type { ThemeMode } from '@context/ThemeContext';
 
 const changePasswordSchema = z
   .object({
-    currentPassword: z.string().min(1, 'Contrasena actual requerida'),
+    // Opcional en el schema: se exige en runtime solo si el usuario ya tiene
+    // contraseña (los usuarios de Google la establecen sin la actual).
+    currentPassword: z.string().optional(),
     newPassword: passwordSchema,
     confirmPassword: z.string().min(1, 'Confirma tu contrasena'),
   })
@@ -45,7 +47,7 @@ const THEME_OPTIONS: { mode: ThemeMode; label: string }[] = [
 export default function SettingsScreen() {
   const nav = useNavigation();
   const insets = useSafeAreaInsets();
-  const { user, logout } = useAuth();
+  const { user, logout, refreshUser } = useAuth();
   const { mutate, loading, error } = useChangePassword();
   const { pendingCount } = useOutbox();
   const { toast } = useToast();
@@ -53,18 +55,31 @@ export default function SettingsScreen() {
   const { colors, mode, setMode } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
+  // Los usuarios de Google que aún no tienen clave ESTABLECEN una (sin la actual).
+  const hasPassword = user?.hasPassword ?? true;
+
+  // Refrescar /me al abrir para saber si ya tiene contraseña.
+  useEffect(() => {
+    void refreshUser();
+  }, [refreshUser]);
+
   const { control, handleSubmit, formState: { errors }, reset: resetForm } = useForm<ChangePasswordFormValues>({
     resolver: zodResolver(changePasswordSchema),
     defaultValues: { currentPassword: '', newPassword: '', confirmPassword: '' },
   });
 
   const onChangePassword = async (values: ChangePasswordFormValues) => {
-    await mutate({
-      currentPassword: values.currentPassword,
+    if (hasPassword && !values.currentPassword) {
+      toast.error('Ingresa tu contraseña actual');
+      return;
+    }
+    const res = await mutate({
+      currentPassword: hasPassword ? values.currentPassword : undefined,
       newPassword: values.newPassword,
     });
-    toast.success('Contrasena actualizada');
+    toast.success(res.message);
     resetForm();
+    await refreshUser();
   };
 
   const handleLogout = async () => {
@@ -143,27 +158,38 @@ export default function SettingsScreen() {
           </View>
         </Card>
 
-        {/* Change Password */}
+        {/* Change / Set Password */}
         <Card style={styles.section}>
-          <Text style={styles.sectionTitle}>Cambiar contrasena</Text>
+          <Text style={styles.sectionTitle}>
+            {hasPassword ? 'Cambiar contrasena' : 'Establecer contrasena'}
+          </Text>
+
+          {!hasPassword && (
+            <Text style={styles.passwordHint}>
+              Iniciaste sesión con Google. Crea una contraseña para también
+              poder entrar con tu correo.
+            </Text>
+          )}
 
           {!!error && <AlertBanner message={error} variant="error" />}
 
-          <Controller
-            control={control}
-            name="currentPassword"
-            render={({ field: { onChange, value } }) => (
-              <Input
-                label="CONTRASENA ACTUAL"
-                showToggle
-                placeholder="••••••••"
-                value={value}
-                onChangeText={onChange}
-                error={errors.currentPassword?.message}
-                variant="dark"
-              />
-            )}
-          />
+          {hasPassword && (
+            <Controller
+              control={control}
+              name="currentPassword"
+              render={({ field: { onChange, value } }) => (
+                <Input
+                  label="CONTRASENA ACTUAL"
+                  showToggle
+                  placeholder="••••••••"
+                  value={value ?? ''}
+                  onChangeText={onChange}
+                  error={errors.currentPassword?.message}
+                  variant="dark"
+                />
+              )}
+            />
+          )}
           <Controller
             control={control}
             name="newPassword"
@@ -196,7 +222,7 @@ export default function SettingsScreen() {
           />
 
           <GradientButton
-            title="Actualizar contrasena"
+            title={hasPassword ? 'Actualizar contrasena' : 'Establecer contrasena'}
             onPress={handleSubmit(onChangePassword)}
             loading={loading}
           />
@@ -227,6 +253,7 @@ const createStyles = (colors: Colors) =>
     scrollContent: { padding: spacing.xl, gap: 16 },
     section: { padding: 20, gap: 12 },
     sectionTitle: { fontFamily: typography.headingXS.fontFamily, fontSize: typography.headingXS.fontSize, color: colors.textPrimary, marginBottom: 4 },
+    passwordHint: { fontFamily: typography.bodySM.fontFamily, fontSize: typography.bodySM.fontSize, color: colors.textMuted, lineHeight: 18, marginBottom: 4 },
     infoRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
     infoLabel: { fontFamily: typography.bodySM.fontFamily, fontSize: typography.bodySM.fontSize, color: colors.textMuted },
     infoValue: { fontFamily: typography.bodyS.fontFamily, fontSize: typography.bodyS.fontSize, color: colors.textPrimary },

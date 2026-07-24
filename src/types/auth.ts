@@ -4,6 +4,8 @@ export interface AuthUser {
   id: string;
   email: string;
   role: UserRole;
+  /** false si el usuario entró con Google y aún no ha establecido una clave. */
+  hasPassword?: boolean;
 }
 
 export interface RegisterRequest {
@@ -73,7 +75,8 @@ export interface ResetPasswordResponse {
 }
 
 export interface ChangePasswordRequest {
-  currentPassword: string;
+  /** Requerida solo si el usuario ya tiene contraseña (no para usuarios Google). */
+  currentPassword?: string;
   newPassword: string;
 }
 

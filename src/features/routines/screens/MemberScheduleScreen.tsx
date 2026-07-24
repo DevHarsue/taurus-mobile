@@ -61,7 +61,7 @@ export default function MemberScheduleScreen() {
   // Precargar el horario actual.
   const hydrated = React.useRef(false);
   useEffect(() => {
-    if (hydrated.current || !scheduleQuery.data) return;
+    if (hydrated.current || !Array.isArray(scheduleQuery.data)) return;
     hydrated.current = true;
     const initial: WorkingSchedule = {};
     for (const s of scheduleQuery.data) {

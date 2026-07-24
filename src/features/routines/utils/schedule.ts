@@ -26,7 +26,8 @@ export function dayForWeekday(
   schedule: MemberSchedule | null,
   weekday: Weekday,
 ): ScheduledDay | null {
-  if (!schedule) return null;
+  // Defensivo: si el caché trae un formato viejo/no-array, tratar como vacío.
+  if (!Array.isArray(schedule)) return null;
   return schedule.find((s) => s.weekday === weekday) ?? null;
 }
 

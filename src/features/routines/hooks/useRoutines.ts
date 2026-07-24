@@ -92,7 +92,8 @@ export function useMemberSchedule(memberId: string, enabled = true) {
     deps: [memberId],
     enabled: enabled && !!memberId,
     errorMessage: 'No se pudo cargar el horario del miembro',
-    cacheKey: `routine:member:${memberId}`,
+    // v2: array de días. Clave nueva para no chocar con la asignación v1.
+    cacheKey: `schedule:member:${memberId}`,
   });
 }
 

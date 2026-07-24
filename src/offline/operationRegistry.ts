@@ -155,7 +155,7 @@ export const OPERATION_REGISTRY: Record<OperationType, OperationDef> = {
         idempotencyKey: key,
       }),
     invalidates: (payload: SetSchedulePayload) => [
-      `routine:member:${payload.memberId}`,
+      `schedule:member:${payload.memberId}`,
     ],
   },
 

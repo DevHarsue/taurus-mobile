@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Plus, Trash2, X } from 'lucide-react-native';
+import { Info, Plus, Trash2, X } from 'lucide-react-native';
 import { ScreenHeader } from '@components/ScreenHeader';
 import { Card } from '@components/Card';
 import { Input } from '@components/Input';
@@ -29,6 +29,7 @@ import {
   LEVEL_LABELS,
   MEASUREMENT_TYPES,
   MEASUREMENT_LABELS,
+  MEASUREMENT_DESC,
   type CreateRoutineRequest,
   type MeasurementType,
   type RoutineLevel,
@@ -360,32 +361,36 @@ export default function RoutineBuilderScreen() {
               <Text style={styles.noExercises}>Sin ejercicios aún</Text>
             )}
 
-            {day.exercises.map((ex) => {
+            {day.exercises.map((ex, exIdx) => {
               const f2 = field2(ex);
               return (
-                <View key={ex.key} style={styles.exerciseRow}>
-                  <View style={styles.exerciseHeader}>
-                    <View style={styles.exNameWrap}>
-                      <Input
-                        label="EJERCICIO"
-                        placeholder="Nombre"
-                        value={ex.exerciseName}
-                        onChangeText={(t) =>
-                          updateExercise(day.key, ex.key, { exerciseName: t })
-                        }
-                        variant="dark"
-                      />
-                    </View>
+                <View key={ex.key} style={styles.exerciseBlock}>
+                  <View style={styles.exBlockHeader}>
+                    <Text style={styles.exBlockTitle}>
+                      EJERCICIO {exIdx + 1}
+                    </Text>
                     <Pressable
                       onPress={() => removeExercise(day.key, ex.key)}
                       hitSlop={8}
-                      style={styles.removeEx}
                     >
                       <X size={16} color={colors.textMuted} />
                     </Pressable>
                   </View>
 
-                  {/* Tipo de medición */}
+                  <Input
+                    label="NOMBRE"
+                    placeholder="Nombre del ejercicio"
+                    value={ex.exerciseName}
+                    onChangeText={(t) =>
+                      updateExercise(day.key, ex.key, { exerciseName: t })
+                    }
+                    variant="dark"
+                  />
+
+                  <View style={styles.measureLabelRow}>
+                    <Text style={styles.measureLabel}>TIPO DE MEDICIÓN</Text>
+                    <Info size={12} color={colors.textMuted} />
+                  </View>
                   <View style={styles.measureRow}>
                     {MEASUREMENT_TYPES.map((mt) => (
                       <Pressable
@@ -410,6 +415,9 @@ export default function RoutineBuilderScreen() {
                       </Pressable>
                     ))}
                   </View>
+                  <Text style={styles.measureHelp}>
+                    {MEASUREMENT_DESC[ex.measurementType]}
+                  </Text>
 
                   <View style={styles.exFields}>
                     <View style={styles.exFieldSm}>
@@ -589,7 +597,13 @@ const createStyles = (colors: Colors) =>
       fontSize: 13,
       color: colors.primaryRed,
     },
-    dayCard: { padding: 14, gap: 8, marginTop: 8 },
+    dayCard: {
+      padding: 16,
+      gap: 8,
+      marginTop: 18,
+      borderWidth: 1,
+      borderColor: colors.divider,
+    },
     dayTop: { flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
     dayLabelWrap: { flex: 1 },
     removeDay: { paddingTop: 28 },
@@ -600,16 +614,43 @@ const createStyles = (colors: Colors) =>
       fontStyle: 'italic',
       paddingVertical: 4,
     },
-    exerciseRow: {
-      borderTopWidth: 1,
-      borderTopColor: colors.divider,
-      paddingTop: 8,
-      gap: 4,
+    exerciseBlock: {
+      backgroundColor: colors.background,
+      borderRadius: 12,
+      padding: 12,
+      gap: 6,
+      marginTop: 10,
     },
-    exerciseHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
-    exNameWrap: { flex: 1 },
-    removeEx: { paddingTop: 28 },
-    measureRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 6 },
+    exBlockHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    exBlockTitle: {
+      fontFamily: typography.labelL.fontFamily,
+      fontSize: typography.labelL.fontSize,
+      letterSpacing: 1,
+      color: colors.primaryRed,
+    },
+    measureLabelRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      marginTop: 2,
+    },
+    measureLabel: {
+      fontFamily: typography.labelM.fontFamily,
+      fontSize: typography.labelM.fontSize,
+      letterSpacing: 1,
+      color: colors.textMuted,
+    },
+    measureRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+    measureHelp: {
+      fontFamily: typography.bodyXS.fontFamily,
+      fontSize: 11,
+      color: colors.textSecondary,
+      lineHeight: 15,
+    },
     measureChip: {
       paddingVertical: 6,
       paddingHorizontal: 10,

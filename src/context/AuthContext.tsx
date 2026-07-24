@@ -15,6 +15,8 @@ type AuthContextValue = {
   login: (body: LoginRequest) => Promise<void>;
   loginWithGoogle: (body: GoogleLoginRequest) => Promise<void>;
   logout: () => Promise<void>;
+  /** Re-consulta /me y actualiza el usuario (p. ej. tras establecer contraseña). */
+  refreshUser: () => Promise<void>;
 };
 
 export const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -94,6 +96,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     void kvStore.setJson(CACHED_USER_KEY, authUser);
   }, []);
 
+  const refreshUser = useCallback(async () => {
+    try {
+      const me = await authApi.me();
+      setUser(me);
+      void kvStore.setJson(CACHED_USER_KEY, me);
+    } catch {
+      // Sin conexión / error: se mantiene el usuario actual.
+    }
+  }, []);
+
   useEffect(() => {
     setLogoutHandler(logout);
     return () => setLogoutHandler(null);
@@ -165,8 +177,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       login,
       loginWithGoogle,
       logout,
+      refreshUser,
     }),
-    [user, loading, isAuthenticated, isAdmin, login, loginWithGoogle, logout],
+    [
+      user,
+      loading,
+      isAuthenticated,
+      isAdmin,
+      login,
+      loginWithGoogle,
+      logout,
+      refreshUser,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

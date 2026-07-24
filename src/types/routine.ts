@@ -72,6 +72,14 @@ export const MEASUREMENT_HINT: Record<MeasurementType, string> = {
   distance: 'Correr, remo, caminata…',
 };
 
+/** Qué registrará el miembro al entrenar, según el tipo. */
+export const MEASUREMENT_DESC: Record<MeasurementType, string> = {
+  weight_reps: 'El miembro anota repeticiones y peso (kg) por serie.',
+  reps: 'El miembro anota solo las repeticiones por serie.',
+  time: 'El miembro anota el tiempo en segundos (ej. plancha 30s).',
+  distance: 'El miembro anota la distancia recorrida (ej. 5 km).',
+};
+
 // ─── Catálogo de ejercicios ────────────────────────────────────────────────
 
 export interface Exercise {

@@ -14,7 +14,8 @@ export function useMySchedule() {
     queryFn: () => routinesService.getMySchedule(),
     deps: [],
     errorMessage: 'No se pudo cargar tu rutina',
-    cacheKey: 'routine:me',
+    // v2: array de días. Clave nueva para no chocar con el bundle v1.
+    cacheKey: 'schedule:me',
   });
 }
 
