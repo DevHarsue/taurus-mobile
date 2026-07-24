@@ -31,6 +31,14 @@ const STATUS: Record<
   skipped: { label: 'Saltado', variant: 'neutral' },
 };
 
+function formatSet(s: SetLog): string {
+  if (s.durationDone != null) return `${s.durationDone}s`;
+  if (s.distanceDone != null) return `${s.distanceDone}`;
+  const reps = s.repsDone != null ? `${s.repsDone}` : '–';
+  const weight = s.weightDone != null ? ` × ${s.weightDone}kg` : '';
+  return `${reps}${weight}`;
+}
+
 function groupByExercise(sets: SetLog[]): { name: string; detail: string }[] {
   const map = new Map<string, SetLog[]>();
   for (const s of sets) {
@@ -38,16 +46,10 @@ function groupByExercise(sets: SetLog[]): { name: string; detail: string }[] {
     arr.push(s);
     map.set(s.exerciseName, arr);
   }
-  return Array.from(map.entries()).map(([name, list]) => {
-    const detail = list
-      .map((s) => {
-        const reps = s.repsDone != null ? `${s.repsDone}` : '–';
-        const weight = s.weightDone != null ? ` × ${s.weightDone}kg` : '';
-        return `${reps}${weight}`;
-      })
-      .join('  |  ');
-    return { name, detail };
-  });
+  return Array.from(map.entries()).map(([name, list]) => ({
+    name,
+    detail: list.map(formatSet).join('  |  '),
+  }));
 }
 
 export default function WorkoutHistoryScreen() {

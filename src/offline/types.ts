@@ -10,7 +10,7 @@ export type OperationType =
   | 'routines.create'
   | 'routines.update'
   | 'routines.delete'
-  | 'routines.assign'
+  | 'routines.setSchedule'
   | 'workouts.log';
 
 export type OpStatus = 'pending' | 'in-flight' | 'failed';

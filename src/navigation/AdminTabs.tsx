@@ -17,7 +17,7 @@ import EditPlanScreen from '@features/plans/screens/EditPlanScreen';
 import RoutinesListScreen from '@features/routines/screens/RoutinesListScreen';
 import ExerciseCatalogScreen from '@features/routines/screens/ExerciseCatalogScreen';
 import RoutineBuilderScreen from '@features/routines/screens/RoutineBuilderScreen';
-import AssignRoutineScreen from '@features/routines/screens/AssignRoutineScreen';
+import MemberScheduleScreen from '@features/routines/screens/MemberScheduleScreen';
 import QRScannerScreen from '@features/scanner/screens/QRScannerScreen';
 import MyProfileScreen from '@features/profile/screens/MyProfileScreen';
 import SettingsScreen from '@features/settings/screens/SettingsScreen';
@@ -60,6 +60,7 @@ function MembersStackNavigator() {
       <MembersStack.Screen name="RenewMembership" component={RenewMembershipScreen} />
       <MembersStack.Screen name="EditMember" component={EditMemberScreen} />
       <MembersStack.Screen name="FingerprintEnroll" component={FingerprintEnrollScreen} />
+      <MembersStack.Screen name="MemberSchedule" component={MemberScheduleScreen} />
     </MembersStack.Navigator>
   );
 }
@@ -82,7 +83,6 @@ function RoutinesStackNavigator() {
       <RoutinesStack.Screen name="RoutinesHome" component={RoutinesListScreen} />
       <RoutinesStack.Screen name="ExerciseCatalog" component={ExerciseCatalogScreen} />
       <RoutinesStack.Screen name="RoutineBuilder" component={RoutineBuilderScreen} />
-      <RoutinesStack.Screen name="AssignRoutine" component={AssignRoutineScreen} />
     </RoutinesStack.Navigator>
   );
 }

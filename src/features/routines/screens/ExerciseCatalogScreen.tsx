@@ -31,6 +31,11 @@ import {
   exerciseSchema,
   type ExerciseFormValues,
 } from '../schemas/routine.schema';
+import {
+  MEASUREMENT_TYPES,
+  MEASUREMENT_LABELS,
+  type MeasurementType,
+} from '@app-types/routine';
 import { typography, spacing, type Colors } from '@theme/index';
 
 export default function ExerciseCatalogScreen() {
@@ -50,7 +55,13 @@ export default function ExerciseCatalogScreen() {
     formState: { errors },
   } = useForm<ExerciseFormValues>({
     resolver: zodResolver(exerciseSchema),
-    defaultValues: { name: '', muscleGroup: '', equipment: '', description: '' },
+    defaultValues: {
+      name: '',
+      muscleGroup: '',
+      equipment: '',
+      description: '',
+      measurementType: 'weight_reps',
+    },
   });
 
   const onSubmit = async (values: ExerciseFormValues) => {
@@ -59,8 +70,15 @@ export default function ExerciseCatalogScreen() {
       muscleGroup: values.muscleGroup || undefined,
       equipment: values.equipment || undefined,
       description: values.description || undefined,
+      measurementType: values.measurementType,
     });
-    reset({ name: '', muscleGroup: '', equipment: '', description: '' });
+    reset({
+      name: '',
+      muscleGroup: '',
+      equipment: '',
+      description: '',
+      measurementType: 'weight_reps',
+    });
     query.refetch();
     toast[queued ? 'info' : 'success'](
       queued ? 'Sin conexión: se guardará al sincronizar' : 'Ejercicio creado',
@@ -149,6 +167,34 @@ export default function ExerciseCatalogScreen() {
               />
             )}
           />
+          <Text style={styles.fieldLabel}>TIPO DE MEDICIÓN</Text>
+          <Controller
+            control={control}
+            name="measurementType"
+            render={({ field: { onChange, value } }) => (
+              <View style={styles.measureRow}>
+                {MEASUREMENT_TYPES.map((mt) => (
+                  <Pressable
+                    key={mt}
+                    style={[
+                      styles.measureChip,
+                      value === mt && styles.measureChipActive,
+                    ]}
+                    onPress={() => onChange(mt)}
+                  >
+                    <Text
+                      style={[
+                        styles.measureChipText,
+                        value === mt && styles.measureChipTextActive,
+                      ]}
+                    >
+                      {MEASUREMENT_LABELS[mt]}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            )}
+          />
           <GradientButton
             title="Agregar al catálogo"
             onPress={handleSubmit(onSubmit)}
@@ -182,9 +228,13 @@ export default function ExerciseCatalogScreen() {
                   <View style={styles.rowInfo}>
                     <Text style={styles.rowName}>{ex.name}</Text>
                     <Text style={styles.rowMeta}>
-                      {[ex.muscleGroup, ex.equipment]
+                      {[
+                        MEASUREMENT_LABELS[ex.measurementType],
+                        ex.muscleGroup,
+                        ex.equipment,
+                      ]
                         .filter(Boolean)
-                        .join('  ·  ') || 'Sin categoría'}
+                        .join('  ·  ')}
                     </Text>
                   </View>
                   <Pressable
@@ -214,6 +264,33 @@ const createStyles = (colors: Colors) =>
       color: colors.textPrimary,
       marginBottom: 8,
     },
+    fieldLabel: {
+      fontFamily: typography.labelL.fontFamily,
+      fontSize: typography.labelL.fontSize,
+      letterSpacing: 1,
+      color: colors.textMuted,
+      textTransform: 'uppercase',
+      marginBottom: 8,
+      marginTop: 4,
+    },
+    measureRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 },
+    measureChip: {
+      paddingVertical: 8,
+      paddingHorizontal: 14,
+      borderRadius: 999,
+      borderWidth: 1,
+      borderColor: colors.divider,
+    },
+    measureChipActive: {
+      backgroundColor: colors.primaryRed,
+      borderColor: colors.primaryRed,
+    },
+    measureChipText: {
+      fontFamily: typography.bodyS.fontFamily,
+      fontSize: 13,
+      color: colors.textPrimary,
+    },
+    measureChipTextActive: { color: colors.white },
     listTitle: {
       fontFamily: typography.labelM.fontFamily,
       fontSize: typography.labelM.fontSize,

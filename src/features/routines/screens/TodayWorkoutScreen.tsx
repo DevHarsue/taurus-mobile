@@ -30,13 +30,18 @@ import { useToast } from '@hooks/useToast';
 import { useTheme } from '@hooks/useTheme';
 import { haptics } from '@utils/haptics';
 import { newUuid } from '@offline';
-import { useMyRoutine, useLogWorkout } from '../hooks/useMyRoutine';
-import { deriveTodayWorkout, getCurrentWeekday } from '../utils/schedule';
+import { useMySchedule, useLogWorkout } from '../hooks/useMyRoutine';
+import {
+  deriveTodayWorkout,
+  getCurrentWeekday,
+  prescriptionLine,
+} from '../utils/schedule';
 import {
   WEEKDAY_LABELS,
   type LogSetRequest,
+  type MeasurementType,
   type RoutineExercise,
-  type RoutineDay,
+  type ScheduledDay,
 } from '@app-types/routine';
 import { typography, spacing, type Colors } from '@theme/index';
 import type { MemberRoutineStackParamList } from '@navigation/types';
@@ -44,28 +49,45 @@ import type { MemberRoutineStackParamList } from '@navigation/types';
 interface SetEntry {
   reps: string;
   weight: string;
+  duration: string;
+  distance: string;
   done: boolean;
 }
 type LogState = Record<string, SetEntry[]>;
 
-function buildInitialLog(day: RoutineDay | null): LogState {
+type FieldKey = 'reps' | 'weight' | 'duration' | 'distance';
+
+/** Qué inputs mostrar por serie según el tipo de medición. */
+function inputsFor(
+  type: MeasurementType,
+): { key: FieldKey; label: string; numeric: boolean; placeholder: string }[] {
+  switch (type) {
+    case 'reps':
+      return [{ key: 'reps', label: 'REPS', numeric: true, placeholder: '10' }];
+    case 'time':
+      return [{ key: 'duration', label: 'SEG', numeric: true, placeholder: '30' }];
+    case 'distance':
+      return [{ key: 'distance', label: 'DIST', numeric: false, placeholder: 'km' }];
+    case 'weight_reps':
+    default:
+      return [
+        { key: 'reps', label: 'REPS', numeric: true, placeholder: '10' },
+        { key: 'weight', label: 'KG', numeric: true, placeholder: '-' },
+      ];
+  }
+}
+
+function emptyEntry(): SetEntry {
+  return { reps: '', weight: '', duration: '', distance: '', done: false };
+}
+
+function buildInitialLog(day: ScheduledDay | null): LogState {
   const state: LogState = {};
   if (!day) return state;
   for (const ex of day.exercises) {
-    state[ex.id] = Array.from({ length: Math.max(ex.sets, 1) }, () => ({
-      reps: '',
-      weight: '',
-      done: false,
-    }));
+    state[ex.id] = Array.from({ length: Math.max(ex.sets, 1) }, emptyEntry);
   }
   return state;
-}
-
-function prescriptionLine(ex: RoutineExercise): string {
-  const parts = [`${ex.sets} series`, `${ex.reps} reps`];
-  if (ex.restSeconds) parts.push(`${ex.restSeconds}s desc.`);
-  if (ex.weight) parts.push(ex.weight);
-  return parts.join('  ·  ');
 }
 
 export default function TodayWorkoutScreen() {
@@ -73,7 +95,7 @@ export default function TodayWorkoutScreen() {
     useNavigation<NativeStackNavigationProp<MemberRoutineStackParamList>>();
   const insets = useSafeAreaInsets();
   const { displayName } = useGreeting();
-  const query = useMyRoutine();
+  const query = useMySchedule();
   const { mutate: logWorkout, loading: logging } = useLogWorkout();
   const { toast } = useToast();
   const { colors } = useTheme();
@@ -87,16 +109,11 @@ export default function TodayWorkoutScreen() {
 
   const [log, setLog] = useState<LogState>({});
 
-  // Re-inicializar el formulario cuando cambia el dia (al cargar/refrescar).
   useEffect(() => {
     setLog(buildInitialLog(day));
   }, [day]);
 
-  const updateSet = (
-    exId: string,
-    setIdx: number,
-    patch: Partial<SetEntry>,
-  ) => {
+  const updateSet = (exId: string, setIdx: number, patch: Partial<SetEntry>) => {
     setLog((prev) => {
       const sets = prev[exId] ? [...prev[exId]] : [];
       sets[setIdx] = { ...sets[setIdx], ...patch };
@@ -104,7 +121,7 @@ export default function TodayWorkoutScreen() {
     });
   };
 
-  const { doneSets, totalSets } = useMemo(() => {
+  const { doneSets, totalSetsCount } = useMemo(() => {
     let done = 0;
     let total = 0;
     Object.values(log).forEach((sets) => {
@@ -113,16 +130,21 @@ export default function TodayWorkoutScreen() {
         if (s.done) done += 1;
       });
     });
-    return { doneSets: done, totalSets: total };
+    return { doneSets: done, totalSetsCount: total };
   }, [log]);
 
   const onSubmit = async () => {
-    if (!day || !query.data?.assignment) return;
+    if (!day) return;
     const sets: LogSetRequest[] = [];
     for (const ex of day.exercises) {
       const entries = log[ex.id] ?? [];
       entries.forEach((entry, idx) => {
-        const hasData = entry.done || entry.reps || entry.weight;
+        const hasData =
+          entry.done ||
+          entry.reps ||
+          entry.weight ||
+          entry.duration ||
+          entry.distance;
         if (!hasData) return;
         sets.push({
           routineExerciseId: ex.id,
@@ -130,6 +152,8 @@ export default function TodayWorkoutScreen() {
           setNumber: idx + 1,
           repsDone: entry.reps ? Number(entry.reps) : undefined,
           weightDone: entry.weight ? Number(entry.weight) : undefined,
+          durationDone: entry.duration ? Number(entry.duration) : undefined,
+          distanceDone: entry.distance ? Number(entry.distance) : undefined,
           done: entry.done,
         });
       });
@@ -140,11 +164,10 @@ export default function TodayWorkoutScreen() {
       return;
     }
 
-    const status = doneSets >= totalSets ? 'completed' : 'partial';
+    const status = doneSets >= totalSetsCount ? 'completed' : 'partial';
     const { queued } = await logWorkout({
-      assignmentId: query.data.assignment.id,
-      routineDayId: day.id,
-      dayLabel: day.label,
+      routineDayId: day.routineDayId,
+      dayLabel: day.dayLabel,
       status,
       clientId: newUuid(),
       sets,
@@ -164,7 +187,7 @@ export default function TodayWorkoutScreen() {
   }, [query]);
 
   const weekdayLabel = WEEKDAY_LABELS[getCurrentWeekday()];
-  const hasRoutine = !!query.data?.assignment && !!query.data?.routine;
+  const hasSchedule = (query.data?.length ?? 0) > 0;
 
   return (
     <View style={styles.container}>
@@ -203,19 +226,17 @@ export default function TodayWorkoutScreen() {
             <Skeleton width="100%" height={90} borderRadius={16} />
             <Skeleton width="100%" height={90} borderRadius={16} />
           </View>
-        ) : !hasRoutine ? (
+        ) : !hasSchedule ? (
           <EmptyState
             icon={Dumbbell}
             title="Aún no tienes una rutina"
-            description="Cuando el gimnasio te asigne una rutina, aparecerá aquí."
+            description="Cuando el gimnasio te asigne rutinas por día, aparecerán aquí."
           />
         ) : today.isRestDay || !day ? (
           <Card style={styles.restCard}>
             <Coffee size={40} color={colors.primaryRed} strokeWidth={1.6} />
             <Text style={styles.restTitle}>Día de descanso</Text>
-            <Text style={styles.restDesc}>
-              Hoy no toca entrenar según tu rutina “{today.routineName}”.
-            </Text>
+            <Text style={styles.restDesc}>Hoy no toca entrenar según tu horario.</Text>
             <Pressable
               style={styles.weekLink}
               onPress={() => nav.navigate('WeekRoutine')}
@@ -228,8 +249,8 @@ export default function TodayWorkoutScreen() {
           <>
             <View style={styles.dayHeaderRow}>
               <View style={{ flex: 1 }}>
-                <Text style={styles.routineName}>{today.routineName}</Text>
-                <Text style={styles.dayLabel}>{day.label}</Text>
+                <Text style={styles.routineName}>{day.routineName}</Text>
+                <Text style={styles.dayLabel}>{day.dayLabel}</Text>
               </View>
               <Pressable
                 style={styles.weekLink}
@@ -241,80 +262,85 @@ export default function TodayWorkoutScreen() {
             </View>
 
             <Text style={styles.progress}>
-              {doneSets}/{totalSets} series completadas
+              {doneSets}/{totalSetsCount} series completadas
             </Text>
 
-            {day.exercises.map((ex) => (
-              <Card key={ex.id} style={styles.exCard}>
-                <Pressable
-                  style={styles.exHeader}
-                  onPress={() =>
-                    nav.navigate('ExerciseDetail', {
-                      exercise: ex,
-                      dayLabel: day.label,
-                    })
-                  }
-                >
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.exName}>{ex.exerciseName}</Text>
-                    <Text style={styles.exPrescription}>
-                      {prescriptionLine(ex)}
-                    </Text>
-                  </View>
-                  <ChevronRight size={20} color={colors.textMuted} />
-                </Pressable>
-
-                {!!ex.notes && <Text style={styles.exNotes}>{ex.notes}</Text>}
-
-                <View style={styles.setsHeader}>
-                  <Text style={[styles.setsHeaderText, styles.colSet]}>SERIE</Text>
-                  <Text style={[styles.setsHeaderText, styles.colInput]}>REPS</Text>
-                  <Text style={[styles.setsHeaderText, styles.colInput]}>KG</Text>
-                  <Text style={[styles.setsHeaderText, styles.colCheck]}>✓</Text>
-                </View>
-
-                {(log[ex.id] ?? []).map((entry, idx) => (
-                  <View key={idx} style={styles.setRow}>
-                    <Text style={[styles.setNumber, styles.colSet]}>{idx + 1}</Text>
-                    <View style={styles.colInput}>
-                      <TextInput
-                        style={styles.setInput}
-                        value={entry.reps}
-                        onChangeText={(t) => updateSet(ex.id, idx, { reps: t })}
-                        keyboardType="numeric"
-                        placeholder={ex.reps}
-                        placeholderTextColor={colors.textPrimaryAlpha40}
-                      />
+            {day.exercises.map((ex: RoutineExercise) => {
+              const fields = inputsFor(ex.measurementType);
+              return (
+                <Card key={ex.id} style={styles.exCard}>
+                  <Pressable
+                    style={styles.exHeader}
+                    onPress={() =>
+                      nav.navigate('ExerciseDetail', {
+                        exercise: ex,
+                        dayLabel: day.dayLabel,
+                      })
+                    }
+                  >
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.exName}>{ex.exerciseName}</Text>
+                      <Text style={styles.exPrescription}>
+                        {prescriptionLine(ex)}
+                      </Text>
                     </View>
-                    <View style={styles.colInput}>
-                      <TextInput
-                        style={styles.setInput}
-                        value={entry.weight}
-                        onChangeText={(t) => updateSet(ex.id, idx, { weight: t })}
-                        keyboardType="numeric"
-                        placeholder="-"
-                        placeholderTextColor={colors.textPrimaryAlpha40}
-                      />
-                    </View>
-                    <View style={styles.colCheck}>
-                      <Pressable
-                        onPress={() =>
-                          updateSet(ex.id, idx, { done: !entry.done })
-                        }
-                        style={[
-                          styles.checkBox,
-                          entry.done && styles.checkBoxDone,
-                        ]}
+                    <ChevronRight size={20} color={colors.textMuted} />
+                  </Pressable>
+
+                  {!!ex.notes && <Text style={styles.exNotes}>{ex.notes}</Text>}
+
+                  <View style={styles.setsHeader}>
+                    <Text style={[styles.setsHeaderText, styles.colSet]}>SERIE</Text>
+                    {fields.map((f) => (
+                      <Text
+                        key={f.key}
+                        style={[styles.setsHeaderText, styles.colInput]}
                       >
-                        {entry.done && (
-                          <Check size={16} color={colors.white} strokeWidth={3} />
-                        )}
-                      </Pressable>
-                    </View>
+                        {f.label}
+                      </Text>
+                    ))}
+                    <Text style={[styles.setsHeaderText, styles.colCheck]}>✓</Text>
                   </View>
-                ))}
-              </Card>
-            ))}
+
+                  {(log[ex.id] ?? []).map((entry, idx) => (
+                    <View key={idx} style={styles.setRow}>
+                      <Text style={[styles.setNumber, styles.colSet]}>
+                        {idx + 1}
+                      </Text>
+                      {fields.map((f) => (
+                        <View key={f.key} style={styles.colInput}>
+                          <TextInput
+                            style={styles.setInput}
+                            value={entry[f.key]}
+                            onChangeText={(t) =>
+                              updateSet(ex.id, idx, { [f.key]: t })
+                            }
+                            keyboardType={f.numeric ? 'numeric' : 'default'}
+                            placeholder={f.placeholder}
+                            placeholderTextColor={colors.textPrimaryAlpha40}
+                          />
+                        </View>
+                      ))}
+                      <View style={styles.colCheck}>
+                        <Pressable
+                          onPress={() =>
+                            updateSet(ex.id, idx, { done: !entry.done })
+                          }
+                          style={[
+                            styles.checkBox,
+                            entry.done && styles.checkBoxDone,
+                          ]}
+                        >
+                          {entry.done && (
+                            <Check size={16} color={colors.white} strokeWidth={3} />
+                          )}
+                        </Pressable>
+                      </View>
+                    </View>
+                  ))}
+                </Card>
+              );
+            })}
 
             <GradientButton
               title="Registrar entrenamiento"
@@ -419,11 +445,7 @@ const createStyles = (colors: Colors) =>
       color: colors.textSecondary,
       fontStyle: 'italic',
     },
-    setsHeader: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingTop: 4,
-    },
+    setsHeader: { flexDirection: 'row', alignItems: 'center', paddingTop: 4 },
     setsHeaderText: {
       fontFamily: typography.labelM.fontFamily,
       fontSize: typography.labelM.fontSize,

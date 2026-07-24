@@ -47,7 +47,23 @@ export default function ExerciseDetailScreen() {
 
         <View style={styles.statsRow}>
           <Stat label="SERIES" value={String(exercise.sets)} styles={styles} />
-          <Stat label="REPS" value={exercise.reps} styles={styles} />
+          {exercise.measurementType === 'time' ? (
+            <Stat
+              label="TIEMPO"
+              value={
+                exercise.durationSeconds ? `${exercise.durationSeconds}s` : '—'
+              }
+              styles={styles}
+            />
+          ) : exercise.measurementType === 'distance' ? (
+            <Stat
+              label="DISTANCIA"
+              value={exercise.distance ?? '—'}
+              styles={styles}
+            />
+          ) : (
+            <Stat label="REPS" value={exercise.reps} styles={styles} />
+          )}
           {exercise.restSeconds != null && (
             <Stat
               label="DESCANSO"

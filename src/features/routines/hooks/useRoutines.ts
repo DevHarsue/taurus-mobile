@@ -3,11 +3,11 @@ import { useMutation } from '@hooks/useMutation';
 import { routinesService } from '@api/services';
 import { runOrEnqueue, type OfflineOutcome } from '@offline';
 import type {
-  AssignRoutineRequest,
   CreateRoutineRequest,
+  MemberSchedule,
   Routine,
-  RoutineAssignment,
   RoutineDetail,
+  SetScheduleRequest,
   UpdateRoutineRequest,
 } from '@app-types/routine';
 
@@ -86,28 +86,35 @@ export function useDeleteRoutine() {
   });
 }
 
-export function useAssignRoutine() {
-  return useMutation<AssignRoutineRequest, OfflineOutcome<void>>({
-    mutationFn: (body) =>
-      runOrEnqueue({
-        type: 'routines.assign',
-        payload: body,
-        label: `Asignar rutina a miembro`,
-        run: async (key) => {
-          await routinesService.assignRoutine(body, { idempotencyKey: key });
-        },
-        optimistic: () => undefined,
-      }),
-    errorMessage: 'No se pudo asignar la rutina',
+export function useMemberSchedule(memberId: string, enabled = true) {
+  return useQuery<MemberSchedule>({
+    queryFn: () => routinesService.getMemberSchedule(memberId),
+    deps: [memberId],
+    enabled: enabled && !!memberId,
+    errorMessage: 'No se pudo cargar el horario del miembro',
+    cacheKey: `routine:member:${memberId}`,
   });
 }
 
-export function useMemberAssignment(memberId: string, enabled = true) {
-  return useQuery<RoutineAssignment | null>({
-    queryFn: () => routinesService.getMemberAssignment(memberId),
-    deps: [memberId],
-    enabled: enabled && !!memberId,
-    errorMessage: 'No se pudo cargar la asignación del miembro',
-    cacheKey: `routine:member:${memberId}`,
+export interface SetScheduleInput {
+  memberId: string;
+  body: SetScheduleRequest;
+}
+
+export function useSetMemberSchedule() {
+  return useMutation<SetScheduleInput, OfflineOutcome<void>>({
+    mutationFn: ({ memberId, body }) =>
+      runOrEnqueue({
+        type: 'routines.setSchedule',
+        payload: { memberId, body },
+        label: `Actualizar horario del miembro`,
+        run: async (key) => {
+          await routinesService.setMemberSchedule(memberId, body, {
+            idempotencyKey: key,
+          });
+        },
+        optimistic: () => undefined,
+      }),
+    errorMessage: 'No se pudo guardar el horario',
   });
 }

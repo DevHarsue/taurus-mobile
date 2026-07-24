@@ -5,10 +5,10 @@ import type {
   UpdateMemberRequest,
 } from '@app-types/member';
 import type {
-  AssignRoutineRequest,
   CreateExerciseRequest,
   CreateRoutineRequest,
   LogWorkoutRequest,
+  SetScheduleRequest,
   UpdateExerciseRequest,
   UpdateRoutineRequest,
 } from '@app-types/routine';
@@ -56,6 +56,11 @@ export interface UpdateRoutinePayload {
 
 export interface DeleteRoutinePayload {
   routineId: string;
+}
+
+export interface SetSchedulePayload {
+  memberId: string;
+  body: SetScheduleRequest;
 }
 
 export const OPERATION_REGISTRY: Record<OperationType, OperationDef> = {
@@ -144,10 +149,12 @@ export const OPERATION_REGISTRY: Record<OperationType, OperationDef> = {
       `routine:${payload.routineId}`,
     ],
   },
-  'routines.assign': {
-    run: (payload: AssignRoutineRequest, key) =>
-      routinesService.assignRoutine(payload, { idempotencyKey: key }),
-    invalidates: (payload: AssignRoutineRequest) => [
+  'routines.setSchedule': {
+    run: (payload: SetSchedulePayload, key) =>
+      routinesService.setMemberSchedule(payload.memberId, payload.body, {
+        idempotencyKey: key,
+      }),
+    invalidates: (payload: SetSchedulePayload) => [
       `routine:member:${payload.memberId}`,
     ],
   },

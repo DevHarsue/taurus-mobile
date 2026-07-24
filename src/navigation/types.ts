@@ -25,7 +25,6 @@ export type RoutinesStackParamList = {
   RoutinesHome: undefined;
   ExerciseCatalog: undefined;
   RoutineBuilder: { routineId?: string } | undefined;
-  AssignRoutine: { routineId: string; routineName?: string };
 };
 
 export type MembersStackParamList = {
@@ -35,6 +34,7 @@ export type MembersStackParamList = {
   RenewMembership: { memberId: string; memberName?: string };
   EditMember: { id: string };
   FingerprintEnroll: { memberId: string; memberName: string };
+  MemberSchedule: { memberId: string; memberName?: string };
 };
 
 export type PlansStackParamList = {
@@ -118,7 +118,7 @@ export type RenewalHistoryScreenProps = BottomTabScreenProps<MemberTabsParamList
 export type RoutinesHomeScreenProps = NativeStackScreenProps<RoutinesStackParamList, 'RoutinesHome'>;
 export type ExerciseCatalogScreenProps = NativeStackScreenProps<RoutinesStackParamList, 'ExerciseCatalog'>;
 export type RoutineBuilderScreenProps = NativeStackScreenProps<RoutinesStackParamList, 'RoutineBuilder'>;
-export type AssignRoutineScreenProps = NativeStackScreenProps<RoutinesStackParamList, 'AssignRoutine'>;
+export type MemberScheduleScreenProps = NativeStackScreenProps<MembersStackParamList, 'MemberSchedule'>;
 
 export type TodayWorkoutScreenProps = NativeStackScreenProps<MemberRoutineStackParamList, 'TodayWorkout'>;
 export type WeekRoutineScreenProps = NativeStackScreenProps<MemberRoutineStackParamList, 'WeekRoutine'>;

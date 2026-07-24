@@ -1,14 +1,13 @@
 import { BaseApiService, type IWriteOptions } from './BaseApiService';
 import type {
-  AssignRoutineRequest,
   CreateExerciseRequest,
   CreateRoutineRequest,
   Exercise,
   LogWorkoutRequest,
-  MemberRoutineBundle,
+  MemberSchedule,
   Routine,
-  RoutineAssignment,
   RoutineDetail,
+  SetScheduleRequest,
   UpdateExerciseRequest,
   UpdateRoutineRequest,
   WorkoutLog,
@@ -67,21 +66,21 @@ export class RoutinesService extends BaseApiService {
     return this.delete(`/api/routines/${id}`, undefined, options);
   }
 
-  async assignRoutine(
-    body: AssignRoutineRequest,
-    options?: IWriteOptions,
-  ): Promise<RoutineAssignment> {
-    return this.post('/api/routines/assign', body, options);
+  // ─── Horario semanal de un miembro (admin) ───────────────────────────────
+  async getMemberSchedule(memberId: string): Promise<MemberSchedule> {
+    return this.get(`/api/routines/member/${memberId}/schedule`);
   }
 
-  async getMemberAssignment(
+  async setMemberSchedule(
     memberId: string,
-  ): Promise<RoutineAssignment | null> {
-    return this.get(`/api/routines/member/${memberId}/assignment`);
+    body: SetScheduleRequest,
+    options?: IWriteOptions,
+  ): Promise<MemberSchedule> {
+    return this.put(`/api/routines/member/${memberId}/schedule`, body, options);
   }
 
   // ─── Miembro autenticado (offline-first) ─────────────────────────────────
-  async getMyRoutine(): Promise<MemberRoutineBundle> {
+  async getMySchedule(): Promise<MemberSchedule> {
     return this.get('/api/routines/me');
   }
 

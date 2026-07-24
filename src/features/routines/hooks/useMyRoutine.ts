@@ -4,14 +4,14 @@ import { routinesService } from '@api/services';
 import { runOrEnqueue, type OfflineOutcome } from '@offline';
 import type {
   LogWorkoutRequest,
-  MemberRoutineBundle,
+  MemberSchedule,
   WorkoutLog,
 } from '@app-types/routine';
 
-/** Bundle de la rutina del miembro (asignación + rutina completa), cacheado offline. */
-export function useMyRoutine() {
-  return useQuery<MemberRoutineBundle>({
-    queryFn: () => routinesService.getMyRoutine(),
+/** Horario semanal del miembro (rutina por día), cacheado offline. */
+export function useMySchedule() {
+  return useQuery<MemberSchedule>({
+    queryFn: () => routinesService.getMySchedule(),
     deps: [],
     errorMessage: 'No se pudo cargar tu rutina',
     cacheKey: 'routine:me',
@@ -28,7 +28,7 @@ export function useWorkoutHistory(limit?: number) {
   });
 }
 
-/** Registro de entrenamiento (pesos/reps reales) offline-aware. */
+/** Registro de entrenamiento (reps/peso/tiempo/distancia) offline-aware. */
 export function useLogWorkout() {
   return useMutation<LogWorkoutRequest, OfflineOutcome<void>>({
     mutationFn: (body) =>

@@ -27,7 +27,10 @@ import {
 } from '../hooks/useRoutines';
 import {
   LEVEL_LABELS,
+  MEASUREMENT_TYPES,
+  MEASUREMENT_LABELS,
   type CreateRoutineRequest,
+  type MeasurementType,
   type RoutineLevel,
 } from '@app-types/routine';
 import { typography, spacing, type Colors } from '@theme/index';
@@ -40,10 +43,12 @@ interface BuilderExercise {
   key: string;
   exerciseId?: string;
   exerciseName: string;
+  measurementType: MeasurementType;
   sets: string;
   reps: string;
+  durationSeconds: string;
+  distance: string;
   restSeconds: string;
-  notes: string;
 }
 
 interface BuilderDay {
@@ -54,15 +59,21 @@ interface BuilderDay {
 
 const LEVELS: RoutineLevel[] = ['beginner', 'intermediate', 'advanced'];
 
-function emptyExercise(name = '', exerciseId?: string): BuilderExercise {
+function emptyExercise(
+  name = '',
+  exerciseId?: string,
+  measurementType: MeasurementType = 'weight_reps',
+): BuilderExercise {
   return {
     key: newTempId(),
     exerciseId,
     exerciseName: name,
+    measurementType,
     sets: '3',
     reps: '10',
+    durationSeconds: '',
+    distance: '',
     restSeconds: '',
-    notes: '',
   };
 }
 
@@ -89,7 +100,6 @@ export default function RoutineBuilderScreen() {
   ]);
   const [pickerDayKey, setPickerDayKey] = useState<string | null>(null);
 
-  // Prefill al editar (una sola vez cuando llega el detalle).
   const hydrated = useRef(false);
   useEffect(() => {
     if (!isEdit || hydrated.current || !detailQuery.data) return;
@@ -107,52 +117,57 @@ export default function RoutineBuilderScreen() {
           key: newTempId(),
           exerciseId: ex.exerciseId ?? undefined,
           exerciseName: ex.exerciseName,
+          measurementType: ex.measurementType,
           sets: String(ex.sets),
           reps: ex.reps,
+          durationSeconds:
+            ex.durationSeconds != null ? String(ex.durationSeconds) : '',
+          distance: ex.distance ?? '',
           restSeconds: ex.restSeconds != null ? String(ex.restSeconds) : '',
-          notes: ex.notes ?? '',
         })),
       })),
     );
   }, [isEdit, detailQuery.data]);
 
   const addDay = () => {
-    const letter = String.fromCharCode(65 + days.length); // A, B, C...
+    const letter = String.fromCharCode(65 + days.length);
     setDays((prev) => [
       ...prev,
       { key: newTempId(), label: `Día ${letter}`, exercises: [] },
     ]);
   };
 
-  const removeDay = (dayKey: string) => {
+  const removeDay = (dayKey: string) =>
     setDays((prev) => prev.filter((d) => d.key !== dayKey));
-  };
 
-  const setDayLabel = (dayKey: string, label: string) => {
-    setDays((prev) =>
-      prev.map((d) => (d.key === dayKey ? { ...d, label } : d)),
-    );
-  };
+  const setDayLabel = (dayKey: string, label: string) =>
+    setDays((prev) => prev.map((d) => (d.key === dayKey ? { ...d, label } : d)));
 
   const addExerciseToDay = (
     dayKey: string,
-    name?: string,
+    exName?: string,
     exerciseId?: string,
-  ) => {
+    measurementType?: MeasurementType,
+  ) =>
     setDays((prev) =>
       prev.map((d) =>
         d.key === dayKey
-          ? { ...d, exercises: [...d.exercises, emptyExercise(name, exerciseId)] }
+          ? {
+              ...d,
+              exercises: [
+                ...d.exercises,
+                emptyExercise(exName, exerciseId, measurementType),
+              ],
+            }
           : d,
       ),
     );
-  };
 
   const updateExercise = (
     dayKey: string,
     exKey: string,
     patch: Partial<BuilderExercise>,
-  ) => {
+  ) =>
     setDays((prev) =>
       prev.map((d) =>
         d.key === dayKey
@@ -165,9 +180,8 @@ export default function RoutineBuilderScreen() {
           : d,
       ),
     );
-  };
 
-  const removeExercise = (dayKey: string, exKey: string) => {
+  const removeExercise = (dayKey: string, exKey: string) =>
     setDays((prev) =>
       prev.map((d) =>
         d.key === dayKey
@@ -175,7 +189,6 @@ export default function RoutineBuilderScreen() {
           : d,
       ),
     );
-  };
 
   const buildPayload = (): CreateRoutineRequest | null => {
     if (name.trim().length < 2) {
@@ -191,11 +204,19 @@ export default function RoutineBuilderScreen() {
           .map((ex, j) => ({
             exerciseId: ex.exerciseId,
             exerciseName: ex.exerciseName.trim(),
+            measurementType: ex.measurementType,
             orderIndex: j,
             sets: Number(ex.sets) || 1,
             reps: ex.reps.trim() || '10',
+            durationSeconds:
+              ex.measurementType === 'time' && ex.durationSeconds
+                ? Number(ex.durationSeconds)
+                : undefined,
+            distance:
+              ex.measurementType === 'distance' && ex.distance.trim()
+                ? ex.distance.trim()
+                : undefined,
             restSeconds: ex.restSeconds ? Number(ex.restSeconds) : undefined,
-            notes: ex.notes.trim() || undefined,
           })),
       }))
       .filter((d) => d.exercises.length > 0);
@@ -240,6 +261,18 @@ export default function RoutineBuilderScreen() {
 
   const pickerDay = days.find((d) => d.key === pickerDayKey) ?? null;
 
+  // Etiqueta y binding del campo variable según el tipo de medición.
+  const field2 = (ex: BuilderExercise) => {
+    switch (ex.measurementType) {
+      case 'time':
+        return { label: 'TIEMPO (S)', value: ex.durationSeconds, key: 'durationSeconds' as const, numeric: true };
+      case 'distance':
+        return { label: 'DIST', value: ex.distance, key: 'distance' as const, numeric: false };
+      default:
+        return { label: 'REPS', value: ex.reps, key: 'reps' as const, numeric: false };
+    }
+  };
+
   return (
     <View style={styles.container}>
       <ScreenHeader
@@ -269,12 +302,7 @@ export default function RoutineBuilderScreen() {
               style={[styles.chip, level === lv && styles.chipActive]}
               onPress={() => setLevel(lv)}
             >
-              <Text
-                style={[
-                  styles.chipText,
-                  level === lv && styles.chipTextActive,
-                ]}
-              >
+              <Text style={[styles.chipText, level === lv && styles.chipTextActive]}>
                 {LEVEL_LABELS[lv]}
               </Text>
             </Pressable>
@@ -332,67 +360,98 @@ export default function RoutineBuilderScreen() {
               <Text style={styles.noExercises}>Sin ejercicios aún</Text>
             )}
 
-            {day.exercises.map((ex) => (
-              <View key={ex.key} style={styles.exerciseRow}>
-                <View style={styles.exerciseHeader}>
-                  <View style={styles.exNameWrap}>
-                    <Input
-                      label="EJERCICIO"
-                      placeholder="Nombre"
-                      value={ex.exerciseName}
-                      onChangeText={(t) =>
-                        updateExercise(day.key, ex.key, { exerciseName: t })
-                      }
-                      variant="dark"
-                    />
+            {day.exercises.map((ex) => {
+              const f2 = field2(ex);
+              return (
+                <View key={ex.key} style={styles.exerciseRow}>
+                  <View style={styles.exerciseHeader}>
+                    <View style={styles.exNameWrap}>
+                      <Input
+                        label="EJERCICIO"
+                        placeholder="Nombre"
+                        value={ex.exerciseName}
+                        onChangeText={(t) =>
+                          updateExercise(day.key, ex.key, { exerciseName: t })
+                        }
+                        variant="dark"
+                      />
+                    </View>
+                    <Pressable
+                      onPress={() => removeExercise(day.key, ex.key)}
+                      hitSlop={8}
+                      style={styles.removeEx}
+                    >
+                      <X size={16} color={colors.textMuted} />
+                    </Pressable>
                   </View>
-                  <Pressable
-                    onPress={() => removeExercise(day.key, ex.key)}
-                    hitSlop={8}
-                    style={styles.removeEx}
-                  >
-                    <X size={16} color={colors.textMuted} />
-                  </Pressable>
+
+                  {/* Tipo de medición */}
+                  <View style={styles.measureRow}>
+                    {MEASUREMENT_TYPES.map((mt) => (
+                      <Pressable
+                        key={mt}
+                        style={[
+                          styles.measureChip,
+                          ex.measurementType === mt && styles.measureChipActive,
+                        ]}
+                        onPress={() =>
+                          updateExercise(day.key, ex.key, { measurementType: mt })
+                        }
+                      >
+                        <Text
+                          style={[
+                            styles.measureChipText,
+                            ex.measurementType === mt &&
+                              styles.measureChipTextActive,
+                          ]}
+                        >
+                          {MEASUREMENT_LABELS[mt]}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </View>
+
+                  <View style={styles.exFields}>
+                    <View style={styles.exFieldSm}>
+                      <Input
+                        label="SERIES"
+                        placeholder="3"
+                        value={ex.sets}
+                        onChangeText={(t) =>
+                          updateExercise(day.key, ex.key, { sets: t })
+                        }
+                        variant="dark"
+                        keyboardType="numeric"
+                      />
+                    </View>
+                    <View style={styles.exFieldSm}>
+                      <Input
+                        label={f2.label}
+                        placeholder={ex.measurementType === 'distance' ? '5 km' : '10'}
+                        value={f2.value}
+                        onChangeText={(t) =>
+                          updateExercise(day.key, ex.key, { [f2.key]: t })
+                        }
+                        variant="dark"
+                        keyboardType={f2.numeric ? 'numeric' : 'default'}
+                      />
+                    </View>
+                    <View style={styles.exFieldSm}>
+                      <Input
+                        label="DESC. (S)"
+                        placeholder="90"
+                        value={ex.restSeconds}
+                        onChangeText={(t) =>
+                          updateExercise(day.key, ex.key, { restSeconds: t })
+                        }
+                        variant="dark"
+                        keyboardType="numeric"
+                      />
+                    </View>
+                  </View>
                 </View>
-                <View style={styles.exFields}>
-                  <View style={styles.exFieldSm}>
-                    <Input
-                      label="SERIES"
-                      placeholder="3"
-                      value={ex.sets}
-                      onChangeText={(t) =>
-                        updateExercise(day.key, ex.key, { sets: t })
-                      }
-                      variant="dark"
-                      keyboardType="numeric"
-                    />
-                  </View>
-                  <View style={styles.exFieldSm}>
-                    <Input
-                      label="REPS"
-                      placeholder="8-12"
-                      value={ex.reps}
-                      onChangeText={(t) =>
-                        updateExercise(day.key, ex.key, { reps: t })
-                      }
-                      variant="dark"
-                    />
-                  </View>
-                  <View style={styles.exFieldSm}>
-                    <Input
-                      label="DESC. (S)"
-                      placeholder="90"
-                      value={ex.restSeconds}
-                      onChangeText={(t) =>
-                        updateExercise(day.key, ex.key, { restSeconds: t })
-                      }
-                      variant="dark"
-                      keyboardType="numeric"
-                    />
-                  </View>
-                </View>
-              </View>
-            ))}
+              );
+            })}
 
             <View style={styles.addExerciseRow}>
               <Pressable
@@ -421,7 +480,6 @@ export default function RoutineBuilderScreen() {
         />
       </ScrollView>
 
-      {/* Picker de catálogo */}
       <Modal
         visible={!!pickerDay}
         transparent
@@ -449,15 +507,22 @@ export default function RoutineBuilderScreen() {
                     style={styles.modalItem}
                     onPress={() => {
                       if (pickerDayKey) {
-                        addExerciseToDay(pickerDayKey, ex.name, ex.id);
+                        addExerciseToDay(
+                          pickerDayKey,
+                          ex.name,
+                          ex.id,
+                          ex.measurementType,
+                        );
                       }
                       setPickerDayKey(null);
                     }}
                   >
                     <Text style={styles.modalItemName}>{ex.name}</Text>
-                    {!!ex.muscleGroup && (
-                      <Text style={styles.modalItemMeta}>{ex.muscleGroup}</Text>
-                    )}
+                    <Text style={styles.modalItemMeta}>
+                      {[MEASUREMENT_LABELS[ex.measurementType], ex.muscleGroup]
+                        .filter(Boolean)
+                        .join('  ·  ')}
+                    </Text>
                   </Pressable>
                 ))
               )}
@@ -491,10 +556,7 @@ const createStyles = (colors: Colors) =>
       borderColor: colors.divider,
       alignItems: 'center',
     },
-    chipActive: {
-      backgroundColor: colors.primaryRed,
-      borderColor: colors.primaryRed,
-    },
+    chipActive: { backgroundColor: colors.primaryRed, borderColor: colors.primaryRed },
     chipText: {
       fontFamily: typography.bodyS.fontFamily,
       fontSize: 13,
@@ -542,10 +604,29 @@ const createStyles = (colors: Colors) =>
       borderTopWidth: 1,
       borderTopColor: colors.divider,
       paddingTop: 8,
+      gap: 4,
     },
     exerciseHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
     exNameWrap: { flex: 1 },
     removeEx: { paddingTop: 28 },
+    measureRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 6 },
+    measureChip: {
+      paddingVertical: 6,
+      paddingHorizontal: 10,
+      borderRadius: 999,
+      borderWidth: 1,
+      borderColor: colors.divider,
+    },
+    measureChipActive: {
+      backgroundColor: colors.primaryRed,
+      borderColor: colors.primaryRed,
+    },
+    measureChipText: {
+      fontFamily: typography.bodyXS.fontFamily,
+      fontSize: 11,
+      color: colors.textPrimary,
+    },
+    measureChipTextActive: { color: colors.white },
     exFields: { flexDirection: 'row', gap: 8 },
     exFieldSm: { flex: 1 },
     addExerciseRow: { flexDirection: 'row', gap: 8, marginTop: 4 },

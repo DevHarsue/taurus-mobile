@@ -5,6 +5,7 @@ export const exerciseSchema = z.object({
   muscleGroup: z.string().optional(),
   equipment: z.string().optional(),
   description: z.string().optional(),
+  measurementType: z.enum(['weight_reps', 'reps', 'time', 'distance']),
 });
 
 export type ExerciseFormValues = z.infer<typeof exerciseSchema>;

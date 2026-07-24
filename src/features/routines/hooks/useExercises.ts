@@ -31,6 +31,7 @@ export function useCreateExercise() {
           description: body.description ?? null,
           muscleGroup: body.muscleGroup ?? null,
           equipment: body.equipment ?? null,
+          measurementType: body.measurementType ?? 'weight_reps',
           isActive: true,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),

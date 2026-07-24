@@ -1,6 +1,7 @@
 import type {
-  MemberRoutineBundle,
-  RoutineDay,
+  MemberSchedule,
+  RoutineExercise,
+  ScheduledDay,
   TodayWorkout,
   Weekday,
 } from '@app-types/routine';
@@ -20,33 +21,49 @@ export function getCurrentWeekday(): Weekday {
   return JS_DAY_TO_WEEKDAY[new Date().getDay()];
 }
 
-/** Resuelve el routine_day asignado a un dia de semana concreto. */
+/** El día programado (rutina + día) para un día de la semana concreto. */
 export function dayForWeekday(
-  bundle: MemberRoutineBundle | null,
+  schedule: MemberSchedule | null,
   weekday: Weekday,
-): RoutineDay | null {
-  if (!bundle?.assignment || !bundle.routine) return null;
-  const dayId = bundle.assignment.dayMapping[weekday];
-  if (!dayId) return null;
-  return bundle.routine.days.find((d) => d.id === dayId) ?? null;
+): ScheduledDay | null {
+  if (!schedule) return null;
+  return schedule.find((s) => s.weekday === weekday) ?? null;
 }
 
 /** Deriva "lo que toca hoy" 100% en el cliente (funciona offline). */
 export function deriveTodayWorkout(
-  bundle: MemberRoutineBundle | null,
+  schedule: MemberSchedule | null,
 ): TodayWorkout {
   const weekday = getCurrentWeekday();
-  const day = dayForWeekday(bundle, weekday);
-  return {
-    weekday,
-    routineName: bundle?.routine?.name ?? null,
-    day,
-    isRestDay: !day,
-  };
+  const day = dayForWeekday(schedule, weekday);
+  return { weekday, day, isRestDay: !day };
 }
 
-/** Cuenta total de series prescritas en un dia (para resumenes). */
-export function totalSets(day: RoutineDay | null): number {
+/** Total de series prescritas en un día (para resúmenes). */
+export function totalSets(day: ScheduledDay | null): number {
   if (!day) return 0;
   return day.exercises.reduce((sum, ex) => sum + (ex.sets ?? 0), 0);
+}
+
+/** Línea de prescripción legible según el tipo de medición del ejercicio. */
+export function prescriptionLine(ex: RoutineExercise): string {
+  const parts: string[] = [`${ex.sets} series`];
+  switch (ex.measurementType) {
+    case 'time':
+      parts.push(ex.durationSeconds ? `${ex.durationSeconds}s` : 'tiempo');
+      break;
+    case 'distance':
+      parts.push(ex.distance ? ex.distance : 'distancia');
+      break;
+    case 'reps':
+      parts.push(`${ex.reps} reps`);
+      break;
+    case 'weight_reps':
+    default:
+      parts.push(`${ex.reps} reps`);
+      if (ex.weight) parts.push(ex.weight);
+      break;
+  }
+  if (ex.restSeconds) parts.push(`${ex.restSeconds}s desc.`);
+  return parts.join('  ·  ');
 }

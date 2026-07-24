@@ -89,7 +89,8 @@ export default function RoutinesListScreen() {
       >
         <Text style={styles.title}>Rutinas de entrenamiento</Text>
         <Text style={styles.description}>
-          Crea plantillas de rutina y asígnalas por días a tus miembros.
+          Crea plantillas de rutina. Para asignarlas, entra al detalle de un
+          miembro → “Horario semanal” (puedes poner una rutina distinta por día).
         </Text>
 
         <Pressable
@@ -140,17 +141,6 @@ export default function RoutinesListScreen() {
                     </Text>
                   )}
                   <View style={styles.actions}>
-                    <Pressable
-                      style={[styles.actionBtn, styles.assignBtn]}
-                      onPress={() =>
-                        nav.navigate('AssignRoutine', {
-                          routineId: routine.id,
-                          routineName: routine.name,
-                        })
-                      }
-                    >
-                      <Text style={styles.assignText}>Asignar</Text>
-                    </Pressable>
                     <Pressable
                       style={styles.actionBtn}
                       onPress={() =>

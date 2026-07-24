@@ -47,10 +47,32 @@ export const LEVEL_LABELS: Record<RoutineLevel, string> = {
   advanced: 'Avanzado',
 };
 
-/** Mapeo dia de semana -> id del routine_day. Claves ausentes = descanso. */
-export type DayMapping = Partial<Record<Weekday, string>>;
+// ─── Tipos de medición ─────────────────────────────────────────────────────
 
-// ─── Catalogo de ejercicios ────────────────────────────────────────────────
+export type MeasurementType = 'weight_reps' | 'reps' | 'time' | 'distance';
+
+export const MEASUREMENT_TYPES: MeasurementType[] = [
+  'weight_reps',
+  'reps',
+  'time',
+  'distance',
+];
+
+export const MEASUREMENT_LABELS: Record<MeasurementType, string> = {
+  weight_reps: 'Peso y reps',
+  reps: 'Repeticiones',
+  time: 'Tiempo',
+  distance: 'Distancia',
+};
+
+export const MEASUREMENT_HINT: Record<MeasurementType, string> = {
+  weight_reps: 'Sentadilla, press banca…',
+  reps: 'Dominadas, flexiones…',
+  time: 'Plancha, isométricos…',
+  distance: 'Correr, remo, caminata…',
+};
+
+// ─── Catálogo de ejercicios ────────────────────────────────────────────────
 
 export interface Exercise {
   id: string;
@@ -58,6 +80,7 @@ export interface Exercise {
   description?: string | null;
   muscleGroup?: string | null;
   equipment?: string | null;
+  measurementType: MeasurementType;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -70,10 +93,13 @@ export interface RoutineExercise {
   routineDayId: string;
   exerciseId?: string | null;
   exerciseName: string;
+  measurementType: MeasurementType;
   orderIndex: number;
   sets: number;
   reps: string;
   weight?: string | null;
+  durationSeconds?: number | null;
+  distance?: string | null;
   restSeconds?: number | null;
   rpe?: string | null;
   notes?: string | null;
@@ -102,32 +128,25 @@ export interface RoutineDetail extends Routine {
   days: RoutineDay[];
 }
 
-// ─── Asignacion + bundle del miembro ───────────────────────────────────────
+// ─── Horario semanal del miembro ───────────────────────────────────────────
 
-export interface RoutineAssignment {
-  id: string;
-  memberId: string;
+/** Un día del horario semanal, ya resuelto con su rutina/día/ejercicios. */
+export interface ScheduledDay {
+  weekday: Weekday;
   routineId: string;
-  assignedBy?: string | null;
-  dayMapping: DayMapping;
-  startsAt: string;
-  endsAt?: string | null;
-  status: 'active' | 'paused' | 'finished';
-  createdAt: string;
-  updatedAt: string;
+  routineName: string;
+  routineDayId: string;
+  dayLabel: string;
+  exercises: RoutineExercise[];
 }
 
-/** Lo que devuelve GET /routines/me. */
-export interface MemberRoutineBundle {
-  assignment: RoutineAssignment | null;
-  routine: RoutineDetail | null;
-}
+/** GET /routines/me y /routines/member/:id/schedule devuelven esto. */
+export type MemberSchedule = ScheduledDay[];
 
 /** Vista derivada en el cliente para "lo que toca hoy". */
 export interface TodayWorkout {
   weekday: Weekday;
-  routineName: string | null;
-  day: RoutineDay | null;
+  day: ScheduledDay | null;
   isRestDay: boolean;
 }
 
@@ -140,6 +159,8 @@ export interface SetLog {
   setNumber: number;
   repsDone?: number | null;
   weightDone?: number | null;
+  durationDone?: number | null;
+  distanceDone?: number | null;
   done: boolean;
 }
 
@@ -163,6 +184,7 @@ export interface CreateExerciseRequest {
   description?: string;
   muscleGroup?: string;
   equipment?: string;
+  measurementType?: MeasurementType;
 }
 
 export interface UpdateExerciseRequest {
@@ -170,16 +192,20 @@ export interface UpdateExerciseRequest {
   description?: string;
   muscleGroup?: string;
   equipment?: string;
+  measurementType?: MeasurementType;
   isActive?: boolean;
 }
 
 export interface CreateRoutineExerciseRequest {
   exerciseId?: string;
   exerciseName: string;
+  measurementType?: MeasurementType;
   orderIndex?: number;
   sets: number;
   reps: string;
   weight?: string;
+  durationSeconds?: number;
+  distance?: string;
   restSeconds?: number;
   rpe?: string;
   notes?: string;
@@ -203,12 +229,14 @@ export type UpdateRoutineRequest = Partial<CreateRoutineRequest> & {
   isActive?: boolean;
 };
 
-export interface AssignRoutineRequest {
+export interface ScheduleEntry {
+  weekday: Weekday;
   routineId: string;
-  memberId: string;
-  dayMapping: DayMapping;
-  startsAt?: string;
-  endsAt?: string;
+  routineDayId: string;
+}
+
+export interface SetScheduleRequest {
+  entries: ScheduleEntry[];
 }
 
 export interface LogSetRequest {
@@ -217,6 +245,8 @@ export interface LogSetRequest {
   setNumber: number;
   repsDone?: number;
   weightDone?: number;
+  durationDone?: number;
+  distanceDone?: number;
   done?: boolean;
 }
 
