@@ -1,7 +1,7 @@
-import React, { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useCallback, useMemo, useState } from 'react';
+import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ChevronLeft, ChevronRight, LogOut, Settings } from 'lucide-react-native';
 import { useAuth } from '@hooks/useAuth';
@@ -32,12 +32,27 @@ export default function MyProfileScreen() {
   const { displayName } = useGreeting();
   const nav = useNavigation<NativeStackNavigationProp<MemberProfileStackParamList | ProfileStackParamList>>();
   const insets = useSafeAreaInsets();
-  const { data: myMember } = useMyMemberDetail();
+  const { data: myMember, refetch: refetchMember, loading: loadingMember } = useMyMemberDetail();
   const { mutate: generateCard, loading: generatingCard } = useGenerateMemberCard();
-  const { data: accessLog } = useMyAccessLog();
+  const { data: accessLog, refetch: refetchAccess } = useMyAccessLog();
   const { toast } = useToast();
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
+
+  // Refrescar al volver a la pantalla (p. ej. tras que el admin renueve el plan).
+  useFocusEffect(
+    useCallback(() => {
+      refetchMember();
+      refetchAccess();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []),
+  );
+
+  const onRefresh = useCallback(() => {
+    refetchMember();
+    refetchAccess();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const membershipLabel =
     myMember?.subscriptionStatus === 'active'
@@ -112,6 +127,14 @@ export default function MyProfileScreen() {
         style={styles.scroll}
         contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 24 }]}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={loadingMember && !!myMember}
+            onRefresh={onRefresh}
+            tintColor={colors.primaryRed}
+            colors={[colors.primaryRed]}
+          />
+        }
       >
         {/* Membership Card */}
         <Card style={styles.membershipCard}>
