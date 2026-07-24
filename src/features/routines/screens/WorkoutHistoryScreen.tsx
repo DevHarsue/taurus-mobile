@@ -17,7 +17,7 @@ import { QueryRenderer } from '@components/QueryRenderer';
 import { SkeletonCard, SkeletonList } from '@components/Skeleton';
 import { useTheme } from '@hooks/useTheme';
 import { haptics } from '@utils/haptics';
-import { formatDateShort } from '@utils/dates';
+import { formatDateOnly } from '@utils/dates';
 import { useWorkoutHistory } from '../hooks/useMyRoutine';
 import type { SetLog, WorkoutLog } from '@app-types/routine';
 import { typography, spacing, type Colors } from '@theme/index';
@@ -116,7 +116,7 @@ export default function WorkoutHistoryScreen() {
                     <View style={styles.cardHeader}>
                       <View style={{ flex: 1 }}>
                         <Text style={styles.date}>
-                          {formatDateShort(logEntry.performedOn)}
+                          {formatDateOnly(logEntry.performedOn)}
                         </Text>
                         {!!logEntry.dayLabel && (
                           <Text style={styles.dayLabel}>{logEntry.dayLabel}</Text>

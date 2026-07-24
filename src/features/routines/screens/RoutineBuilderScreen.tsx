@@ -16,6 +16,7 @@ import { Input } from '@components/Input';
 import { GradientButton } from '@components/GradientButton';
 import { EmptyState } from '@components/EmptyState';
 import { LoadingSpinner } from '@components/LoadingSpinner';
+import { KeyboardScreen } from '@components/KeyboardScreen';
 import { useToast } from '@hooks/useToast';
 import { useTheme } from '@hooks/useTheme';
 import { newTempId } from '@offline';
@@ -282,11 +283,7 @@ export default function RoutineBuilderScreen() {
         backgroundColor={colors.backgroundForm}
       />
 
-      <ScrollView
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-      >
+      <KeyboardScreen contentContainerStyle={styles.content}>
         <Input
           label="NOMBRE DE LA RUTINA"
           placeholder="Ej. Full Body Principiante"
@@ -486,7 +483,7 @@ export default function RoutineBuilderScreen() {
           loading={creating || updating}
           style={styles.submit}
         />
-      </ScrollView>
+      </KeyboardScreen>
 
       <Modal
         visible={!!pickerDay}

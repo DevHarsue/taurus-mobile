@@ -2,7 +2,6 @@ import React, { useCallback, useMemo, useState } from 'react';
 import {
   Pressable,
   RefreshControl,
-  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -17,6 +16,7 @@ import { Input } from '@components/Input';
 import { GradientButton } from '@components/GradientButton';
 import { EmptyState } from '@components/EmptyState';
 import { QueryRenderer } from '@components/QueryRenderer';
+import { KeyboardScreen } from '@components/KeyboardScreen';
 import { SkeletonCard, SkeletonList } from '@components/Skeleton';
 import { useToast } from '@hooks/useToast';
 import { useConfirm } from '@hooks/useConfirm';
@@ -143,10 +143,8 @@ export default function ExerciseCatalogScreen() {
         backgroundColor={colors.backgroundForm}
       />
 
-      <ScrollView
+      <KeyboardScreen
         contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
         refreshControl={
           <RefreshControl
             refreshing={query.loading}
@@ -302,7 +300,7 @@ export default function ExerciseCatalogScreen() {
             </View>
           )}
         </QueryRenderer>
-      </ScrollView>
+      </KeyboardScreen>
     </View>
   );
 }

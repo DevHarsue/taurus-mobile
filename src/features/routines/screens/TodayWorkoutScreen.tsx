@@ -2,18 +2,17 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Pressable,
   RefreshControl,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import {
   CalendarDays,
   Check,
+  CheckCircle2,
   ChevronRight,
   Coffee,
   Dumbbell,
@@ -23,14 +22,20 @@ import { ScreenHeader } from '@components/ScreenHeader';
 import { Card } from '@components/Card';
 import { GradientButton } from '@components/GradientButton';
 import { EmptyState } from '@components/EmptyState';
+import { KeyboardScreen } from '@components/KeyboardScreen';
 import { Skeleton } from '@components/Skeleton';
 import { Avatar } from '@components/Avatar';
 import { useGreeting } from '@hooks/useGreeting';
 import { useToast } from '@hooks/useToast';
 import { useTheme } from '@hooks/useTheme';
 import { haptics } from '@utils/haptics';
+import { todayLocalISODate } from '@utils/dates';
 import { newUuid } from '@offline';
-import { useMySchedule, useLogWorkout } from '../hooks/useMyRoutine';
+import {
+  useMySchedule,
+  useLogWorkout,
+  useWorkoutHistory,
+} from '../hooks/useMyRoutine';
 import {
   deriveTodayWorkout,
   getCurrentWeekday,
@@ -93,14 +98,15 @@ function buildInitialLog(day: ScheduledDay | null): LogState {
 export default function TodayWorkoutScreen() {
   const nav =
     useNavigation<NativeStackNavigationProp<MemberRoutineStackParamList>>();
-  const insets = useSafeAreaInsets();
   const { displayName } = useGreeting();
   const query = useMySchedule();
+  const historyQuery = useWorkoutHistory();
   const { mutate: logWorkout, loading: logging } = useLogWorkout();
   const { toast } = useToast();
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
+  const todayIso = todayLocalISODate();
   const today = useMemo(
     () => deriveTodayWorkout(query.data ?? null),
     [query.data],
@@ -108,10 +114,25 @@ export default function TodayWorkoutScreen() {
   const day = today.day;
 
   const [log, setLog] = useState<LogState>({});
+  const [justRegistered, setJustRegistered] = useState(false);
 
   useEffect(() => {
     setLog(buildInitialLog(day));
+    setJustRegistered(false);
   }, [day]);
+
+  // ¿Ya registró este día hoy? (evita registros duplicados)
+  const alreadyLoggedToday = useMemo(
+    () =>
+      (historyQuery.data ?? []).some(
+        (l) =>
+          !!day &&
+          l.routineDayId === day.routineDayId &&
+          l.performedOn === todayIso,
+      ),
+    [historyQuery.data, day, todayIso],
+  );
+  const registeredToday = alreadyLoggedToday || justRegistered;
 
   const updateSet = (exId: string, setIdx: number, patch: Partial<SetEntry>) => {
     setLog((prev) => {
@@ -168,17 +189,19 @@ export default function TodayWorkoutScreen() {
     const { queued } = await logWorkout({
       routineDayId: day.routineDayId,
       dayLabel: day.dayLabel,
+      performedOn: todayIso,
       status,
       clientId: newUuid(),
       sets,
     });
     haptics.light();
+    setJustRegistered(true);
+    historyQuery.refetch();
     toast[queued ? 'info' : 'success'](
       queued
         ? 'Sin conexión: tu entrenamiento se guardará al reconectar'
         : '¡Entrenamiento registrado!',
     );
-    setLog(buildInitialLog(day));
   };
 
   const refresh = useCallback(() => {
@@ -202,13 +225,8 @@ export default function TodayWorkoutScreen() {
         onRightPress={() => nav.navigate('WorkoutHistory')}
       />
 
-      <ScrollView
-        contentContainerStyle={[
-          styles.content,
-          { paddingBottom: insets.bottom + 32 },
-        ]}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
+      <KeyboardScreen
+        contentContainerStyle={styles.content}
         refreshControl={
           <RefreshControl
             refreshing={query.loading}
@@ -263,6 +281,10 @@ export default function TodayWorkoutScreen() {
 
             <Text style={styles.progress}>
               {doneSets}/{totalSetsCount} series completadas
+            </Text>
+            <Text style={styles.checkHint}>
+              Marca ✓ cada serie que completes; luego pulsa “Registrar” para
+              guardar tu entrenamiento del día.
             </Text>
 
             {day.exercises.map((ex: RoutineExercise) => {
@@ -342,15 +364,27 @@ export default function TodayWorkoutScreen() {
               );
             })}
 
-            <GradientButton
-              title="Registrar entrenamiento"
-              onPress={onSubmit}
-              loading={logging}
-              style={styles.submit}
-            />
+            {registeredToday ? (
+              <Card style={styles.doneCard}>
+                <CheckCircle2 size={22} color={colors.badgeActive} />
+                <Text style={styles.doneText}>
+                  Ya registraste tu entrenamiento de hoy.
+                </Text>
+                <Pressable onPress={() => nav.navigate('WorkoutHistory')}>
+                  <Text style={styles.doneLink}>Ver historial</Text>
+                </Pressable>
+              </Card>
+            ) : (
+              <GradientButton
+                title="Registrar entrenamiento"
+                onPress={onSubmit}
+                loading={logging}
+                style={styles.submit}
+              />
+            )}
           </>
         )}
-      </ScrollView>
+      </KeyboardScreen>
     </View>
   );
 }
@@ -424,7 +458,27 @@ const createStyles = (colors: Colors) =>
       fontFamily: typography.bodyS.fontFamily,
       fontSize: typography.bodyS.fontSize,
       color: colors.primaryRed,
+      marginBottom: 4,
+    },
+    checkHint: {
+      fontFamily: typography.bodyXS.fontFamily,
+      fontSize: 12,
+      color: colors.textMuted,
+      lineHeight: 16,
       marginBottom: 8,
+    },
+    doneCard: { padding: 18, alignItems: 'center', gap: 6, marginTop: 12 },
+    doneText: {
+      fontFamily: typography.bodyM.fontFamily,
+      fontSize: typography.bodyM.fontSize,
+      color: colors.textPrimary,
+      textAlign: 'center',
+    },
+    doneLink: {
+      fontFamily: typography.bodyS.fontFamily,
+      fontSize: typography.bodyS.fontSize,
+      color: colors.primaryRed,
+      marginTop: 4,
     },
     exCard: { padding: 16, gap: 10, marginBottom: 4 },
     exHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },

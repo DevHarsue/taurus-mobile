@@ -14,6 +14,7 @@ import { Card } from '@components/Card';
 import { GradientButton } from '@components/GradientButton';
 import { EmptyState } from '@components/EmptyState';
 import { LoadingSpinner } from '@components/LoadingSpinner';
+import { KeyboardScreen } from '@components/KeyboardScreen';
 import { routinesService } from '@api/services';
 import { useToast } from '@hooks/useToast';
 import { useTheme } from '@hooks/useTheme';
@@ -151,10 +152,7 @@ export default function MemberScheduleScreen() {
         backgroundColor={colors.backgroundForm}
       />
 
-      <ScrollView
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
-      >
+      <KeyboardScreen contentContainerStyle={styles.content}>
         {!!memberName && <Text style={styles.memberName}>{memberName}</Text>}
         <Text style={styles.hint}>
           Toca cada día para asignarle una rutina y su día, o déjalo en descanso.
@@ -194,7 +192,7 @@ export default function MemberScheduleScreen() {
           loading={saving}
           style={styles.submit}
         />
-      </ScrollView>
+      </KeyboardScreen>
 
       {/* Editor de un día */}
       <Modal

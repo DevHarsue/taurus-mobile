@@ -16,6 +16,29 @@ export function formatDateShort(iso: string): string {
   }).format(date);
 }
 
+/** Fecha de HOY en horario LOCAL como 'YYYY-MM-DD' (sin desfase UTC). */
+export function todayLocalISODate(): string {
+  const d = new Date();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${d.getFullYear()}-${m}-${day}`;
+}
+
+/**
+ * Formatea una fecha SOLO-fecha 'YYYY-MM-DD' interpretándola como LOCAL.
+ * Evita el bug de `new Date('2026-07-24')`, que se parsea como medianoche UTC
+ * y en zonas negativas (p.ej. UTC-4) muestra el día anterior.
+ */
+export function formatDateOnly(ymd: string): string {
+  const [y, m, d] = ymd.split('-').map(Number);
+  if (!y || !m || !d) return ymd;
+  return new Intl.DateTimeFormat('es', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  }).format(new Date(y, m - 1, d));
+}
+
 export function formatMonthYear(date: Date): string {
   return new Intl.DateTimeFormat('es', { month: 'long' })
     .format(date)

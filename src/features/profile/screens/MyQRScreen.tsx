@@ -86,7 +86,7 @@ const createStyles = (colors: Colors) => StyleSheet.create({
   qrInner: { borderRadius: 12, overflow: 'hidden' },
   qrPlaceholder: { width: 200, height: 200, alignItems: 'center', justifyContent: 'center', backgroundColor: '#F4F4F5' },
   qrPlaceholderText: { fontFamily: typography.bodySM.fontFamily, fontSize: typography.bodySM.fontSize, color: colors.textMuted },
-  nameCard: { backgroundColor: colors.textPrimary, borderRadius: 16, paddingVertical: 16, paddingHorizontal: 24, alignItems: 'center', gap: 8, width: '100%' },
+  nameCard: { backgroundColor: '#1A1C1C', borderRadius: 16, paddingVertical: 16, paddingHorizontal: 24, alignItems: 'center', gap: 8, width: '100%' },
   memberName: { fontFamily: typography.headingS.fontFamily, fontSize: typography.headingS.fontSize, color: colors.white },
   tierBadge: { backgroundColor: colors.primaryRed, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 4 },
   tierText: { fontFamily: typography.labelM.fontFamily, fontSize: typography.labelM.fontSize, letterSpacing: 1, color: colors.white },
