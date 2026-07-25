@@ -95,7 +95,7 @@ export default function CompleteProfileScreen({ onCompleted }: Props) {
           style={styles.logoutBtn}
           onPress={async () => {
             const ok = await confirm({
-              title: 'Cerrar sesion',
+              title: 'Cerrar sesión',
               message: '¿Seguro que quieres salir?',
               confirmLabel: 'Salir',
               cancelLabel: 'Cancelar',
