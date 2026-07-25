@@ -13,23 +13,23 @@ export const phoneSchema = z
   .string()
   .regex(
     PHONE_REGEX,
-    'Telefono invalido. Formato: 58 + prefijo (412/414/416/418/422/424/426) + 7 digitos. Ej: 584141771490',
+    'Teléfono inválido. Formato: 58 + prefijo (412/414/416/418/422/424/426) + 7 dígitos. Ej: 584141771490',
   );
 
 export const cedulaSchema = z
   .string()
-  .regex(CEDULA_REGEX, 'Cedula invalida. Solo numeros, entre 7 y 10 digitos');
+  .regex(CEDULA_REGEX, 'Cédula inválida. Solo números, entre 7 y 10 dígitos');
 
 export const emailSchema = z
   .string()
   .min(1, 'Email requerido')
-  .email('Email invalido')
+  .email('Email inválido')
   .max(254, 'El email no puede superar 254 caracteres');
 
 export const passwordSchema = z
   .string()
-  .min(PASSWORD_MIN_LENGTH, `La contrasena debe tener al menos ${PASSWORD_MIN_LENGTH} caracteres`)
+  .min(PASSWORD_MIN_LENGTH, `La contraseña debe tener al menos ${PASSWORD_MIN_LENGTH} caracteres`)
   .regex(
     PASSWORD_REGEX,
-    'La contrasena debe incluir al menos 2 numeros, 1 mayuscula, 1 minuscula y 1 caracter especial',
+    'La contraseña debe incluir al menos 2 números, 1 mayúscula, 1 minúscula y 1 carácter especial',
   );

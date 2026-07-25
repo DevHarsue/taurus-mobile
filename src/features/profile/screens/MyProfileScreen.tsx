@@ -148,8 +148,8 @@ export default function MyProfileScreen() {
             </View>
             <View style={styles.dateInfo}>
               <View style={styles.dateInfoRow}>
-                <Text style={styles.dateLabel}>Dias restantes</Text>
-                <Text style={styles.dateValue}>{myMember?.daysLeft ?? 0} dias</Text>
+                <Text style={styles.dateLabel}>Días restantes</Text>
+                <Text style={styles.dateValue}>{myMember?.daysLeft ?? 0} días</Text>
               </View>
               <View style={styles.dateInfoRow}>
                 <Text style={styles.dateLabel}>Vencimiento</Text>
@@ -168,9 +168,9 @@ export default function MyProfileScreen() {
         {/* Stats Row */}
         <View style={styles.statsRow}>
           <Card style={styles.statCard}>
-            <Text style={styles.statLabel}>DIAS RESTANTES</Text>
+            <Text style={styles.statLabel}>DÍAS RESTANTES</Text>
             <Text style={styles.statNumber}>{myMember?.daysLeft ?? 0}</Text>
-            <Text style={styles.statUnit}>dias</Text>
+            <Text style={styles.statUnit}>días</Text>
           </Card>
           <Card style={styles.statCard}>
             <Text style={styles.statLabel}>VISITAS ESTE MES</Text>
@@ -229,7 +229,7 @@ export default function MyProfileScreen() {
           style={styles.logoutBtn}
           onPress={async () => {
             const ok = await confirm({
-              title: 'Cerrar sesion',
+              title: 'Cerrar sesión',
               message: '¿Seguro que quieres salir?',
               confirmLabel: 'Salir',
               cancelLabel: 'Cancelar',

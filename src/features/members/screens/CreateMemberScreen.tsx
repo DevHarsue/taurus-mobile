@@ -242,7 +242,7 @@ export default function CreateMemberScreen() {
 
             {createdResult.temporaryPassword && (
               <Card style={styles.passwordCard}>
-                <Text style={styles.passwordLabel}>CONTRASENA TEMPORAL</Text>
+                <Text style={styles.passwordLabel}>CONTRASEÑA TEMPORAL</Text>
                 <Text style={styles.passwordValue}>{createdResult.temporaryPassword}</Text>
                 <Pressable style={styles.copyBtn} onPress={handleCopy}>
                   {copied ? (
@@ -251,11 +251,11 @@ export default function CreateMemberScreen() {
                     <Copy size={16} color={colors.primaryRed} />
                   )}
                   <Text style={[styles.copyBtnText, copied && { color: colors.sensorActive }]}>
-                    {copied ? 'Copiada' : 'Copiar contrasena'}
+                    {copied ? 'Copiada' : 'Copiar contraseña'}
                   </Text>
                 </Pressable>
                 <Text style={styles.passwordWarning}>
-                  Esta contrasena no se podra ver de nuevo. Asegurese de compartirla con el miembro.
+                  Esta contraseña no se podrá ver de nuevo. Asegúrese de compartirla con el miembro.
                 </Text>
               </Card>
             )}

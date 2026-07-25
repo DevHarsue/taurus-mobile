@@ -17,7 +17,7 @@ import { useTheme } from '@hooks/useTheme';
 import type { AuthStackParamList } from '@navigation/types';
 
 const schema = z.object({
-  email: z.string().email('Email invalido'),
+  email: z.string().email('Email inválido'),
   password: z.string().min(1, 'Contraseña requerida'),
 });
 
@@ -95,14 +95,14 @@ export function LoginForm() {
 
       {/* CTA */}
       <GradientButton
-        title="Iniciar sesion"
+        title="Iniciar sesión"
         onPress={handleSubmit((values) => submit(values))}
         loading={loading}
       />
 
       {/* Forgot Password */}
       <Pressable onPress={() => nav.navigate('ForgotPassword')}>
-        <Text style={styles.forgotLink}>¿Olvidaste tu contrasena?</Text>
+        <Text style={styles.forgotLink}>¿Olvidaste tu contraseña?</Text>
       </Pressable>
 
       {/* Divider */}

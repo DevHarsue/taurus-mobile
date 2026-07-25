@@ -16,7 +16,7 @@ export function useLogin() {
         throw e;
       }
     },
-    errorMessage: 'No se pudo iniciar sesion',
+    errorMessage: 'No se pudo iniciar sesión',
   });
 
   return { submit: mutation.mutate, loading: mutation.loading, error: mutation.error };

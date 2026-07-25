@@ -142,7 +142,7 @@ export default function PlansScreen() {
                 <PlanCard
                   key={plan.id}
                   plan={plan}
-                  highlighted={plan.isHighlighted ?? i === 1}
+                  highlighted={false}//{plan.isHighlighted ?? i === 1}
                   onEdit={() => nav.navigate('EditPlan', { plan: toPlanBase(plan) })}
                   onDelete={() => handleDeletePlan(plan.id, plan.name)}
                   styles={styles}
@@ -168,7 +168,7 @@ const createStyles = (colors: Colors) => StyleSheet.create({
   description: { fontFamily: typography.bodySM.fontFamily, fontSize: typography.bodySM.fontSize, color: colors.textMuted, marginBottom: 16, lineHeight: 20 },
   plansList: { gap: 16 },
   planCard: { padding: 20, gap: 8 },
-  planCardDark: { backgroundColor: colors.primaryDark },
+  planCardDark: { backgroundColor: colors.textPrimary },
   planName: { fontFamily: typography.titleS.fontFamily, fontSize: typography.titleS.fontSize, color: colors.textPrimary },
   priceRow: { flexDirection: 'row', alignItems: 'flex-start' },
   priceDollar: { fontFamily: typography.bodyS.fontFamily, fontSize: 14, color: colors.textPrimary, marginTop: 4 },

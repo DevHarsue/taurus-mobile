@@ -32,7 +32,7 @@ export default function RegisterScreen() {
 
   const onSubmit = async (values: RegisterFormValues) => {
     await mutate({ email: values.email, password: values.password });
-    toast.success('Cuenta creada, ya puedes iniciar sesion');
+    toast.success('Cuenta creada, ya puedes iniciar sesión');
     nav.navigate('Login');
   };
 
@@ -73,7 +73,7 @@ export default function RegisterScreen() {
           name="password"
           render={({ field: { onChange, value } }) => (
             <Input
-              label="CONTRASENA"
+              label="CONTRASEÑA"
               showToggle
               placeholder="••••••••"
               value={value}
@@ -88,7 +88,7 @@ export default function RegisterScreen() {
           name="confirmPassword"
           render={({ field: { onChange, value } }) => (
             <Input
-              label="CONFIRMAR CONTRASENA"
+              label="CONFIRMAR CONTRASEÑA"
               showToggle
               placeholder="••••••••"
               value={value}
@@ -107,7 +107,7 @@ export default function RegisterScreen() {
         <View style={styles.loginRow}>
           <Text style={styles.loginText}>¿Ya tienes una cuenta? </Text>
           <Pressable onPress={() => nav.navigate('Login')}>
-            <Text style={styles.loginLink}>INICIA SESION</Text>
+            <Text style={styles.loginLink}>INICIA SESIÓN</Text>
           </Pressable>
         </View>
       </KeyboardScreen>

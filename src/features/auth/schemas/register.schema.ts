@@ -5,10 +5,10 @@ export const registerSchema = z
   .object({
     email: emailSchema,
     password: passwordSchema,
-    confirmPassword: z.string().min(1, 'Confirma tu contrasena'),
+    confirmPassword: z.string().min(1, 'Confirma tu contraseña'),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: 'Las contrasenas no coinciden',
+    message: 'Las contraseñas no coinciden',
     path: ['confirmPassword'],
   });
 

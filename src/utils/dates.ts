@@ -60,7 +60,7 @@ export function addDays(iso: string, days: number): string {
 export function formatDuration(days: number): string {
   if (days >= 365) return `${Math.round(days / 30)} Meses`;
   if (days >= 28 && days % 30 <= 5) return `${Math.round(days / 30)} ${Math.round(days / 30) === 1 ? 'Mes' : 'Meses'}`;
-  return `${days} Dias`;
+  return `${days} Días`;
 }
 
 export function getDaysInMonth(year: number, month: number): number {

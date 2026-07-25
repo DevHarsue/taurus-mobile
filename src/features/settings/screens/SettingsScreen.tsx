@@ -29,10 +29,10 @@ const changePasswordSchema = z
     // contraseña (los usuarios de Google la establecen sin la actual).
     currentPassword: z.string().optional(),
     newPassword: passwordSchema,
-    confirmPassword: z.string().min(1, 'Confirma tu contrasena'),
+    confirmPassword: z.string().min(1, 'Confirma tu contraseña'),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
-    message: 'Las contrasenas no coinciden',
+    message: 'Las contraseñas no coinciden',
     path: ['confirmPassword'],
   });
 
@@ -84,7 +84,7 @@ export default function SettingsScreen() {
 
   const handleLogout = async () => {
     const ok = await confirm({
-      title: 'Cerrar sesion',
+      title: 'Cerrar sesión',
       message: '¿Seguro que quieres salir?',
       confirmLabel: 'Salir',
       cancelLabel: 'Cancelar',
@@ -95,14 +95,14 @@ export default function SettingsScreen() {
 
   return (
     <View style={styles.container}>
-      <ScreenHeader title="Configuracion" onBack={() => nav.goBack()} />
+      <ScreenHeader title="Configuración" onBack={() => nav.goBack()} />
 
       <KeyboardScreen
         contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 24 }]}
       >
         {/* User Info */}
         <Card style={styles.section}>
-          <Text style={styles.sectionTitle}>Informacion de usuario</Text>
+          <Text style={styles.sectionTitle}>Información de usuario</Text>
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Email</Text>
             <Text style={styles.infoValue}>{user?.email ?? '—'}</Text>
@@ -161,7 +161,7 @@ export default function SettingsScreen() {
         {/* Change / Set Password */}
         <Card style={styles.section}>
           <Text style={styles.sectionTitle}>
-            {hasPassword ? 'Cambiar contrasena' : 'Establecer contrasena'}
+            {hasPassword ? 'Cambiar contraseña' : 'Establecer contraseña'}
           </Text>
 
           {!hasPassword && (
@@ -179,7 +179,7 @@ export default function SettingsScreen() {
               name="currentPassword"
               render={({ field: { onChange, value } }) => (
                 <Input
-                  label="CONTRASENA ACTUAL"
+                  label="CONTRASEÑA ACTUAL"
                   showToggle
                   placeholder="••••••••"
                   value={value ?? ''}
@@ -195,7 +195,7 @@ export default function SettingsScreen() {
             name="newPassword"
             render={({ field: { onChange, value } }) => (
               <Input
-                label="NUEVA CONTRASENA"
+                label="NUEVA CONTRASEÑA"
                 showToggle
                 placeholder="••••••••"
                 value={value}
@@ -210,7 +210,7 @@ export default function SettingsScreen() {
             name="confirmPassword"
             render={({ field: { onChange, value } }) => (
               <Input
-                label="CONFIRMAR NUEVA CONTRASENA"
+                label="CONFIRMAR NUEVA CONTRASEÑA"
                 showToggle
                 placeholder="••••••••"
                 value={value}
@@ -222,7 +222,7 @@ export default function SettingsScreen() {
           />
 
           <GradientButton
-            title={hasPassword ? 'Actualizar contrasena' : 'Establecer contrasena'}
+            title={hasPassword ? 'Actualizar contraseña' : 'Establecer contraseña'}
             onPress={handleSubmit(onChangePassword)}
             loading={loading}
           />
@@ -230,9 +230,9 @@ export default function SettingsScreen() {
 
         {/* App Info */}
         <Card style={styles.section}>
-          <Text style={styles.sectionTitle}>Informacion de la app</Text>
+          <Text style={styles.sectionTitle}>Información de la app</Text>
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Version</Text>
+            <Text style={styles.infoLabel}>Versión</Text>
             <Text style={styles.infoValue}>1.0.0</Text>
           </View>
         </Card>
@@ -240,7 +240,7 @@ export default function SettingsScreen() {
         {/* Logout */}
         <Pressable style={styles.logoutBtn} onPress={handleLogout}>
           <LogOut size={18} color={colors.badgeExpired} strokeWidth={2} />
-          <Text style={styles.logoutText}>Cerrar sesion</Text>
+          <Text style={styles.logoutText}>Cerrar sesión</Text>
         </Pressable>
       </KeyboardScreen>
     </View>
