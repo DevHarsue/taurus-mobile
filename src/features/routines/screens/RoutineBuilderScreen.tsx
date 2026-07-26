@@ -283,7 +283,7 @@ export default function RoutineBuilderScreen() {
         backgroundColor={colors.backgroundForm}
       />
 
-      <KeyboardScreen contentContainerStyle={styles.content}>
+      <KeyboardScreen contentContainerStyle={styles.content} dismissOnTap={false}>
         <Input
           label="NOMBRE DE LA RUTINA"
           placeholder="Ej. Full Body Principiante"

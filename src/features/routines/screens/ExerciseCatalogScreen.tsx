@@ -145,6 +145,7 @@ export default function ExerciseCatalogScreen() {
 
       <KeyboardScreen
         contentContainerStyle={styles.content}
+        dismissOnTap={false}
         refreshControl={
           <RefreshControl
             refreshing={query.loading}

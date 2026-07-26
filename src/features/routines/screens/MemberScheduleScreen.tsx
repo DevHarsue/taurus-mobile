@@ -152,7 +152,7 @@ export default function MemberScheduleScreen() {
         backgroundColor={colors.backgroundForm}
       />
 
-      <KeyboardScreen contentContainerStyle={styles.content}>
+      <KeyboardScreen contentContainerStyle={styles.content} dismissOnTap={false}>
         {!!memberName && <Text style={styles.memberName}>{memberName}</Text>}
         <Text style={styles.hint}>
           Toca cada día para asignarle una rutina y su día, o déjalo en descanso.

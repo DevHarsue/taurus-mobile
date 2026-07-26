@@ -14,10 +14,20 @@
       "distribution": "internal",
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_AUTH_BASE_URL": "https://taurus-auth.onrender.com",
+        "EXPO_PUBLIC_MEMBERS_BASE_URL": "https://taurus-members.onrender.com",
+        "EXPO_PUBLIC_ACCESS_BASE_URL": "https://taurus-access.onrender.com"
       }
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_AUTH_BASE_URL": "https://taurus-auth.onrender.com",
+        "EXPO_PUBLIC_MEMBERS_BASE_URL": "https://taurus-members.onrender.com",
+        "EXPO_PUBLIC_ACCESS_BASE_URL": "https://taurus-access.onrender.com"
+      }
     }
   }
 }

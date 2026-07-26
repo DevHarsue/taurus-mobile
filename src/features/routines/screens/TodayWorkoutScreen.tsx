@@ -30,7 +30,7 @@ import { useToast } from '@hooks/useToast';
 import { useTheme } from '@hooks/useTheme';
 import { haptics } from '@utils/haptics';
 import { todayLocalISODate } from '@utils/dates';
-import { newUuid } from '@offline';
+import { kvStore, newUuid } from '@offline';
 import {
   useMySchedule,
   useLogWorkout,
@@ -86,6 +86,11 @@ function emptyEntry(): SetEntry {
   return { reps: '', weight: '', duration: '', distance: '', done: false };
 }
 
+/** Clave del borrador local del entrenamiento (por día de rutina y fecha). */
+function draftKey(routineDayId: string, dateIso: string): string {
+  return `taurus.workout_draft.${routineDayId}.${dateIso}`;
+}
+
 function buildInitialLog(day: ScheduledDay | null): LogState {
   const state: LogState = {};
   if (!day) return state;
@@ -115,11 +120,34 @@ export default function TodayWorkoutScreen() {
 
   const [log, setLog] = useState<LogState>({});
   const [justRegistered, setJustRegistered] = useState(false);
+  const [draftReady, setDraftReady] = useState(false);
 
+  const dayId = day?.routineDayId ?? null;
+
+  // Cargar el borrador local guardado (o el inicial) al cambiar de día/fecha.
+  // Así el progreso sobrevive cerrar y reabrir la app durante el entreno.
   useEffect(() => {
-    setLog(buildInitialLog(day));
+    let cancelled = false;
+    setDraftReady(false);
     setJustRegistered(false);
-  }, [day]);
+    (async () => {
+      if (!dayId) {
+        if (!cancelled) {
+          setLog({});
+          setDraftReady(true);
+        }
+        return;
+      }
+      const saved = await kvStore.getJson<LogState>(draftKey(dayId, todayIso));
+      if (cancelled) return;
+      setLog(saved ?? buildInitialLog(day));
+      setDraftReady(true);
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dayId, todayIso]);
 
   // ¿Ya registró este día hoy? (evita registros duplicados)
   const alreadyLoggedToday = useMemo(
@@ -133,6 +161,12 @@ export default function TodayWorkoutScreen() {
     [historyQuery.data, day, todayIso],
   );
   const registeredToday = alreadyLoggedToday || justRegistered;
+
+  // Guardar el borrador mientras entrena (checks/reps/peso) en el teléfono.
+  useEffect(() => {
+    if (!dayId || !draftReady || registeredToday) return;
+    void kvStore.setJson(draftKey(dayId, todayIso), log);
+  }, [log, dayId, todayIso, draftReady, registeredToday]);
 
   const updateSet = (exId: string, setIdx: number, patch: Partial<SetEntry>) => {
     setLog((prev) => {
@@ -160,13 +194,8 @@ export default function TodayWorkoutScreen() {
     for (const ex of day.exercises) {
       const entries = log[ex.id] ?? [];
       entries.forEach((entry, idx) => {
-        const hasData =
-          entry.done ||
-          entry.reps ||
-          entry.weight ||
-          entry.duration ||
-          entry.distance;
-        if (!hasData) return;
+        // Solo se registran las series MARCADAS con ✓ (el check = "la hice").
+        if (!entry.done) return;
         sets.push({
           routineExerciseId: ex.id,
           exerciseName: ex.exerciseName,
@@ -175,13 +204,13 @@ export default function TodayWorkoutScreen() {
           weightDone: entry.weight ? Number(entry.weight) : undefined,
           durationDone: entry.duration ? Number(entry.duration) : undefined,
           distanceDone: entry.distance ? Number(entry.distance) : undefined,
-          done: entry.done,
+          done: true,
         });
       });
     }
 
     if (sets.length === 0) {
-      toast.error('Marca al menos una serie');
+      toast.error('Marca (✓) al menos una serie completada');
       return;
     }
 
@@ -196,6 +225,8 @@ export default function TodayWorkoutScreen() {
     });
     haptics.light();
     setJustRegistered(true);
+    // El entreno ya quedó registrado (o encolado): limpiar el borrador local.
+    void kvStore.remove(draftKey(day.routineDayId, todayIso));
     historyQuery.refetch();
     toast[queued ? 'info' : 'success'](
       queued
@@ -227,6 +258,7 @@ export default function TodayWorkoutScreen() {
 
       <KeyboardScreen
         contentContainerStyle={styles.content}
+        dismissOnTap={false}
         refreshControl={
           <RefreshControl
             refreshing={query.loading}
@@ -283,8 +315,9 @@ export default function TodayWorkoutScreen() {
               {doneSets}/{totalSetsCount} series completadas
             </Text>
             <Text style={styles.checkHint}>
-              Marca ✓ cada serie que completes; luego pulsa “Registrar” para
-              guardar tu entrenamiento del día.
+              Marca ✓ cada serie que completes: eso es lo que se registra
+              (reps/peso son el detalle). Tu avance se guarda en el teléfono —
+              puedes cerrar la app y volver. Al terminar, pulsa “Registrar”.
             </Text>
 
             {day.exercises.map((ex: RoutineExercise) => {
@@ -325,7 +358,10 @@ export default function TodayWorkoutScreen() {
                   </View>
 
                   {(log[ex.id] ?? []).map((entry, idx) => (
-                    <View key={idx} style={styles.setRow}>
+                    <View
+                      key={idx}
+                      style={[styles.setRow, entry.done && styles.setRowDone]}
+                    >
                       <Text style={[styles.setNumber, styles.colSet]}>
                         {idx + 1}
                       </Text>
@@ -510,7 +546,13 @@ const createStyles = (colors: Colors) =>
     colSet: { width: 48, textAlign: 'center' },
     colInput: { flex: 1, paddingHorizontal: 4 },
     colCheck: { width: 48, alignItems: 'center' },
-    setRow: { flexDirection: 'row', alignItems: 'center' },
+    setRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 3,
+      borderRadius: 8,
+    },
+    setRowDone: { backgroundColor: colors.badgeActiveBg },
     setNumber: {
       fontFamily: typography.bodyM.fontFamily,
       fontSize: typography.bodyM.fontSize,
