@@ -18,6 +18,7 @@ import RoutinesListScreen from '@features/routines/screens/RoutinesListScreen';
 import ExerciseCatalogScreen from '@features/routines/screens/ExerciseCatalogScreen';
 import RoutineBuilderScreen from '@features/routines/screens/RoutineBuilderScreen';
 import MemberScheduleScreen from '@features/routines/screens/MemberScheduleScreen';
+import MemberWorkoutHistoryScreen from '@features/routines/screens/MemberWorkoutHistoryScreen';
 import QRScannerScreen from '@features/scanner/screens/QRScannerScreen';
 import MyProfileScreen from '@features/profile/screens/MyProfileScreen';
 import SettingsScreen from '@features/settings/screens/SettingsScreen';
@@ -61,6 +62,7 @@ function MembersStackNavigator() {
       <MembersStack.Screen name="EditMember" component={EditMemberScreen} />
       <MembersStack.Screen name="FingerprintEnroll" component={FingerprintEnrollScreen} />
       <MembersStack.Screen name="MemberSchedule" component={MemberScheduleScreen} />
+      <MembersStack.Screen name="MemberWorkoutHistory" component={MemberWorkoutHistoryScreen} />
     </MembersStack.Navigator>
   );
 }

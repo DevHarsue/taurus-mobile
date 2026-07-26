@@ -11,7 +11,6 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import {
   CalendarDays,
-  Check,
   CheckCircle2,
   ChevronRight,
   Coffee,
@@ -56,9 +55,18 @@ interface SetEntry {
   weight: string;
   duration: string;
   distance: string;
-  done: boolean;
 }
 type LogState = Record<string, SetEntry[]>;
+
+/** Una serie cuenta como registrada si tiene al menos un dato escrito. */
+function isFilled(entry: SetEntry): boolean {
+  return Boolean(
+    entry.reps.trim() ||
+      entry.weight.trim() ||
+      entry.duration.trim() ||
+      entry.distance.trim(),
+  );
+}
 
 type FieldKey = 'reps' | 'weight' | 'duration' | 'distance';
 
@@ -83,7 +91,7 @@ function inputsFor(
 }
 
 function emptyEntry(): SetEntry {
-  return { reps: '', weight: '', duration: '', distance: '', done: false };
+  return { reps: '', weight: '', duration: '', distance: '' };
 }
 
 /** Clave del borrador local del entrenamiento (por día de rutina y fecha). */
@@ -182,7 +190,7 @@ export default function TodayWorkoutScreen() {
     Object.values(log).forEach((sets) => {
       sets.forEach((s) => {
         total += 1;
-        if (s.done) done += 1;
+        if (isFilled(s)) done += 1;
       });
     });
     return { doneSets: done, totalSetsCount: total };
@@ -190,12 +198,12 @@ export default function TodayWorkoutScreen() {
 
   const onSubmit = async () => {
     if (!day) return;
+    // Se registra toda serie que tenga algún dato escrito (sin checks).
     const sets: LogSetRequest[] = [];
     for (const ex of day.exercises) {
       const entries = log[ex.id] ?? [];
       entries.forEach((entry, idx) => {
-        // Solo se registran las series MARCADAS con ✓ (el check = "la hice").
-        if (!entry.done) return;
+        if (!isFilled(entry)) return;
         sets.push({
           routineExerciseId: ex.id,
           exerciseName: ex.exerciseName,
@@ -210,7 +218,7 @@ export default function TodayWorkoutScreen() {
     }
 
     if (sets.length === 0) {
-      toast.error('Marca (✓) al menos una serie completada');
+      toast.error('Escribe los datos de al menos una serie');
       return;
     }
 
@@ -225,8 +233,8 @@ export default function TodayWorkoutScreen() {
     });
     haptics.light();
     setJustRegistered(true);
-    // El entreno ya quedó registrado (o encolado): limpiar el borrador local.
-    void kvStore.remove(draftKey(day.routineDayId, todayIso));
+    // El borrador se conserva para seguir viendo (solo lectura) lo registrado;
+    // mañana la clave cambia de fecha y el día arranca limpio.
     historyQuery.refetch();
     toast[queued ? 'info' : 'success'](
       queued
@@ -312,13 +320,15 @@ export default function TodayWorkoutScreen() {
             </View>
 
             <Text style={styles.progress}>
-              {doneSets}/{totalSetsCount} series completadas
+              {doneSets}/{totalSetsCount} series con datos
             </Text>
-            <Text style={styles.checkHint}>
-              Marca ✓ cada serie que completes: eso es lo que se registra
-              (reps/peso son el detalle). Tu avance se guarda en el teléfono —
-              puedes cerrar la app y volver. Al terminar, pulsa “Registrar”.
-            </Text>
+            {!registeredToday && (
+              <Text style={styles.checkHint}>
+                Escribe reps/peso de cada serie que hagas: tu avance se guarda
+                solo en el teléfono — puedes cerrar la app y volver. Al
+                terminar, pulsa “Registrar entrenamiento”.
+              </Text>
+            )}
 
             {day.exercises.map((ex: RoutineExercise) => {
               const fields = inputsFor(ex.measurementType);
@@ -354,46 +364,31 @@ export default function TodayWorkoutScreen() {
                         {f.label}
                       </Text>
                     ))}
-                    <Text style={[styles.setsHeaderText, styles.colCheck]}>✓</Text>
                   </View>
 
                   {(log[ex.id] ?? []).map((entry, idx) => (
-                    <View
-                      key={idx}
-                      style={[styles.setRow, entry.done && styles.setRowDone]}
-                    >
+                    <View key={idx} style={styles.setRow}>
                       <Text style={[styles.setNumber, styles.colSet]}>
                         {idx + 1}
                       </Text>
                       {fields.map((f) => (
                         <View key={f.key} style={styles.colInput}>
                           <TextInput
-                            style={styles.setInput}
+                            style={[
+                              styles.setInput,
+                              registeredToday && styles.setInputLocked,
+                            ]}
                             value={entry[f.key]}
                             onChangeText={(t) =>
                               updateSet(ex.id, idx, { [f.key]: t })
                             }
+                            editable={!registeredToday}
                             keyboardType={f.numeric ? 'numeric' : 'default'}
-                            placeholder={f.placeholder}
+                            placeholder={registeredToday ? '' : f.placeholder}
                             placeholderTextColor={colors.textPrimaryAlpha40}
                           />
                         </View>
                       ))}
-                      <View style={styles.colCheck}>
-                        <Pressable
-                          onPress={() =>
-                            updateSet(ex.id, idx, { done: !entry.done })
-                          }
-                          style={[
-                            styles.checkBox,
-                            entry.done && styles.checkBoxDone,
-                          ]}
-                        >
-                          {entry.done && (
-                            <Check size={16} color={colors.white} strokeWidth={3} />
-                          )}
-                        </Pressable>
-                      </View>
                     </View>
                   ))}
                 </Card>
@@ -545,14 +540,12 @@ const createStyles = (colors: Colors) =>
     },
     colSet: { width: 48, textAlign: 'center' },
     colInput: { flex: 1, paddingHorizontal: 4 },
-    colCheck: { width: 48, alignItems: 'center' },
     setRow: {
       flexDirection: 'row',
       alignItems: 'center',
       paddingVertical: 3,
       borderRadius: 8,
     },
-    setRowDone: { backgroundColor: colors.badgeActiveBg },
     setNumber: {
       fontFamily: typography.bodyM.fontFamily,
       fontSize: typography.bodyM.fontSize,
@@ -567,18 +560,6 @@ const createStyles = (colors: Colors) =>
       fontFamily: typography.bodySM.fontFamily,
       fontSize: typography.bodySM.fontSize,
     },
-    checkBox: {
-      width: 32,
-      height: 32,
-      borderRadius: 8,
-      borderWidth: 1.5,
-      borderColor: colors.divider,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    checkBoxDone: {
-      backgroundColor: colors.badgeActive,
-      borderColor: colors.badgeActive,
-    },
+    setInputLocked: { opacity: 0.6 },
     submit: { marginTop: 16 },
   });

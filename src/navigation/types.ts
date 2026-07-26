@@ -35,6 +35,7 @@ export type MembersStackParamList = {
   EditMember: { id: string };
   FingerprintEnroll: { memberId: string; memberName: string };
   MemberSchedule: { memberId: string; memberName?: string };
+  MemberWorkoutHistory: { memberId: string; memberName?: string };
 };
 
 export type PlansStackParamList = {
@@ -119,6 +120,7 @@ export type RoutinesHomeScreenProps = NativeStackScreenProps<RoutinesStackParamL
 export type ExerciseCatalogScreenProps = NativeStackScreenProps<RoutinesStackParamList, 'ExerciseCatalog'>;
 export type RoutineBuilderScreenProps = NativeStackScreenProps<RoutinesStackParamList, 'RoutineBuilder'>;
 export type MemberScheduleScreenProps = NativeStackScreenProps<MembersStackParamList, 'MemberSchedule'>;
+export type MemberWorkoutHistoryScreenProps = NativeStackScreenProps<MembersStackParamList, 'MemberWorkoutHistory'>;
 
 export type TodayWorkoutScreenProps = NativeStackScreenProps<MemberRoutineStackParamList, 'TodayWorkout'>;
 export type WeekRoutineScreenProps = NativeStackScreenProps<MemberRoutineStackParamList, 'WeekRoutine'>;

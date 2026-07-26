@@ -29,6 +29,16 @@ export function useWorkoutHistory(limit?: number) {
   });
 }
 
+/** Historial de entrenamientos de un miembro (seguimiento admin). */
+export function useMemberWorkoutHistory(memberId: string) {
+  return useQuery<WorkoutLog[]>({
+    queryFn: () => routinesService.getMemberHistory(memberId),
+    deps: [memberId],
+    errorMessage: 'No se pudo cargar el historial del miembro',
+    cacheKey: `routine:member:${memberId}:history`,
+  });
+}
+
 /** Registro de entrenamiento (reps/peso/tiempo/distancia) offline-aware. */
 export function useLogWorkout() {
   return useMutation<LogWorkoutRequest, OfflineOutcome<void>>({

@@ -88,6 +88,14 @@ export class RoutinesService extends BaseApiService {
     return this.get('/api/routines/me/history', limit ? { limit } : undefined);
   }
 
+  /** Historial de entrenamientos de un miembro (seguimiento admin). */
+  async getMemberHistory(memberId: string, limit?: number): Promise<WorkoutLog[]> {
+    return this.get(
+      `/api/routines/member/${memberId}/history`,
+      limit ? { limit } : undefined,
+    );
+  }
+
   async logWorkout(
     body: LogWorkoutRequest,
     options?: IWriteOptions,

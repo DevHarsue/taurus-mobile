@@ -1,13 +1,6 @@
 import React, { useCallback, useMemo } from 'react';
-import {
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
 import { History } from 'lucide-react-native';
 import { ScreenHeader } from '@components/ScreenHeader';
 import { EmptyState } from '@components/EmptyState';
@@ -15,14 +8,19 @@ import { QueryRenderer } from '@components/QueryRenderer';
 import { SkeletonCard, SkeletonList } from '@components/Skeleton';
 import { useTheme } from '@hooks/useTheme';
 import { haptics } from '@utils/haptics';
-import { useWorkoutHistory } from '../hooks/useMyRoutine';
+import { useMemberWorkoutHistory } from '../hooks/useMyRoutine';
 import { WorkoutHistoryList } from '../components/WorkoutHistoryList';
+import type { MemberWorkoutHistoryScreenProps } from '@navigation/types';
 import { typography, spacing, type Colors } from '@theme/index';
 
-export default function WorkoutHistoryScreen() {
-  const nav = useNavigation();
+/** Seguimiento (admin): entrenamientos registrados por un miembro. */
+export default function MemberWorkoutHistoryScreen({
+  navigation,
+  route,
+}: MemberWorkoutHistoryScreenProps) {
+  const { memberId, memberName } = route.params;
   const insets = useSafeAreaInsets();
-  const query = useWorkoutHistory();
+  const query = useMemberWorkoutHistory(memberId);
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
@@ -34,8 +32,8 @@ export default function WorkoutHistoryScreen() {
   return (
     <View style={styles.container}>
       <ScreenHeader
-        title="Historial"
-        onBack={() => nav.goBack()}
+        title="Entrenamientos"
+        onBack={() => navigation.goBack()}
         backgroundColor={colors.background}
       />
 
@@ -54,7 +52,9 @@ export default function WorkoutHistoryScreen() {
           />
         }
       >
-        <Text style={styles.title}>Tus entrenamientos</Text>
+        <Text style={styles.title}>
+          {memberName ? `Historial de ${memberName}` : 'Historial del miembro'}
+        </Text>
 
         <QueryRenderer
           query={query}
@@ -68,8 +68,8 @@ export default function WorkoutHistoryScreen() {
           empty={
             <EmptyState
               icon={History}
-              title="Sin entrenamientos aún"
-              description="Cuando registres tu rutina del día, aparecerá aquí."
+              title="Sin entrenamientos registrados"
+              description="Cuando el miembro registre sus rutinas, aparecerán aquí."
             />
           }
         >

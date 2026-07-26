@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Info, Pencil, Download, FileText, Fingerprint, Dumbbell } from 'lucide-react-native';
+import { Info, Pencil, Download, FileText, Fingerprint, Dumbbell, History } from 'lucide-react-native';
 import { ScreenHeader } from '@components/ScreenHeader';
 import { Badge } from '@components/Badge';
 import { Button } from '@components/Button';
@@ -230,6 +230,15 @@ export default function MemberDetailScreen({ route }: MemberDetailScreenProps) {
                 icon={<Dumbbell size={18} color={colors.primaryRed} strokeWidth={2} />}
                 onPress={() =>
                   nav.navigate('MemberSchedule', { memberId: id, memberName: member.name })
+                }
+              />
+
+              <Button
+                variant="outline"
+                title="Historial de entrenamientos"
+                icon={<History size={18} color={colors.primaryRed} strokeWidth={2} />}
+                onPress={() =>
+                  nav.navigate('MemberWorkoutHistory', { memberId: id, memberName: member.name })
                 }
               />
 
