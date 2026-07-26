@@ -12,8 +12,13 @@ export interface IMutationResult<TInput, TOutput> {
 export interface IUseMutationOptions<TInput, TOutput> {
   /** Funcion asincrona que ejecuta la mutacion. */
   mutationFn: (input: TInput) => Promise<TOutput>;
-  /** Mensaje de error legible para el usuario. */
+  /** Mensaje de error legible para el usuario (fallback). */
   errorMessage?: string;
+  /**
+   * Mapea el error crudo a un mensaje especifico para el usuario.
+   * Si devuelve null/undefined se usa `errorMessage`.
+   */
+  getErrorMessage?: (error: unknown) => string | null | undefined;
   /** Callback ejecutado tras una mutacion exitosa. */
   onSuccess?: (data: TOutput) => void;
 }
@@ -23,7 +28,7 @@ export interface IUseMutationOptions<TInput, TOutput> {
 export function useMutation<TInput, TOutput = void>(
   options: IUseMutationOptions<TInput, TOutput>,
 ): IMutationResult<TInput, TOutput> {
-  const { mutationFn, errorMessage = 'Operacion fallida', onSuccess } = options;
+  const { mutationFn, errorMessage = 'Operacion fallida', getErrorMessage, onSuccess } = options;
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -38,13 +43,13 @@ export function useMutation<TInput, TOutput = void>(
         if (mountedRef.current) onSuccess?.(result);
         return result;
       } catch (e) {
-        if (mountedRef.current) setError(errorMessage);
+        if (mountedRef.current) setError(getErrorMessage?.(e) ?? errorMessage);
         throw e;
       } finally {
         if (mountedRef.current) setLoading(false);
       }
     },
-    [mutationFn, errorMessage, onSuccess],
+    [mutationFn, errorMessage, getErrorMessage, onSuccess],
   );
 
   const reset = useCallback(() => {
